@@ -18,7 +18,8 @@ export default defineConfig([
     },
     extends: [
       js.configs.recommended,
-      tseslint.configs.recommended,
+      tseslint.configs.recommendedTypeChecked,
+      tseslint.configs.stylisticTypeChecked,
       reactHooks.configs["recommended-latest"],
       reactRefresh.configs.vite,
       // Load jsx-a11y recommended manually
@@ -35,6 +36,10 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parserOptions: {
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: {
       "prettier/prettier": "warn",
