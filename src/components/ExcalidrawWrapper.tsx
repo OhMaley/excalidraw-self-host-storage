@@ -10,9 +10,9 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 // Style
 import "@excalidraw/excalidraw/index.css";
 
-type Props = {
+interface Props {
   drawingId?: string;
-};
+}
 
 export default function ExcalidrawWrapper({ drawingId }: Props) {
   const { load } = useStorage();
@@ -32,7 +32,7 @@ export default function ExcalidrawWrapper({ drawingId }: Props) {
         console.error("Failed to load drawing", e);
       }
     };
-    doLoad();
+    void doLoad();
     return () => {
       cancelled = true;
     };
