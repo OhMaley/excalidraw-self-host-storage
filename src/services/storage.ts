@@ -4,40 +4,40 @@ import type { SceneData, AppState } from "@excalidraw/excalidraw/types";
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "/api";
 
 export interface StoredDrawing {
-  id?: string;
-  elements?: SceneData["elements"];
-  appState?: Partial<AppState>;
-  collaborators?: SceneData["collaborators"];
-  captureUpdate?: SceneData["captureUpdate"];
+    id?: string;
+    elements?: SceneData["elements"];
+    appState?: Partial<AppState>;
+    collaborators?: SceneData["collaborators"];
+    captureUpdate?: SceneData["captureUpdate"];
 }
 
 export async function loadDrawing(id: string): Promise<StoredDrawing> {
-  const res = await fetch(`${API_BASE}/drawings/${encodeURIComponent(id)}`, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    credentials: "include",
-  });
+    const res = await fetch(`${API_BASE}/drawings/${encodeURIComponent(id)}`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        credentials: "include",
+    });
 
-  if (!res.ok) {
-    throw new Error(`Failed to load drawing: ${res.status}`);
-  }
+    if (!res.ok) {
+        throw new Error(`Failed to load drawing: ${res.status}`);
+    }
 
-  const data = (await res.json()) as StoredDrawing;
-  return data;
+    const data = (await res.json()) as StoredDrawing;
+    return data;
 }
 
 export async function saveDrawing(body: StoredDrawing): Promise<{ id: string }> {
-  const res = await fetch(`${API_BASE}/drawings`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body),
-  });
+    const res = await fetch(`${API_BASE}/drawings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    throw new Error(`Failed to save drawing: ${res.status}`);
-  }
+    if (!res.ok) {
+        throw new Error(`Failed to save drawing: ${res.status}`);
+    }
 
-  const data = (await res.json()) as { id: string };
-  return data;
+    const data = (await res.json()) as { id: string };
+    return data;
 }
