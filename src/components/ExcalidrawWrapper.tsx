@@ -10,6 +10,9 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 // Style
 import "@excalidraw/excalidraw/index.css";
 
+// Utils
+import { hydrateScene } from "@utils/sceneUtils";
+
 interface Props {
     drawingId?: string;
 }
@@ -27,7 +30,7 @@ export default function ExcalidrawWrapper({ drawingId }: Props) {
             try {
                 const scene = await load(drawingId);
                 if (cancelled) return;
-                excalidrawAPI.updateScene(scene);
+                excalidrawAPI.updateScene(hydrateScene(scene, excalidrawAPI));
             } catch (e) {
                 console.error("Failed to load drawing", e);
             }
