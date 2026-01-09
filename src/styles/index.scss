@@ -1,0 +1,41 @@
+:root {
+    --font-ui: "Assistant", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --color-primary: #6965db;
+    --color-primary-darker: #5b57d1;
+    --color-primary-darkest: #4a47b1;
+    --color-text: rgb(27, 27, 31);
+    --color-text-muted: #666;
+    --color-background: #ffffff;
+    --color-text-bold: var(--color-primary);
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+
+    font-family: var(
+        --font-ui,
+        "Assistant",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif
+    );
+    color: var(--color-text, rgb(27, 27, 31));
+    background-color: var(--color-background, #fff);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+b,
+strong {
+    color: var(--color-text-bold);
+    font-weight: bold;
+}

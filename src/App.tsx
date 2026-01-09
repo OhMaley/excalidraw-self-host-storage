@@ -1,15 +1,31 @@
 // Components
 import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "@pages/Home";
+
+// Routes
+import { publicRoutes, protectedRoutes } from "@routes/routes";
+import { RequireAuth } from "@routes/RequireAuth";
+import { RequireRole } from "@routes/RequireRoles";
 
 function App() {
     return (
         <Routes>
-            {/* Home page without a loaded canvas */}
-            <Route path="/" element={<Home />} />
+            {/* Public */}
+            {publicRoutes.map(({ path, element }) => (
+                <Route key={path} path={path} element={element} />
+            ))}
 
-            {/* Home page loaded with a canvas */}
-            <Route path="/draw/:id" element={<Home />} />
+            {/* Protected */}
+            <Route element={<RequireAuth />}>
+                {protectedRoutes.map(({ path, element, roleRequiredAmong }) =>
+                    roleRequiredAmong ? (
+                        <Route element={<RequireRole requiresRoleAmong={roleRequiredAmong} />}>
+                            <Route path={path} element={element} />
+                        </Route>
+                    ) : (
+                        <Route path={path} element={element} />
+                    )
+                )}
+            </Route>
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

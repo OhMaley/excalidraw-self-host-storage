@@ -9,13 +9,13 @@ import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
     globalIgnores(["dist", "node_modules"]),
+    reactHooks.configs.flat.recommended,
     {
         files: ["**/*.{ts,tsx}"],
         ignores: ["dist", "node_modules"],
         plugins: {
             "jsx-a11y": jsxA11y,
             prettier: prettierPlugin,
-            "react-hooks": reactHooks,
             "react-refresh": reactRefresh,
         },
         extends: [
