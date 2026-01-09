@@ -13,11 +13,11 @@ import "@excalidraw/excalidraw/index.css";
 // Utils
 import { hydrateScene } from "@utils/sceneUtils";
 
-interface Props {
+interface ExcalidrawWrapperProps {
     drawingId?: string;
 }
 
-export default function ExcalidrawWrapper({ drawingId }: Props) {
+export default function ExcalidrawWrapper({ drawingId }: ExcalidrawWrapperProps) {
     const { load } = useStorage();
     const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null);
 
