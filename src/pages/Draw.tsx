@@ -4,6 +4,6 @@ import { useParams } from "react-router-dom";
 import ExcalidrawWrapper from "@components/ExcalidrawWrapper";
 
 export default function Draw() {
-    const { id } = useParams<{ id: string }>();
-    return <ExcalidrawWrapper drawingId={id} />;
+    const { drawingId } = useParams<{ drawingId: string }>();
+    return <ExcalidrawWrapper drawingId={drawingId} />;
 }
