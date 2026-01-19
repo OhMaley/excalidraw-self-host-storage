@@ -52,8 +52,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setKeycloak(kc);
 
                 if (authenticated && kc.tokenParsed) {
-                    localStorage.setItem("was_authenticated", "true");
-
                     const token = kc.tokenParsed as {
                         sub: string;
                         preferred_username?: string;
