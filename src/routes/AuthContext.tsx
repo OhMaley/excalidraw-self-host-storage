@@ -17,6 +17,7 @@ export interface AuthContextType {
     keycloak: Keycloak | null;
     user: User | null;
     loading: boolean;
+    error: Error | null;
     isAuthenticated: boolean;
     login: (redirectUri?: string) => void;
     logout: () => void;
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [keycloak, setKeycloak] = useState<Keycloak | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
     const initializedRef = useRef(false);
 
     useEffect(() => {
@@ -50,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
             .then((authenticated) => {
                 setKeycloak(kc);
+                setError(null);
 
                 if (authenticated && kc.tokenParsed) {
                     const token = kc.tokenParsed as {
@@ -75,11 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 } else {
                     setUser(null);
                 }
-
-                setLoading(false);
             })
-            .catch(() => {
+            .catch((err) => {
                 setUser(null);
+                setKeycloak(null);
+                if (err instanceof Error) {
+                    setError(err);
+                } else {
+                    setError(new Error("Authentication server unreachable"));
+                }
+            })
+            .finally(() => {
                 setLoading(false);
             });
     }, []);
@@ -111,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         keycloak,
         user,
         loading,
+        error,
         isAuthenticated: !!user,
         login,
         logout,

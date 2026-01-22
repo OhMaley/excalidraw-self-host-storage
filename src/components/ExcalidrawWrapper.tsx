@@ -1,49 +1,91 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 
 // Components
 import { Excalidraw } from "@excalidraw/excalidraw";
+const NotFound = lazy(() => import("@pages/NotFound"));
+
+// Hooks
 import { useStorage } from "@hooks/useStorage";
 
 // Type
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+import type { StoredDrawing } from "@services/storage";
 
 // Style
 import "@excalidraw/excalidraw/index.css";
 
 // Utils
 import { hydrateScene } from "@utils/sceneUtils";
+import { HttpError } from "@utils/httpError";
 
 interface ExcalidrawWrapperProps {
     drawingId?: string;
 }
 
+type LoadState =
+    | { status: "loading" }
+    | { status: "ready"; data: StoredDrawing }
+    | { status: "error"; error: HttpError };
+
 export default function ExcalidrawWrapper({ drawingId }: ExcalidrawWrapperProps) {
     const { load } = useStorage();
-    const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null);
+    const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
+    const [state, setState] = useState<LoadState | null>(drawingId ? { status: "loading" } : null);
 
+    // Load drawing when ID exists
     useEffect(() => {
-        if (!excalidrawAPI) return;
+        if (!drawingId) return;
 
         let cancelled = false;
-        const doLoad = async () => {
-            if (!drawingId) return;
+
+        const fetchDrawing = async () => {
+            setState({ status: "loading" });
+
             try {
-                const scene = await load(drawingId);
+                const data = await load(drawingId);
                 if (cancelled) return;
-                excalidrawAPI.updateScene(hydrateScene(scene, excalidrawAPI));
-            } catch (e) {
-                console.error("Failed to load drawing", e);
+
+                setState({ status: "ready", data });
+            } catch (error) {
+                if (error instanceof HttpError) {
+                    setState({ status: "error", error: error });
+                }
             }
         };
-        void doLoad();
+
+        void fetchDrawing();
+
         return () => {
             cancelled = true;
         };
-    }, [drawingId, load, excalidrawAPI]);
+    }, [drawingId, load]);
+
+    // Hydrate Excalidraw once both API + data are ready
+    useEffect(() => {
+        if (!state) return;
+        if (state.status !== "ready") return;
+        if (!excalidrawAPIRef.current) return;
+
+        excalidrawAPIRef.current.updateScene(hydrateScene(state.data, excalidrawAPIRef.current));
+    }, [state]);
+
+    // Error handling
+    if (state?.status === "error") {
+        switch (state.error.status) {
+            case 404:
+                return (
+                    <Suspense fallback={null}>
+                        <NotFound description="Drawing not found" />
+                    </Suspense>
+                );
+            default:
+                return <div>Failed to load drawing</div>;
+        }
+    }
 
     return (
         <div style={{ height: "100%", width: "100%" }}>
-            <Excalidraw excalidrawAPI={(api) => setExcalidrawAPI(api)} />
+            <Excalidraw excalidrawAPI={(api) => (excalidrawAPIRef.current = api)} />
         </div>
     );
 }
