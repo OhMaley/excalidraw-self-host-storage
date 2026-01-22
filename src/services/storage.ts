@@ -1,6 +1,9 @@
 // Types
 import type { SceneData, AppState } from "@excalidraw/excalidraw/types";
 
+// Utils
+import { HttpError } from "@utils/httpError";
+
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "/api";
 
 export interface StoredDrawing {
@@ -12,18 +15,23 @@ export interface StoredDrawing {
 }
 
 export async function loadDrawing(id: string): Promise<StoredDrawing> {
-    const res = await fetch(`${API_BASE}/drawings/${encodeURIComponent(id)}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        credentials: "include",
-    });
-
-    if (!res.ok) {
-        throw new Error(`Failed to load drawing: ${res.status}`);
+    try {
+        const res = await fetch(`${API_BASE}/drawings/${encodeURIComponent(id)}`, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            credentials: "include",
+        });
+        if (!res.ok) {
+            throw new HttpError(res.status, res.statusText, "Failed to load drawing");
+        }
+        return (await res.json()) as StoredDrawing;
+    } catch (error) {
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(500, "Fetch error", "Drawing fetch error");
+        }
     }
-
-    const data = (await res.json()) as StoredDrawing;
-    return data;
 }
 
 export async function saveDrawing(body: StoredDrawing): Promise<{ id: string }> {

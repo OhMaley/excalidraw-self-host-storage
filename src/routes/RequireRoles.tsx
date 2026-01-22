@@ -1,10 +1,13 @@
+import { lazy, Suspense } from "react";
+
 // Components
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
-import AccessDenied from "@pages/AccessDenied";
 
 // Types
 import type { Role } from "@routes/AuthContext";
+
+const AccessDenied = lazy(() => import("@pages/AccessDenied"));
 
 interface RequireRoleProps {
     requiresRoleAmong: Role[];
@@ -13,10 +16,14 @@ interface RequireRoleProps {
 export const RequireRole = ({ requiresRoleAmong }: RequireRoleProps) => {
     const { loading, hasRole } = useAuth();
 
-    if (loading) return;
+    if (loading) return null;
 
     if (!hasRole(requiresRoleAmong)) {
-        return <AccessDenied requiresRoleAmong={requiresRoleAmong} />;
+        return (
+            <Suspense fallback={null}>
+                <AccessDenied requiresRoleAmong={requiresRoleAmong} />
+            </Suspense>
+        );
     }
 
     return <Outlet />;

@@ -10,10 +10,7 @@ export function useStorage() {
     const [saving, setSaving] = useState(false);
     const lastSavedRef = useRef<number>(0);
 
-    const load = useCallback(async (id: string) => {
-        const data = await loadDrawing(id);
-        return data;
-    }, []);
+    const load = useCallback(loadDrawing, []);
 
     const save = useCallback(
         async (payload: { elements: SceneData["elements"]; appState: Partial<AppState> }) => {
