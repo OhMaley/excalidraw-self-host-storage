@@ -3,7 +3,7 @@ import { useEffect, useRef, lazy, Suspense } from "react";
 // Components
 import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
-import Spinner from "@components/Spinner";
+const Spinner = lazy(() => import("@components/Spinner"));
 
 // Pages
 const AuthError = lazy(() => import("@pages/AuthError"));
