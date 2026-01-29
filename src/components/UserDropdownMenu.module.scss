@@ -1,0 +1,104 @@
+.avatarButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 0;
+}
+
+.avatarRoot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--lg-button-size);
+    height: var(--lg-button-size);
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.avatarFallback {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: #fff;
+    font-size: large;
+    font-weight: 500;
+}
+
+.dropdownMenuContent {
+    z-index: 2;
+    min-width: 150px;
+    background-color: var(--island-bg-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-island);
+    padding: 0.5rem;
+}
+
+.dropdownMenuItem {
+    display: flex;
+    flex-direction: row;
+    height: 2rem;
+    width: calc(100% - 2px);
+    margin: 1px;
+    padding: 0px 0.5rem;
+    align-items: center;
+    background-color: transparent;
+    color: var(--color-on-surface);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 400;
+    text-decoration: none;
+    border-radius: var(--border-radius-md);
+    outline: none;
+    border: 1px solid transparent;
+    column-gap: 0.625rem;
+    user-select: none;
+
+    &.red {
+        color: var(--color-red) !important;
+    }
+
+    &:hover {
+        background-color: var(--button-hover-bg);
+    }
+
+    &:active {
+        background-color: var(--button-hover-bg);
+        border-color: var(--color-brand-active);
+    }
+
+    &[data-disabled] {
+        opacity: 0.5;
+        cursor: default;
+        color: var(--color-text-muted);
+        pointer-events: none;
+    }
+}
+
+.dropdownMenuSeparator {
+    height: 1px;
+    background-color: var(--default-border-color);
+    margin: 0.5rem 0px;
+}
+
+.icon {
+    width: 16px;
+    height: 16px;
+    color: var(--color-text);
+
+    &.red {
+        color: var(--color-red) !important;
+    }
+}
+
+.utilities {
+    display: block;
+    width: 100%;
+    text-align: center;
+    color: var(--color-gray-50);
+    font-size: 10px;
+    user-select: none;
+}

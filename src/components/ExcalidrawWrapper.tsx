@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
 
 // Components
-import { Excalidraw } from "@excalidraw/excalidraw";
+import { Excalidraw, WelcomeScreen } from "@excalidraw/excalidraw";
+import TopRightUI from "@components/TopRightUI";
 const NotFound = lazy(() => import("@pages/NotFound"));
 
 // Hooks
@@ -11,7 +12,7 @@ import { useStorage } from "@hooks/useStorage";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import type { StoredDrawing } from "@services/storage";
 
-// Style
+// Styles
 import "@excalidraw/excalidraw/index.css";
 
 // Utils
@@ -69,6 +70,11 @@ export default function ExcalidrawWrapper({ drawingId }: ExcalidrawWrapperProps)
         excalidrawAPIRef.current.updateScene(hydrateScene(state.data, excalidrawAPIRef.current));
     }, [state]);
 
+    // Loading state
+    if (state?.status === "loading") {
+        return null;
+    }
+
     // Error handling
     if (state?.status === "error") {
         switch (state.error.status) {
@@ -83,9 +89,15 @@ export default function ExcalidrawWrapper({ drawingId }: ExcalidrawWrapperProps)
         }
     }
 
+    // Excalidraw ready
     return (
         <div style={{ height: "100%", width: "100%" }}>
-            <Excalidraw excalidrawAPI={(api) => (excalidrawAPIRef.current = api)} />
+            <Excalidraw
+                excalidrawAPI={(api) => (excalidrawAPIRef.current = api)}
+                renderTopRightUI={() => <TopRightUI />}
+            >
+                <WelcomeScreen />
+            </Excalidraw>
         </div>
     );
 }
