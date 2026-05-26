@@ -1,0 +1,21 @@
+single:
+  parameters:
+    - $ref: "../components/parameters.yaml#/DrawingId"
+  
+  get:
+    operationId: getDrawing
+    summary: Fetch a drawing metadata.
+    tags: [Drawings]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Drawing.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"

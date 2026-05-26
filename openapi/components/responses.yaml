@@ -1,0 +1,20 @@
+Unauthorized:
+  description: Missing or invalid bearer token.
+  content:
+    application/json:
+      schema:
+        $ref: "./schemas/Error.yaml"
+
+Forbidden:
+  description: Authenticated user does not own this resource.
+  content:
+    application/json:
+      schema:
+        $ref: "./schemas/Error.yaml"
+
+NotFound:
+  description: Resource not found.
+  content:
+    application/json:
+      schema:
+        $ref: "./schemas/Error.yaml"
