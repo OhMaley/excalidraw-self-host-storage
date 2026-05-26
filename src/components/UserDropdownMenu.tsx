@@ -1,10 +1,12 @@
 // Components
 import { Avatar, DropdownMenu } from "radix-ui";
+import { Link } from "react-router-dom";
 
 // Icons
 import UserIcon from "../assets/icons/user.svg?react";
 import GearIcon from "../assets/icons/gear.svg?react";
 import ExitIcon from "../assets/icons/exit.svg?react";
+import FolderIcon from "../assets/icons/folder.svg?react";
 
 // Type
 import type { User } from "@routes/AuthContext";
@@ -35,6 +37,7 @@ export function UserDropdownMenu({ user, logout }: UserDropdownMenuProps) {
                     </Avatar.Root>
                 </button>
             </DropdownMenu.Trigger>
+
             <DropdownMenu.Portal>
                 <DropdownMenu.Content className={styles.dropdownMenuContent} sideOffset={8}>
                     <DropdownMenu.Item className={styles.dropdownMenuItem} disabled>
@@ -45,7 +48,18 @@ export function UserDropdownMenu({ user, logout }: UserDropdownMenuProps) {
                         <GearIcon className={styles.icon} />
                         Preferences
                     </DropdownMenu.Item>
+
                     <DropdownMenu.Separator className={styles.dropdownMenuSeparator} />
+
+                    <DropdownMenu.Item asChild>
+                        <Link to="/workspaces" className={styles.dropdownMenuItem}>
+                            <FolderIcon className={styles.icon} />
+                            My Workspaces
+                        </Link>
+                    </DropdownMenu.Item>
+
+                    <DropdownMenu.Separator className={styles.dropdownMenuSeparator} />
+
                     <DropdownMenu.Item
                         className={`${styles.dropdownMenuItem} ${styles.red}`}
                         onSelect={() => logout()}

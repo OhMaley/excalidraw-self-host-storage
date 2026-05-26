@@ -1,7 +1,5 @@
 .avatarButton {
     background: none;
-    border: none;
-    cursor: pointer;
     border-radius: 50%;
     padding: 0;
 }
@@ -10,8 +8,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--lg-button-size);
-    height: var(--lg-button-size);
+    width: var(--button-size-md);
+    height: var(--button-size-md);
     border-radius: 50%;
     overflow: hidden;
 }
@@ -30,9 +28,9 @@
 
 .dropdownMenuContent {
     z-index: 2;
-    min-width: 150px;
+    min-width: 160px;
     background-color: var(--island-bg-color);
-    border-radius: var(--border-radius-lg);
+    border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-island);
     padding: 0.5rem;
 }
@@ -51,7 +49,7 @@
     font-size: 0.875rem;
     font-weight: 400;
     text-decoration: none;
-    border-radius: var(--border-radius-md);
+    border-radius: var(--border-radius-sm);
     outline: none;
     border: 1px solid transparent;
     column-gap: 0.625rem;

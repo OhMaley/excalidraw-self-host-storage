@@ -4,9 +4,6 @@ import { UserDropdownMenu } from "@components/UserDropdownMenu";
 // Hooks
 import { useAuth } from "@hooks/useAuth";
 
-// Styles
-import styles from "./TopRightUI.module.scss";
-
 export default function TopRightUI() {
     const { loading, isAuthenticated, user, login, logout } = useAuth();
 
@@ -16,9 +13,5 @@ export default function TopRightUI() {
         return <UserDropdownMenu user={user} logout={logout} />;
     }
 
-    return (
-        <button className={styles.button} onClick={() => login()}>
-            Login
-        </button>
-    );
+    return <button onClick={() => login()}>Login</button>;
 }

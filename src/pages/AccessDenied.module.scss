@@ -49,29 +49,6 @@ $original-image-ratio: calc($original-image-height / $original-image-width);
         line-height: 1.5;
         color: var(--color-text-muted);
     }
-
-    .button {
-        height: 2.5rem;
-        padding: 0 0.8rem;
-        font-size: 0.95rem;
-        font-weight: 500;
-        border-radius: 0.5rem;
-        border: none;
-        background-color: var(--color-primary);
-        color: #fff;
-        cursor: pointer;
-        transition:
-            background-color 120ms ease,
-            border-color 120ms ease;
-
-        &:hover {
-            background-color: var(--color-primary-darker);
-        }
-
-        &:active {
-            background-color: var(--color-primary-darkest);
-        }
-    }
 }
 
 @media (orientation: landscape) and (max-height: 600px) {

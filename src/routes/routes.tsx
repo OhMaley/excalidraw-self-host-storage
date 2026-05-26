@@ -24,6 +24,7 @@ type RouteComponent = ComponentType | LazyExoticComponent<ComponentType>;
 const Draw = lazy(() => import("@pages/Draw"));
 const Dashboard = lazy(() => import("@pages/Dashboard"));
 const Admin = lazy(() => import("@pages/Admin"));
+const Workspaces = lazy(() => import("@pages/Workspaces"));
 
 /* --------------------------------------------- *
  * Route definitions                             *
@@ -37,6 +38,7 @@ const appRoutes: AppRoute[] = [
 
     { path: "/dashboard", element: Dashboard, loginRequired: true },
     { path: "/admin", element: Admin, roleRequiredAmong: ["admin" as Role] },
+    { path: "/workspaces", element: Workspaces, loginRequired: false },
 ];
 
 /* --------------------------------------------- *
