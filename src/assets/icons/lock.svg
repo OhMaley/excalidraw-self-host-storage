@@ -1,0 +1,8 @@
+<svg aria-hidden="true" focusable="false" role="img" class="Icon" style="flex: 0 0 auto;" viewBox="0 0 24 24"
+    fill="none" stroke-width="2" stroke="currentColor" stroke-linecap="round">
+    <g>
+        <path d="M16.25 10.25H7.75a3 3 0 0 0-3 3v4.5a3 3 0 0 0 3 3h8.5a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3Z" />
+        <path d="M12 16.75a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z" />
+        <path d="M8 10.25V7a4 4 0 0 1 8 0v3.25" />
+    </g>
+</svg>

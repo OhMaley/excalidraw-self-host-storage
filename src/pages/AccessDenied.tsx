@@ -36,7 +36,7 @@ export default function AccessDenied({ requiresRoleAmong }: AccessDeniedProps) {
             </p>
 
             {/* Navigation button */}
-            <button type="button" className={styles.button} onClick={() => void navigate(-1)}>
+            <button type="button" className="btn-lg" onClick={() => void navigate(-1)}>
                 Go Back
             </button>
         </div>
