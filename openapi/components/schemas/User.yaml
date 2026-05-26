@@ -1,0 +1,14 @@
+type: object
+required:
+  - id
+  - name
+properties:
+  id:
+    type: string
+    readOnly: true
+    description: Keycloak subject (`sub`).
+    example: "f:abc123:xyz"
+  name:
+    type: string
+    readOnly: true
+    example: "John Doe"

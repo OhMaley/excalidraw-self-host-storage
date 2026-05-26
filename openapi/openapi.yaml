@@ -1,0 +1,27 @@
+openapi: 3.2.0
+info:
+  title: Excalidraw Self Host Storage API
+  version: 0.1.0
+
+components:
+  schemas:
+    User:
+      $ref: "./components/schemas/User.yaml"
+    Drawing:
+      $ref: "./components/schemas/Drawing.yaml"
+
+  parameters:
+    DrawingId:
+      $ref: "./components/parameters.yaml#/DrawingId"
+
+  responses:
+    Unauthorized:
+      $ref: "./components/responses.yaml#/Unauthorized"
+    Forbidden:
+      $ref: "./components/responses.yaml#/Forbidden"
+    NotFound:
+      $ref: "./components/responses.yaml#/NotFound"
+
+paths:
+  /drawings/{id}:
+    $ref: "./paths/drawings.yaml#/single"

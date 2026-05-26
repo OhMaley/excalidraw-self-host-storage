@@ -1,0 +1,58 @@
+type: object
+required:
+  - id
+  - title
+  - created_by
+  - created_at
+  - updated_by
+  - updated_at
+properties:
+  id:
+    type: string
+    format: uuid
+    readOnly: true
+    example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+
+  title:
+    type: string
+    minLength: 1
+    maxLength: 255
+    example: "Homepage wireframe"
+
+  description:
+    type: string
+    maxLength: 2000
+    nullable: true
+    example: "Post-standup sketch"
+
+  tags:
+    type: array
+    items:
+      type: string
+      maxLength: 64
+    maxItems: 20
+    example: ["wireframe", "homepage"]
+
+  created_by:
+    $ref: "./User.yaml"
+    readOnly: true
+
+  created_at:
+    type: string
+    format: date-time
+    readOnly: true
+    example: "2026-05-20T14:32:00Z"
+
+  updated_by:
+    $ref: "./User.yaml"
+    readOnly: true
+    nullable: true
+    description: Null if the drawing has never been updated.
+
+  updated_at:
+    type: string
+    format: date-time
+    readOnly: true
+    nullable: true
+    description: Null if the drawing has never been updated.
+    example: "2026-05-26T09:15:42Z"

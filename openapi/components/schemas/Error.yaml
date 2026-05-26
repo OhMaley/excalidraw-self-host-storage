@@ -1,0 +1,14 @@
+type: object
+required:
+  - code
+  - message
+properties:
+  code:
+    type: string
+    example: "NOT_FOUND"
+  message:
+    type: string
+    example: "Drawing 3fa85f64 not found."
+  details:
+    type: object
+    additionalProperties: true
