@@ -6,3 +6,29 @@ DrawingId:
     type: string
     format: uuid
   description: Drawing identifier.
+
+WorkspaceId:
+  name: workspaceId
+  in: path
+  required: true
+  schema:
+    type: string
+    format: uuid
+  description: Workspace identifier.
+
+CollectionId:
+  name: collectionId
+  in: path
+  required: true
+  schema:
+    type: string
+    format: uuid
+  description: Collection identifier.
+
+MemberId:
+  name: userId
+  in: path
+  required: true
+  schema:
+    type: string
+  description: Keycloak subject (`sub`) of the workspace member.

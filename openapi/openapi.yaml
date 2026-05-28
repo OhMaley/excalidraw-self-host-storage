@@ -9,10 +9,22 @@ components:
       $ref: "./components/schemas/User.yaml"
     Drawing:
       $ref: "./components/schemas/Drawing.yaml"
+    Workspace:
+      $ref: "./components/schemas/Workspace.yaml"
+    WorkspaceMember:
+      $ref: "./components/schemas/WorkspaceMember.yaml"
+    Collection:
+      $ref: "./components/schemas/Collection.yaml"
 
   parameters:
     DrawingId:
       $ref: "./components/parameters.yaml#/DrawingId"
+    WorkspaceId:
+      $ref: "./components/parameters.yaml#/WorkspaceId"
+    CollectionId:
+      $ref: "./components/parameters.yaml#/CollectionId"
+    MemberId:
+      $ref: "./components/parameters.yaml#/MemberId"
 
   responses:
     Unauthorized:
@@ -21,7 +33,26 @@ components:
       $ref: "./components/responses.yaml#/Forbidden"
     NotFound:
       $ref: "./components/responses.yaml#/NotFound"
+    Conflict:
+      $ref: "./components/responses.yaml#/Conflict"
 
 paths:
   /drawings/{id}:
     $ref: "./paths/drawings.yaml#/single"
+
+  /workspaces:
+    $ref: "./paths/workspaces.yaml#/list"
+  /workspaces/{workspaceId}:
+    $ref: "./paths/workspaces.yaml#/single"
+
+  /workspaces/{workspaceId}/members:
+    $ref: "./paths/workspace-members.yaml#/list"
+  /workspaces/{workspaceId}/members/me:
+    $ref: "./paths/workspace-members.yaml#/me"
+  /workspaces/{workspaceId}/members/{userId}:
+    $ref: "./paths/workspace-members.yaml#/single"
+
+  /workspaces/{workspaceId}/collections:
+    $ref: "./paths/workspace-collections.yaml#/list"
+  /workspaces/{workspaceId}/collections/{collectionId}:
+    $ref: "./paths/workspace-collections.yaml#/single"

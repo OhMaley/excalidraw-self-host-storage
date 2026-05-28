@@ -1,0 +1,19 @@
+type: object
+required:
+  - user
+  - role
+  - joined_at
+properties:
+  user:
+    $ref: "./User.yaml"
+
+  role:
+    type: string
+    enum: [owner, admin, member]
+    example: "member"
+
+  joined_at:
+    type: string
+    format: date-time
+    readOnly: true
+    example: "2026-02-10T09:00:00Z"
