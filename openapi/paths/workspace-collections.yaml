@@ -1,0 +1,132 @@
+list:
+  parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+
+  get:
+    operationId: listCollections
+    summary: List collections in a workspace.
+    tags: [Collections]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "../components/schemas/Collection.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  post:
+    operationId: createCollection
+    summary: Create a collection in a workspace.
+    tags: [Collections]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+                example: "Sprint 12 Wireframes"
+              description:
+                type: string
+                maxLength: 500
+                nullable: true
+                example: "All wireframes from sprint 12"
+    responses:
+      "201":
+        description: Collection created.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Collection.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+single:
+  parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+    - $ref: "../components/parameters.yaml#/CollectionId"
+
+  get:
+    operationId: getCollection
+    summary: Fetch a collection.
+    tags: [Collections]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Collection.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  patch:
+    operationId: updateCollection
+    summary: Update a collection's name or description.
+    tags: [Collections]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+                example: "Sprint 12 Wireframes"
+              description:
+                type: string
+                maxLength: 500
+                nullable: true
+                example: "All wireframes from sprint 12"
+    responses:
+      "200":
+        description: Updated collection.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Collection.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  delete:
+    operationId: deleteCollection
+    summary: Delete a collection and all its drawings.
+    tags: [Collections]
+    responses:
+      "204":
+        description: Collection deleted.
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"

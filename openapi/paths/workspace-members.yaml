@@ -1,0 +1,132 @@
+list:
+  parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+
+  get:
+    operationId: listWorkspaceMembers
+    summary: List members of a workspace.
+    tags: [Workspace Members]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "../components/schemas/WorkspaceMember.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  post:
+    operationId: addWorkspaceMember
+    summary: Add a member to a workspace.
+    tags: [Workspace Members]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - user_id
+              - role
+            properties:
+              user_id:
+                type: string
+                description: Keycloak subject (`sub`) of the user to add.
+                example: "f:abc123:xyz"
+              role:
+                type: string
+                enum: [admin, member]
+                example: "member"
+    responses:
+      "201":
+        description: Member added.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/WorkspaceMember.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+      "409":
+        $ref: "../components/responses.yaml#/Conflict"
+
+me:
+  parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+
+  delete:
+    operationId: leaveWorkspace
+    summary: Leave a workspace.
+    description: The workspace owner cannot leave. Transfer ownership first.
+    tags: [Workspace Members]
+    responses:
+      "204":
+        description: Left the workspace.
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+single:
+  parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+    - $ref: "../components/parameters.yaml#/MemberId"
+
+  patch:
+    operationId: updateWorkspaceMember
+    summary: Update a workspace member's role.
+    description: Cannot change the owner's role. Transfer ownership is not supported via this endpoint.
+    tags: [Workspace Members]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - role
+            properties:
+              role:
+                type: string
+                enum: [admin, member]
+                example: "admin"
+    responses:
+      "200":
+        description: Updated member.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/WorkspaceMember.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  delete:
+    operationId: removeWorkspaceMember
+    summary: Remove a member from a workspace.
+    description: The owner cannot be removed.
+    tags: [Workspace Members]
+    responses:
+      "204":
+        description: Member removed.
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"

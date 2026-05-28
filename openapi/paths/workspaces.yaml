@@ -1,0 +1,121 @@
+list:
+  get:
+    operationId: listWorkspaces
+    summary: List workspaces the current user belongs to.
+    tags: [Workspaces]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "../components/schemas/Workspace.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+
+  post:
+    operationId: createWorkspace
+    summary: Create a new workspace.
+    tags: [Workspaces]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+                example: "Design Team"
+              description:
+                type: string
+                maxLength: 500
+                nullable: true
+                example: "All design-related drawings"
+    responses:
+      "201":
+        description: Workspace created.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Workspace.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+
+single:
+  parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+
+  get:
+    operationId: getWorkspace
+    summary: Fetch a workspace.
+    tags: [Workspaces]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Workspace.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  patch:
+    operationId: updateWorkspace
+    summary: Update a workspace name or description.
+    tags: [Workspaces]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+                example: "Design Team"
+              description:
+                type: string
+                maxLength: 500
+                nullable: true
+                example: "All design-related drawings"
+    responses:
+      "200":
+        description: Updated workspace.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Workspace.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  delete:
+    operationId: deleteWorkspace
+    summary: Delete a workspace and all its collections and drawings.
+    description: Private workspaces cannot be deleted (403).
+    tags: [Workspaces]
+    responses:
+      "204":
+        description: Workspace deleted.
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"

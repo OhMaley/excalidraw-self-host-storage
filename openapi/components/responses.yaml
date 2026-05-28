@@ -18,3 +18,10 @@ NotFound:
     application/json:
       schema:
         $ref: "./schemas/Error.yaml"
+
+Conflict:
+  description: Request conflicts with current resource state (e.g. user is already a member).
+  content:
+    application/json:
+      schema:
+        $ref: "./schemas/Error.yaml"

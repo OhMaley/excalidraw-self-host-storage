@@ -1,7 +1,8 @@
 type: object
 required:
   - id
-  - title
+  - name
+  - is_private
   - created_by
   - created_at
   - updated_by
@@ -11,27 +12,25 @@ properties:
     type: string
     format: uuid
     readOnly: true
-    example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    example: "7a1c3e5d-2f4b-6890-abcd-ef1234567890"
 
-  title:
+  name:
     type: string
     minLength: 1
     maxLength: 100
-    example: "Homepage wireframe"
+    example: "Design Team"
 
   description:
     type: string
     maxLength: 500
     nullable: true
-    example: "Post-standup sketch"
+    example: "All design-related drawings"
 
-  tags:
-    type: array
-    items:
-      type: string
-      maxLength: 64
-    maxItems: 20
-    example: ["wireframe", "homepage"]
+  is_private:
+    type: boolean
+    readOnly: true
+    description: True for the user's personal workspace. Private workspaces cannot be deleted and have no members.
+    example: false
 
   created_by:
     $ref: "./User.yaml"
@@ -41,18 +40,18 @@ properties:
     type: string
     format: date-time
     readOnly: true
-    example: "2026-05-20T14:32:00Z"
+    example: "2026-01-15T10:00:00Z"
 
   updated_by:
     $ref: "./User.yaml"
     readOnly: true
     nullable: true
-    description: Null if the drawing has never been updated.
+    description: Null if the workspace has never been updated.
 
   updated_at:
     type: string
     format: date-time
     readOnly: true
     nullable: true
-    description: Null if the drawing has never been updated.
-    example: "2026-05-26T09:15:42Z"
+    description: Null if the workspace has never been updated.
+    example: "2026-05-20T14:32:00Z"
