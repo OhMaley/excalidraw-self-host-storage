@@ -1,5 +1,5 @@
 DrawingId:
-  name: id
+  name: drawingId
   in: path
   required: true
   schema:

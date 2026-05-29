@@ -3,12 +3,88 @@ info:
   title: Excalidraw Self Host Storage API
   version: 0.1.0
 paths:
-  /drawings/{id}:
+  /workspaces/{workspaceId}/collections/{collectionId}/drawings:
     parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+      - $ref: '#/components/parameters/CollectionId'
+    get:
+      operationId: listDrawings
+      summary: List drawings in a collection.
+      tags:
+        - Drawings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Drawing'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: createDrawing
+      summary: Create a drawing in a collection.
+      tags:
+        - Drawings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  example: Homepage wireframe
+                description:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 500
+                  example: Post-standup sketch
+                tags:
+                  type: array
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                  maxItems: 20
+                  example:
+                    - wireframe
+                    - homepage
+      responses:
+        '201':
+          description: Drawing created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drawing'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+  /workspaces/{workspaceId}/collections/{collectionId}/drawings/{drawingId}:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+      - $ref: '#/components/parameters/CollectionId'
       - $ref: '#/components/parameters/DrawingId'
     get:
       operationId: getDrawing
-      summary: Fetch a drawing metadata.
+      summary: Fetch a drawing's metadata.
       tags:
         - Drawings
       responses:
@@ -18,6 +94,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Drawing'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateDrawing
+      summary: Update a drawing's metadata.
+      tags:
+        - Drawings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  example: Homepage wireframe v2
+                description:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 500
+                  example: Updated after review
+                tags:
+                  type: array
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+                  maxItems: 20
+                  example:
+                    - wireframe
+                    - homepage
+                collection_id:
+                  type: string
+                  format: uuid
+                  description: Move the drawing to a different collection.
+                  example: 1b2c3d4e-5f6a-7890-bcde-f12345678901
+      responses:
+        '200':
+          description: Updated drawing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drawing'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      operationId: deleteDrawing
+      summary: Delete a drawing.
+      tags:
+        - Drawings
+      responses:
+        '204':
+          description: Drawing deleted.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -61,9 +204,10 @@ paths:
                   maxLength: 100
                   example: Design Team
                 description:
-                  type: string
+                  type:
+                    - string
+                    - 'null'
                   maxLength: 500
-                  nullable: true
                   example: All design-related drawings
       responses:
         '201':
@@ -74,6 +218,8 @@ paths:
                 $ref: '#/components/schemas/Workspace'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
   /workspaces/{workspaceId}:
     parameters:
       - $ref: '#/components/parameters/WorkspaceId'
@@ -113,9 +259,10 @@ paths:
                   maxLength: 100
                   example: Design Team
                 description:
-                  type: string
+                  type:
+                    - string
+                    - 'null'
                   maxLength: 500
-                  nullable: true
                   example: All design-related drawings
       responses:
         '200':
@@ -130,6 +277,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
     delete:
       operationId: deleteWorkspace
       summary: Delete a workspace and all its collections and drawings.
@@ -211,6 +360,24 @@ paths:
   /workspaces/{workspaceId}/members/me:
     parameters:
       - $ref: '#/components/parameters/WorkspaceId'
+    get:
+      operationId: getMyMembership
+      summary: Fetch the current user's membership in a workspace.
+      tags:
+        - Workspace Members
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
       operationId: leaveWorkspace
       summary: Leave a workspace.
@@ -230,6 +397,24 @@ paths:
     parameters:
       - $ref: '#/components/parameters/WorkspaceId'
       - $ref: '#/components/parameters/MemberId'
+    get:
+      operationId: getWorkspaceMember
+      summary: Fetch a workspace member.
+      tags:
+        - Workspace Members
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
     patch:
       operationId: updateWorkspaceMember
       summary: Update a workspace member's role.
@@ -322,9 +507,10 @@ paths:
                   maxLength: 100
                   example: Sprint 12 Wireframes
                 description:
-                  type: string
+                  type:
+                    - string
+                    - 'null'
                   maxLength: 500
-                  nullable: true
                   example: All wireframes from sprint 12
       responses:
         '201':
@@ -339,6 +525,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
   /workspaces/{workspaceId}/collections/{collectionId}:
     parameters:
       - $ref: '#/components/parameters/WorkspaceId'
@@ -379,9 +567,10 @@ paths:
                   maxLength: 100
                   example: Sprint 12 Wireframes
                 description:
-                  type: string
+                  type:
+                    - string
+                    - 'null'
                   maxLength: 500
-                  nullable: true
                   example: All wireframes from sprint 12
       responses:
         '200':
@@ -396,6 +585,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
     delete:
       operationId: deleteCollection
       summary: Delete a collection and all its drawings.
@@ -431,6 +622,7 @@ components:
       type: object
       required:
         - id
+        - collection_id
         - title
         - created_by
         - created_at
@@ -442,20 +634,26 @@ components:
           format: uuid
           readOnly: true
           example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        collection_id:
+          type: string
+          format: uuid
+          example: 1b2c3d4e-5f6a-7890-bcde-f12345678901
         title:
           type: string
           minLength: 1
           maxLength: 100
           example: Homepage wireframe
         description:
-          type: string
+          type:
+            - string
+            - 'null'
           maxLength: 500
-          nullable: true
           example: Post-standup sketch
         tags:
           type: array
           items:
             type: string
+            minLength: 1
             maxLength: 64
           maxItems: 20
           example:
@@ -470,15 +668,17 @@ components:
           readOnly: true
           example: '2026-05-20T14:32:00Z'
         updated_by:
-          $ref: '#/components/schemas/User'
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: 'null'
           readOnly: true
-          nullable: true
           description: Null if the drawing has never been updated.
         updated_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
           readOnly: true
-          nullable: true
           description: Null if the drawing has never been updated.
           example: '2026-05-26T09:15:42Z'
     Workspace:
@@ -503,9 +703,10 @@ components:
           maxLength: 100
           example: Design Team
         description:
-          type: string
+          type:
+            - string
+            - 'null'
           maxLength: 500
-          nullable: true
           example: All design-related drawings
         is_private:
           type: boolean
@@ -521,15 +722,17 @@ components:
           readOnly: true
           example: '2026-01-15T10:00:00Z'
         updated_by:
-          $ref: '#/components/schemas/User'
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: 'null'
           readOnly: true
-          nullable: true
           description: Null if the workspace has never been updated.
         updated_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
           readOnly: true
-          nullable: true
           description: Null if the workspace has never been updated.
           example: '2026-05-20T14:32:00Z'
     WorkspaceMember:
@@ -580,9 +783,10 @@ components:
           maxLength: 100
           example: Sprint 12 Wireframes
         description:
-          type: string
+          type:
+            - string
+            - 'null'
           maxLength: 500
-          nullable: true
           example: All wireframes from sprint 12
         created_by:
           $ref: '#/components/schemas/User'
@@ -593,15 +797,17 @@ components:
           readOnly: true
           example: '2026-03-01T08:00:00Z'
         updated_by:
-          $ref: '#/components/schemas/User'
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: 'null'
           readOnly: true
-          nullable: true
           description: Null if the collection has never been updated.
         updated_at:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
           readOnly: true
-          nullable: true
           description: Null if the collection has never been updated.
           example: '2026-05-15T11:30:00Z'
     Error:
@@ -621,7 +827,7 @@ components:
           additionalProperties: true
   parameters:
     DrawingId:
-      name: id
+      name: drawingId
       in: path
       required: true
       schema:
@@ -672,6 +878,12 @@ components:
             $ref: '#/components/schemas/Error'
     Conflict:
       description: Request conflicts with current resource state (e.g. user is already a member).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnprocessableEntity:
+      description: Request body is well-formed but contains invalid values.
       content:
         application/json:
           schema:

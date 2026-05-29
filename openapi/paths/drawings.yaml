@@ -1,10 +1,85 @@
+list:
+  parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+    - $ref: "../components/parameters.yaml#/CollectionId"
+
+  get:
+    operationId: listDrawings
+    summary: List drawings in a collection.
+    tags: [Drawings]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "../components/schemas/Drawing.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  post:
+    operationId: createDrawing
+    summary: Create a drawing in a collection.
+    tags: [Drawings]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - title
+            properties:
+              title:
+                type: string
+                minLength: 1
+                maxLength: 100
+                example: "Homepage wireframe"
+              description:
+                type:
+                  - string
+                  - "null"
+                maxLength: 500
+                example: "Post-standup sketch"
+              tags:
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                maxItems: 20
+                example: ["wireframe", "homepage"]
+    responses:
+      "201":
+        description: Drawing created.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Drawing.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+      "422":
+        $ref: "../components/responses.yaml#/UnprocessableEntity"
+
 single:
   parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+    - $ref: "../components/parameters.yaml#/CollectionId"
     - $ref: "../components/parameters.yaml#/DrawingId"
-  
+
   get:
     operationId: getDrawing
-    summary: Fetch a drawing metadata.
+    summary: Fetch a drawing's metadata.
     tags: [Drawings]
     responses:
       "200":
@@ -13,6 +88,71 @@ single:
           application/json:
             schema:
               $ref: "../components/schemas/Drawing.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  patch:
+    operationId: updateDrawing
+    summary: Update a drawing's metadata.
+    tags: [Drawings]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                minLength: 1
+                maxLength: 100
+                example: "Homepage wireframe v2"
+              description:
+                type:
+                  - string
+                  - "null"
+                maxLength: 500
+                example: "Updated after review"
+              tags:
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                maxItems: 20
+                example: ["wireframe", "homepage"]
+              collection_id:
+                type: string
+                format: uuid
+                description: Move the drawing to a different collection.
+                example: "1b2c3d4e-5f6a-7890-bcde-f12345678901"
+    responses:
+      "200":
+        description: Updated drawing.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/Drawing.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+      "422":
+        $ref: "../components/responses.yaml#/UnprocessableEntity"
+
+  delete:
+    operationId: deleteDrawing
+    summary: Delete a drawing.
+    tags: [Drawings]
+    responses:
+      "204":
+        description: Drawing deleted.
       "401":
         $ref: "../components/responses.yaml#/Unauthorized"
       "403":

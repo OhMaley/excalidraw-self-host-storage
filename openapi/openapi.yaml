@@ -35,9 +35,13 @@ components:
       $ref: "./components/responses.yaml#/NotFound"
     Conflict:
       $ref: "./components/responses.yaml#/Conflict"
+    UnprocessableEntity:
+      $ref: "./components/responses.yaml#/UnprocessableEntity"
 
 paths:
-  /drawings/{id}:
+  /workspaces/{workspaceId}/collections/{collectionId}/drawings:
+    $ref: "./paths/drawings.yaml#/list"
+  /workspaces/{workspaceId}/collections/{collectionId}/drawings/{drawingId}:
     $ref: "./paths/drawings.yaml#/single"
 
   /workspaces:
