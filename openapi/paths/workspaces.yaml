@@ -34,9 +34,10 @@ list:
                 maxLength: 100
                 example: "Design Team"
               description:
-                type: string
+                type:
+                  - string
+                  - "null"
                 maxLength: 500
-                nullable: true
                 example: "All design-related drawings"
     responses:
       "201":
@@ -47,6 +48,8 @@ list:
               $ref: "../components/schemas/Workspace.yaml"
       "401":
         $ref: "../components/responses.yaml#/Unauthorized"
+      "422":
+        $ref: "../components/responses.yaml#/UnprocessableEntity"
 
 single:
   parameters:
@@ -87,9 +90,10 @@ single:
                 maxLength: 100
                 example: "Design Team"
               description:
-                type: string
+                type:
+                  - string
+                  - "null"
                 maxLength: 500
-                nullable: true
                 example: "All design-related drawings"
     responses:
       "200":
@@ -104,6 +108,8 @@ single:
         $ref: "../components/responses.yaml#/Forbidden"
       "404":
         $ref: "../components/responses.yaml#/NotFound"
+      "422":
+        $ref: "../components/responses.yaml#/UnprocessableEntity"
 
   delete:
     operationId: deleteWorkspace

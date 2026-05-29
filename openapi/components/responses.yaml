@@ -25,3 +25,10 @@ Conflict:
     application/json:
       schema:
         $ref: "./schemas/Error.yaml"
+
+UnprocessableEntity:
+  description: Request body is well-formed but contains invalid values.
+  content:
+    application/json:
+      schema:
+        $ref: "./schemas/Error.yaml"

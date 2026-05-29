@@ -21,9 +21,10 @@ properties:
     example: "Design Team"
 
   description:
-    type: string
+    type:
+      - string
+      - "null"
     maxLength: 500
-    nullable: true
     example: "All design-related drawings"
 
   is_private:
@@ -43,15 +44,17 @@ properties:
     example: "2026-01-15T10:00:00Z"
 
   updated_by:
-    $ref: "./User.yaml"
+    oneOf:
+      - $ref: "./User.yaml"
+      - type: "null"
     readOnly: true
-    nullable: true
     description: Null if the workspace has never been updated.
 
   updated_at:
-    type: string
+    type:
+      - string
+      - "null"
     format: date-time
     readOnly: true
-    nullable: true
     description: Null if the workspace has never been updated.
     example: "2026-05-20T14:32:00Z"

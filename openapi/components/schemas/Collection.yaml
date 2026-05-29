@@ -27,9 +27,10 @@ properties:
     example: "Sprint 12 Wireframes"
 
   description:
-    type: string
+    type:
+      - string
+      - "null"
     maxLength: 500
-    nullable: true
     example: "All wireframes from sprint 12"
 
   created_by:
@@ -43,15 +44,17 @@ properties:
     example: "2026-03-01T08:00:00Z"
 
   updated_by:
-    $ref: "./User.yaml"
+    oneOf:
+      - $ref: "./User.yaml"
+      - type: "null"
     readOnly: true
-    nullable: true
     description: Null if the collection has never been updated.
 
   updated_at:
-    type: string
+    type:
+      - string
+      - "null"
     format: date-time
     readOnly: true
-    nullable: true
     description: Null if the collection has never been updated.
     example: "2026-05-15T11:30:00Z"

@@ -64,6 +64,24 @@ me:
   parameters:
     - $ref: "../components/parameters.yaml#/WorkspaceId"
 
+  get:
+    operationId: getMyMembership
+    summary: Fetch the current user's membership in a workspace.
+    tags: [Workspace Members]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/WorkspaceMember.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
   delete:
     operationId: leaveWorkspace
     summary: Leave a workspace.
@@ -83,6 +101,24 @@ single:
   parameters:
     - $ref: "../components/parameters.yaml#/WorkspaceId"
     - $ref: "../components/parameters.yaml#/MemberId"
+
+  get:
+    operationId: getWorkspaceMember
+    summary: Fetch a workspace member.
+    tags: [Workspace Members]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/WorkspaceMember.yaml"
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
 
   patch:
     operationId: updateWorkspaceMember
