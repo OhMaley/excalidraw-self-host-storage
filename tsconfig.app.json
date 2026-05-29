@@ -25,14 +25,13 @@
         "noUncheckedSideEffectImports": true,
 
         // Alias
-        "baseUrl": "./",
         "paths": {
-            "@components/*": ["src/components/*"],
-            "@pages/*": ["src/pages/*"],
-            "@hooks/*": ["src/hooks/*"],
-            "@services/*": ["src/services/*"],
-            "@utils/*": ["src/utils/*"],
-            "@routes/*": ["src/routes/*"]
+            "@components/*": ["./src/components/*"],
+            "@pages/*": ["./src/pages/*"],
+            "@hooks/*": ["./src/hooks/*"],
+            "@services/*": ["./src/services/*"],
+            "@utils/*": ["./src/utils/*"],
+            "@routes/*": ["./src/routes/*"]
         }
     },
     "include": ["src"]

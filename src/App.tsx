@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 // Components
 import { Routes, Route, Navigate } from "react-router-dom";
+import Spinner from "@components/Spinner";
 
 // Routes
 import { publicRoutes, protectedRoutes } from "@routes/routes";
@@ -10,7 +11,7 @@ import { RequireRole } from "@routes/RequireRoles";
 
 function App() {
     return (
-        <Suspense fallback={null}>
+        <Suspense fallback={<Spinner size="3rem" mountDelayMs={150} />}>
             <Routes>
                 {/* Public */}
                 {publicRoutes.map(({ path, element: Element }) => (
