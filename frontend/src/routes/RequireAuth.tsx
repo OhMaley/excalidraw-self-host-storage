@@ -3,7 +3,7 @@ import { useEffect, useRef, lazy, Suspense } from "react";
 // Components
 import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
-const Spinner = lazy(() => import("@components/Spinner"));
+import Spinner from "@components/Spinner";
 
 // Pages
 const AuthError = lazy(() => import("@pages/AuthError"));
@@ -35,11 +35,7 @@ export const RequireAuth = () => {
 
     // Still initializing
     if (loading) {
-        return (
-            <Suspense fallback={null}>
-                <Spinner size="2rem" mountDelayMs={2000} />
-            </Suspense>
-        );
+        return <Spinner size="2rem" mountDelayMs={2000} />;
     }
 
     // No active SSO session

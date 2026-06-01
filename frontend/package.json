@@ -10,7 +10,7 @@
         "lint:fix": "eslint . --fix",
         "format": "prettier --write .",
         "preview": "vite preview",
-        "openapi:bundle": "redocly bundle openapi/openapi.yaml -o github-pages/openapi.yaml"
+        "openapi:bundle": "redocly bundle ../openapi/openapi.yaml -o ../github-pages/openapi.yaml"
     },
     "dependencies": {
         "@excalidraw/excalidraw": "^0.18.1",
@@ -29,6 +29,7 @@
         "@typescript-eslint/eslint-plugin": "8.60.0",
         "@typescript-eslint/parser": "8.60.0",
         "@vitejs/plugin-react": "^6.0.2",
+        "esbuild": "^0.28.0",
         "eslint": "^9.39.4",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-jsx-a11y": "^6.10.2",

@@ -37,7 +37,7 @@ const appRoutes: AppRoute[] = [
     { path: "/draw/:drawingId", element: Draw, loginRequired: true },
 
     { path: "/dashboard", element: Dashboard, loginRequired: true },
-    { path: "/admin", element: Admin, roleRequiredAmong: ["admin" as Role] },
+    { path: "/admin", element: Admin, roleRequiredAmong: ["admin"] },
     { path: "/workspaces", element: Workspaces, loginRequired: false },
 ];
 

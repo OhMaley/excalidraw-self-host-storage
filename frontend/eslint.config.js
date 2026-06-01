@@ -9,7 +9,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
     globalIgnores(["dist", "node_modules"]),
-    reactHooks.configs["recommended-latest"],
+    reactHooks.configs.flat["recommended-latest"],
     {
         files: ["**/*.{ts,tsx}"],
         ignores: ["dist", "node_modules"],
