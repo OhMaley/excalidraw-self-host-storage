@@ -10,10 +10,10 @@ import LockIcon from "../assets/icons/lock.svg?react";
 import UsersIcon from "../assets/icons/users.svg?react";
 
 interface WorkspaceSectionProps {
-    icon: React.ReactNode;
-    title: string;
-    count: number;
-    children: React.ReactNode;
+    readonly icon: React.ReactNode;
+    readonly title: string;
+    readonly count: number;
+    readonly children: React.ReactNode;
 }
 
 function WorkspaceSection({ icon, title, count, children }: WorkspaceSectionProps) {
@@ -43,14 +43,22 @@ export default function Workspaces() {
             <Separator.Root className={styles.separator} />
 
             <div className={styles.body}>
-                <WorkspaceSection icon={<LockIcon className={styles.icon} />} title="Private workspaces" count={4}>
+                <WorkspaceSection
+                    icon={<LockIcon className={styles.icon} />}
+                    title="Private workspaces"
+                    count={4}
+                >
                     <p>card 1</p>
                     <p>card 2</p>
                     <p>card 3</p>
                     <p>card 4</p>
                 </WorkspaceSection>
 
-                <WorkspaceSection icon={<UsersIcon className={styles.icon} />} title="Teams workspaces" count={4}>
+                <WorkspaceSection
+                    icon={<UsersIcon className={styles.icon} />}
+                    title="Teams workspaces"
+                    count={4}
+                >
                     <p>card 1</p>
                     <p>card 2</p>
                     <p>card 3</p>

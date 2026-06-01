@@ -2,7 +2,7 @@
 import type { SceneData, AppState } from "@excalidraw/excalidraw/types";
 
 // Utils
-import { HttpError } from "@utils/httpError";
+import { HttpError, HttpStatus } from "@utils/httpError";
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "/api";
 
@@ -29,7 +29,11 @@ export async function loadDrawing(id: string): Promise<StoredDrawing> {
         if (error instanceof HttpError) {
             throw error;
         } else {
-            throw new HttpError(500, "Fetch error", "Drawing fetch error");
+            throw new HttpError(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Fetch error",
+                "Drawing fetch error"
+            );
         }
     }
 }

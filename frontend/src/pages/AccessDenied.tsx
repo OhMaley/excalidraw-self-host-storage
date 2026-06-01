@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./AccessDenied.module.scss";
 
 interface AccessDeniedProps {
-    requiresRoleAmong?: string[];
+    readonly requiresRoleAmong?: string[];
 }
 
 export default function AccessDenied({ requiresRoleAmong }: AccessDeniedProps) {

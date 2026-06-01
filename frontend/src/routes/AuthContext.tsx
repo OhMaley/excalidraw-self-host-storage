@@ -26,7 +26,28 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType>(null!);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+interface TokenParsed {
+    sub: string;
+    preferred_username?: string;
+    email?: string;
+    resource_access?: Record<string, { roles: string[] }>;
+}
+
+function parseUserFromToken(kc: Keycloak): User | null {
+    if (!kc.tokenParsed) return null;
+    const token = kc.tokenParsed as TokenParsed;
+    const rawRoles: string[] =
+        token.resource_access?.[import.meta.env.VITE_KEYCLOAK_CLIENT_ID]?.roles ?? [];
+    const roles: Role[] = rawRoles.filter((r): r is Role => ROLES.includes(r as Role));
+    return {
+        id: token.sub,
+        name: token.preferred_username ?? "User",
+        email: token.email,
+        roles,
+    };
+}
+
+function useKeycloakInit() {
     const [keycloak, setKeycloak] = useState<Keycloak | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -53,63 +74,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .then((authenticated) => {
                 setKeycloak(kc);
                 setError(null);
-
-                if (authenticated && kc.tokenParsed) {
-                    const token = kc.tokenParsed as {
-                        sub: string;
-                        preferred_username?: string;
-                        email?: string;
-                        resource_access?: Record<string, { roles: string[] }>;
-                    };
-
-                    const rawRoles: string[] =
-                        token.resource_access?.[import.meta.env.VITE_KEYCLOAK_CLIENT_ID]?.roles ??
-                        [];
-                    const roles: Role[] = rawRoles.filter((r): r is Role =>
-                        ROLES.includes(r as Role)
-                    );
-
-                    setUser({
-                        id: token.sub,
-                        name: token.preferred_username ?? "User",
-                        email: token.email,
-                        roles,
-                    });
-                } else {
-                    setUser(null);
-                }
+                setUser(authenticated ? parseUserFromToken(kc) : null);
             })
-            .catch((err) => {
+            .catch((err: unknown) => {
                 setUser(null);
                 setKeycloak(null);
-                if (err instanceof Error) {
-                    setError(err);
-                } else {
-                    setError(new Error("Authentication server unreachable"));
-                }
+                setError(
+                    err instanceof Error ? err : new Error("Authentication server unreachable")
+                );
             })
             .finally(() => {
                 setLoading(false);
             });
     }, []);
 
+    return { keycloak, user, setUser, loading, error };
+}
+
+export function AuthProvider({ children }: { readonly children: React.ReactNode }) {
+    const { keycloak, user, setUser, loading, error } = useKeycloakInit();
+
     const login = useCallback(
         (redirectUri?: string) => {
             if (!keycloak) return;
-
-            void keycloak?.login({
-                redirectUri: redirectUri ?? window.location.href,
-            });
+            void keycloak.login({ redirectUri: redirectUri ?? window.location.href });
         },
         [keycloak]
     );
 
     const logout = useCallback(() => {
         if (!keycloak) return;
-
-        void keycloak?.logout({ redirectUri: window.location.origin });
+        void keycloak.logout({ redirectUri: window.location.origin });
         setUser(null);
-    }, [keycloak]);
+    }, [keycloak, setUser]);
 
     const hasRole = useCallback(
         (roles: Role[]) => !!user && user.roles.some((r) => roles.includes(r)),

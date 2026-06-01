@@ -17,10 +17,10 @@ import "@excalidraw/excalidraw/index.css";
 
 // Utils
 import { hydrateScene } from "@utils/sceneUtils";
-import { HttpError } from "@utils/httpError";
+import { HttpError, HttpStatus } from "@utils/httpError";
 
 interface ExcalidrawWrapperProps {
-    drawingId?: string;
+    readonly drawingId?: string;
 }
 
 type LoadState =
@@ -77,15 +77,14 @@ export default function ExcalidrawWrapper({ drawingId }: ExcalidrawWrapperProps)
 
     // Error handling
     if (state?.status === "error") {
-        switch (state.error.status) {
-            case 404:
-                return (
-                    <Suspense fallback={null}>
-                        <NotFound description="Drawing not found" />
-                    </Suspense>
-                );
-            default:
-                return <div>Failed to load drawing</div>;
+        if (state.error.status === HttpStatus.NOT_FOUND) {
+            return (
+                <Suspense fallback={null}>
+                    <NotFound description="Drawing not found" />
+                </Suspense>
+            );
+        } else {
+            return <div>Failed to load drawing</div>;
         }
     }
 

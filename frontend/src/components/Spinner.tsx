@@ -1,10 +1,12 @@
 // Styles
 import styles from "./Spinner.module.scss";
 
+const VIEW_BOX_SIZE = 100;
+
 interface SpinnerProps {
-    size?: string | number;
-    circleWidth?: number;
-    mountDelayMs?: number;
+    readonly size?: string | number;
+    readonly circleWidth?: number;
+    readonly mountDelayMs?: number;
 }
 
 export default function Spinner({
@@ -15,7 +17,7 @@ export default function Spinner({
     return (
         <div className={styles.container}>
             <svg
-                viewBox="0 0 100 100"
+                viewBox={`0 0 ${VIEW_BOX_SIZE} ${VIEW_BOX_SIZE}`}
                 style={
                     {
                         width: size,
@@ -25,9 +27,9 @@ export default function Spinner({
                 }
             >
                 <circle
-                    cx="50"
-                    cy="50"
-                    r={50 - circleWidth / 2}
+                    cx={VIEW_BOX_SIZE / 2}
+                    cy={VIEW_BOX_SIZE / 2}
+                    r={VIEW_BOX_SIZE / 2 - circleWidth / 2}
                     strokeWidth={circleWidth}
                     fill="none"
                     strokeMiterlimit="10"
