@@ -13,7 +13,7 @@ export interface User {
     roles: Role[];
 }
 
-export interface AuthContextType {
+interface AuthContextType {
     keycloak: Keycloak | null;
     user: User | null;
     loading: boolean;

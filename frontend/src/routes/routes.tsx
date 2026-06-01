@@ -7,7 +7,7 @@ import { Navigate } from "react-router-dom";
 import type { Role } from "@routes/AuthContext";
 import type { ComponentType, LazyExoticComponent } from "react";
 
-export interface AppRoute {
+interface AppRoute {
     path: string;
     element: RouteComponent;
     loginRequired?: boolean;
@@ -38,7 +38,7 @@ const appRoutes: AppRoute[] = [
 
     { path: "/dashboard", element: Dashboard, loginRequired: true },
     { path: "/admin", element: Admin, roleRequiredAmong: ["admin"] },
-    { path: "/workspaces", element: Workspaces, loginRequired: true },
+    { path: "/workspaces", element: Workspaces, loginRequired: false },
 ];
 
 /* --------------------------------------------- *
