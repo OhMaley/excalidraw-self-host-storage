@@ -9,7 +9,7 @@
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "format": "prettier --write .",
-        "preview": "vite preview",
+        "preview": "vite preview --port 5173",
         "openapi:bundle": "redocly bundle ../openapi/openapi.yaml -o ../github-pages/openapi.yaml"
     },
     "dependencies": {

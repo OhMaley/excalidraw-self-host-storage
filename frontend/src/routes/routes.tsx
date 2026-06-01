@@ -38,7 +38,7 @@ const appRoutes: AppRoute[] = [
 
     { path: "/dashboard", element: Dashboard, loginRequired: true },
     { path: "/admin", element: Admin, roleRequiredAmong: ["admin"] },
-    { path: "/workspaces", element: Workspaces, loginRequired: false },
+    { path: "/workspaces", element: Workspaces, loginRequired: true },
 ];
 
 /* --------------------------------------------- *
