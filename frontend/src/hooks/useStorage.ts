@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 // Types
 import type { SceneData, AppState } from "@excalidraw/excalidraw/types";
@@ -8,16 +8,16 @@ import { loadDrawing, saveDrawing } from "@services/storage.ts";
 
 export function useStorage() {
     const [saving, setSaving] = useState(false);
-    const lastSavedRef = useRef<number>(0);
+    const [lastSavedAt, setLastSavedAt] = useState<number>(0);
 
-    const load = useCallback(loadDrawing, []);
+    const load = useCallback((id: string) => loadDrawing(id), []);
 
     const save = useCallback(
         async (payload: { elements: SceneData["elements"]; appState: Partial<AppState> }) => {
             setSaving(true);
             try {
                 await saveDrawing(payload);
-                lastSavedRef.current = Date.now();
+                setLastSavedAt(Date.now());
             } finally {
                 setSaving(false);
             }
@@ -25,5 +25,5 @@ export function useStorage() {
         []
     );
 
-    return { load, save, saving, lastSavedAt: lastSavedRef.current };
+    return { load, save, saving, lastSavedAt };
 }
