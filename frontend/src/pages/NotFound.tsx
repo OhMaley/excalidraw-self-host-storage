@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./NotFound.module.scss";
 
 interface NotFoundProps {
-    description?: string;
+    readonly description?: string;
 }
 
 export default function NotFound({ description }: NotFoundProps) {

@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
             sourcemap: isDev,
             minify: isDev ? false : "esbuild",
             outDir: "dist",
-            target: "esnext"
+            target: "esnext",
         },
         define: {
             __APP_ENV__: JSON.stringify(env.APP_ENV),

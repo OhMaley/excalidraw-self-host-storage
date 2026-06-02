@@ -1,0 +1,101 @@
+@mixin layout($img-url, $img-width, $img-height) {
+    $ratio: calc(#{$img-height} / #{$img-width});
+
+    // sm : mobile phones and small devices
+    .container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+        background-color: #ffffff;
+        color: var(--color-text);
+        gap: 1.5rem;
+
+        .image {
+            width: clamp(200px, 40vw, 700px);
+            height: clamp(
+                calc(200px * #{$ratio}),
+                calc(40vw * #{$ratio}),
+                calc(700px * #{$ratio})
+            );
+            background: url(#{$img-url}) center / contain no-repeat;
+            display: block;
+        }
+
+        .statusCode {
+            font-size: clamp(2rem, 6.25vw, 3rem);
+            font-weight: bolder;
+            letter-spacing: 0.05em;
+            color: var(--color-text-bold);
+        }
+
+        .heading {
+            font-size: clamp(1rem, 3.125vw, 1.5rem);
+            letter-spacing: 0.05em;
+            font-weight: bold;
+            color: var(--color-text-bold);
+        }
+
+        .description {
+            max-width: 90%;
+            text-align: center;
+            font-size: clamp(0.75rem, 2vw, 1rem);
+            line-height: 1.5;
+            color: var(--color-text-muted);
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 600px) {
+        .container .image {
+            display: none;
+        }
+    }
+
+    // md : tablets and small laptops
+    @media (min-width: 768px) {
+        .container {
+            .image {
+                width: calc(#{$img-width} / 2.5 * 1px);
+                height: calc(#{$img-height} / 2.5 * 1px);
+            }
+            .statusCode { font-size: 3rem; }
+            .heading { font-size: 1.5rem; }
+            .description { font-size: 1rem; }
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 360px) {
+        .container .image {
+            display: none;
+        }
+    }
+
+    // lg : laptops and small desktops
+    @media (min-width: 992px) {
+        .container {
+            .image {
+                width: calc(#{$img-width} / 2.25 * 1px);
+                height: calc(#{$img-height} / 2.25 * 1px);
+            }
+            .statusCode { font-size: 3.5rem; }
+            .heading { font-size: 1.75rem; }
+            .description { font-size: 1rem; }
+        }
+    }
+
+    // xl : large desktop monitors
+    @media (min-width: 1200px) {
+        .container {
+            .image {
+                width: calc(#{$img-width} / 2 * 1px);
+                height: calc(#{$img-height} / 2 * 1px);
+            }
+            .statusCode { font-size: 4rem; }
+            .heading { font-size: 2rem; }
+            .description { font-size: 1rem; }
+        }
+    }
+}

@@ -18,8 +18,8 @@ import { getInitialFromFullName } from "@utils/userUtils";
 import styles from "./UserDropdownMenu.module.scss";
 
 interface UserDropdownMenuProps {
-    user: User;
-    logout: () => void;
+    readonly user: User;
+    readonly logout: () => void;
 }
 
 export function UserDropdownMenu({ user, logout }: UserDropdownMenuProps) {
