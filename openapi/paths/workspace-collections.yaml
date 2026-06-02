@@ -5,6 +5,7 @@ list:
   get:
     operationId: listCollections
     summary: List collections in a workspace.
+    description: Returns all collections in the specified workspace.
     tags: [Collections]
     responses:
       "200":
@@ -25,6 +26,7 @@ list:
   post:
     operationId: createCollection
     summary: Create a collection in a workspace.
+    description: Creates a new collection in the specified workspace.
     tags: [Collections]
     requestBody:
       required: true
@@ -70,6 +72,7 @@ single:
   get:
     operationId: getCollection
     summary: Fetch a collection.
+    description: Returns metadata for a single collection.
     tags: [Collections]
     responses:
       "200":
@@ -88,6 +91,7 @@ single:
   patch:
     operationId: updateCollection
     summary: Update a collection's name or description.
+    description: Partially updates a collection's name or description. Omitted fields are left unchanged.
     tags: [Collections]
     requestBody:
       required: true
@@ -126,6 +130,7 @@ single:
   delete:
     operationId: deleteCollection
     summary: Delete a collection and all its drawings.
+    description: Permanently deletes the collection and all drawings it contains.
     tags: [Collections]
     responses:
       "204":

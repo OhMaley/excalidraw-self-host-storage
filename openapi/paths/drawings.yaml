@@ -6,6 +6,7 @@ list:
   get:
     operationId: listDrawings
     summary: List drawings in a collection.
+    description: Returns all drawings belonging to the specified collection, ordered by creation date descending.
     tags: [Drawings]
     responses:
       "200":
@@ -26,6 +27,7 @@ list:
   post:
     operationId: createDrawing
     summary: Create a drawing in a collection.
+    description: Creates a new drawing in the specified collection. The Excalidraw canvas is initially empty.
     tags: [Drawings]
     requestBody:
       required: true
@@ -80,6 +82,7 @@ single:
   get:
     operationId: getDrawing
     summary: Fetch a drawing's metadata.
+    description: Returns metadata for a single drawing. Does not include the Excalidraw canvas content.
     tags: [Drawings]
     responses:
       "200":
@@ -98,6 +101,7 @@ single:
   patch:
     operationId: updateDrawing
     summary: Update a drawing's metadata.
+    description: Partially updates a drawing's metadata. Omitted fields are left unchanged. Use `collection_id` to move the drawing to a different collection.
     tags: [Drawings]
     requestBody:
       required: true
@@ -149,6 +153,7 @@ single:
   delete:
     operationId: deleteDrawing
     summary: Delete a drawing.
+    description: Permanently deletes the drawing and its Excalidraw canvas content.
     tags: [Drawings]
     responses:
       "204":

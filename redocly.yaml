@@ -1,0 +1,26 @@
+extends:
+  - recommended
+
+rules:
+  # Operations
+  operation-summary: error
+  operation-description: warn
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-operationId-url-safe: error
+  operation-singular-tag: warn
+
+  # Tags
+  tag-description: warn
+
+  # Parameters
+  parameter-description: warn
+
+  # Schemas
+  no-ambiguous-paths: error
+  no-identical-paths: error
+  no-undefined-server-variable: error
+
+apis:
+  main:
+    root: ./openapi/openapi.yaml

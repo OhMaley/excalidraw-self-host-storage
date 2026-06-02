@@ -2,6 +2,7 @@ list:
   get:
     operationId: listWorkspaces
     summary: List workspaces the current user belongs to.
+    description: Returns all workspaces the authenticated user is a member of.
     tags: [Workspaces]
     responses:
       "200":
@@ -18,6 +19,7 @@ list:
   post:
     operationId: createWorkspace
     summary: Create a new workspace.
+    description: Creates a new workspace. The authenticated user automatically becomes the workspace owner.
     tags: [Workspaces]
     requestBody:
       required: true
@@ -58,6 +60,7 @@ single:
   get:
     operationId: getWorkspace
     summary: Fetch a workspace.
+    description: Returns metadata for a single workspace.
     tags: [Workspaces]
     responses:
       "200":
@@ -76,6 +79,7 @@ single:
   patch:
     operationId: updateWorkspace
     summary: Update a workspace name or description.
+    description: Partially updates a workspace's name or description. Omitted fields are left unchanged.
     tags: [Workspaces]
     requestBody:
       required: true
