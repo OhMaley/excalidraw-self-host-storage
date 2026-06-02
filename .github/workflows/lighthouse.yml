@@ -1,0 +1,48 @@
+name: Frontend — Lighthouse CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/lighthouse.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/lighthouse.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  lighthouse:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_KEYCLOAK_URL: http://localhost:9090
+          VITE_KEYCLOAK_REALM: excalidraw
+          VITE_KEYCLOAK_CLIENT_ID: excalidraw-frontend
+
+      - name: Run Lighthouse CI
+        run: npx --yes @lhci/cli@0 autorun
