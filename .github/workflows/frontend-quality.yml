@@ -11,6 +11,9 @@ on:
       - "frontend/**"
       - ".github/workflows/frontend-quality.yml"
 
+permissions:
+  contents: read
+
 defaults:
   run:
     working-directory: frontend

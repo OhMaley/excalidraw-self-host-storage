@@ -13,6 +13,9 @@ on:
       - "redocly.yaml"
       - ".github/workflows/openapi-quality.yml"
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Redocly lint
