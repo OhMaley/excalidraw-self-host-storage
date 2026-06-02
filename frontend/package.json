@@ -10,6 +10,7 @@
         "lint:fix": "eslint . --fix",
         "format": "prettier --write .",
         "preview": "vite preview --port 5173",
+        "openapi:lint": "redocly lint ../openapi/openapi.yaml --config ../redocly.yaml",
         "openapi:bundle": "redocly bundle ../openapi/openapi.yaml -o ../github-pages/openapi.yaml",
         "type-check": "tsc -p tsconfig.app.json",
         "jscpd": "jscpd",

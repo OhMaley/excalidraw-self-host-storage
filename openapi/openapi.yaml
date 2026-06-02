@@ -2,8 +2,41 @@ openapi: 3.2.0
 info:
   title: Excalidraw Self Host Storage API
   version: 0.1.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: "{protocol}://{host}:{port}"
+    description: Excalidraw self-hosted server
+    variables:
+      protocol:
+        default: http
+        enum: [http, https]
+      host:
+        default: localhost
+      port:
+        default: "8080"
+
+tags:
+  - name: Workspaces
+    description: Manage workspaces and their settings.
+  - name: Workspace Members
+    description: Manage membership and roles within a workspace.
+  - name: Collections
+    description: Manage collections of drawings within a workspace.
+  - name: Drawings
+    description: Manage individual drawings within a collection.
+
+security:
+  - keycloak: []
 
 components:
+  securitySchemes:
+    keycloak:
+      type: openIdConnect
+      openIdConnectUrl: http://localhost:9090/realms/excalidraw/.well-known/openid-configuration
+
   schemas:
     User:
       $ref: "./components/schemas/User.yaml"
