@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO users (id, name) VALUES ($1, 'Test User')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7dc45297e6ecd4a64ff311d0e51725ac8c1d23a54d6845ff199a84fa15bc1343"
+}
