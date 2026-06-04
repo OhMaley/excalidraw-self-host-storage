@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE drawings\n         SET title         = COALESCE($2, title),\n             description   = CASE WHEN $3::bool THEN $4::text ELSE description END,\n             tags          = COALESCE($5, tags),\n             collection_id = $6,\n             updated_by    = $7,\n             updated_at    = NOW()\n         WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Bool",
+        "Text",
+        "TextArray",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cbf4756d8f5b840ebdcd8bf489d48354a72ec28054440a1d30796e026016e7b4"
+}
