@@ -116,14 +116,12 @@ pub async fn create(
         .ok_or_else(|| AppError::NotFound("workspace not found".to_string()))
 }
 
-// description: None = keep existing, Some(None) = clear, Some(Some(v)) = set
 // description: None = keep, Some(None) = clear, Some(Some(v)) = set
 pub async fn update(
     pool: &PgPool,
     workspace_id: Uuid,
     name: Option<&str>,
     description: Option<Option<&str>>,
-    is_private: Option<bool>,
     updated_by: &str,
 ) -> Result<Workspace, AppError> {
     let (update_desc, desc_value) = match description {
@@ -135,11 +133,10 @@ pub async fn update(
         "UPDATE workspaces
          SET name        = COALESCE($2, name),
              description = CASE WHEN $3::bool THEN $4::text ELSE description END,
-             is_private   = COALESCE($5, is_private),
-             updated_by  = $6,
+             updated_by  = $5,
              updated_at  = NOW()
          WHERE id = $1",
-        workspace_id, name, update_desc, desc_value, is_private, updated_by
+        workspace_id, name, update_desc, desc_value, updated_by
     )
     .execute(pool)
     .await?;
@@ -212,15 +209,15 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_name_and_visibility() {
+    async fn update_name() {
         let pool = test_pool().await;
         let user_id = seed_user(&pool).await;
 
         let w = create(&pool, &user_id, "Old Name", None, false).await.unwrap();
 
-        let updated = update(&pool, w.id, Some("New Name"), None, Some(true), &user_id).await.unwrap();
+        let updated = update(&pool, w.id, Some("New Name"), None, &user_id).await.unwrap();
         assert_eq!(updated.name, "New Name");
-        assert!(updated.is_private);
+        assert!(!updated.is_private);
         assert!(updated.updated_at.is_some());
 
         cleanup_user(&pool, &user_id).await;
@@ -232,7 +229,7 @@ mod tests {
         let user_id = seed_user(&pool).await;
 
         let w = create(&pool, &user_id, "WS", Some("to be cleared"), false).await.unwrap();
-        let updated = update(&pool, w.id, None, Some(None), None, &user_id).await.unwrap();
+        let updated = update(&pool, w.id, None, Some(None), &user_id).await.unwrap();
         assert!(updated.description.is_none());
 
         cleanup_user(&pool, &user_id).await;

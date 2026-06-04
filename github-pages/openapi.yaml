@@ -278,7 +278,7 @@ paths:
           $ref: '#/components/responses/NotFound'
     patch:
       operationId: updateWorkspace
-      summary: Update a workspace name or description.
+      summary: Update a workspace.
       description: Partially updates a workspace's name or description. Omitted fields are left unchanged.
       tags:
         - Workspaces
@@ -760,7 +760,7 @@ components:
         is_private:
           type: boolean
           readOnly: true
-          description: True for the user's personal workspace. Private workspaces cannot be deleted and have no members.
+          description: True for the personal workspace auto-created on first login. Private workspaces cannot be deleted and have no members.
           example: false
         created_by:
           $ref: '#/components/schemas/User'

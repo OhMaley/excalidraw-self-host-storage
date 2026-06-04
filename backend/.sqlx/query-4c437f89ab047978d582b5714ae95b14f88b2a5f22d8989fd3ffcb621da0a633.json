@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE workspaces\n         SET name        = COALESCE($2, name),\n             description = CASE WHEN $3::bool THEN $4::text ELSE description END,\n             updated_by  = $5,\n             updated_at  = NOW()\n         WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Bool",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4c437f89ab047978d582b5714ae95b14f88b2a5f22d8989fd3ffcb621da0a633"
+}

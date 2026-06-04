@@ -78,7 +78,7 @@ single:
 
   patch:
     operationId: updateWorkspace
-    summary: Update a workspace name or description.
+    summary: Update a workspace.
     description: Partially updates a workspace's name or description. Omitted fields are left unchanged.
     tags: [Workspaces]
     requestBody:
