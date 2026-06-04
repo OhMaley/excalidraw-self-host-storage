@@ -12,7 +12,6 @@ use crate::{auth::AuthUser, db, error::AppError, models::Workspace, state::AppSt
 pub(super) struct CreateBody {
     name: String,
     description: Option<String>,
-    is_private: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -20,7 +19,6 @@ pub(super) struct UpdateBody {
     name: Option<String>,
     #[serde(default, deserialize_with = "super::deserialize_optional_field")]
     description: Option<Option<String>>,
-    is_private: Option<bool>,
 }
 
 pub async fn list(
@@ -46,7 +44,7 @@ pub async fn create(
         &auth.id,
         &body.name,
         body.description.as_deref(),
-        body.is_private.unwrap_or(false),
+        false,
     )
     .await?;
     Ok((StatusCode::CREATED, Json(ws)))
@@ -76,7 +74,6 @@ pub async fn update(
         workspace_id,
         body.name.as_deref(),
         body.description.as_ref().map(|d| d.as_deref()),
-        body.is_private,
         &auth.id,
     )
     .await?;

@@ -30,7 +30,7 @@ properties:
   is_private:
     type: boolean
     readOnly: true
-    description: True for the user's personal workspace. Private workspaces cannot be deleted and have no members.
+    description: True for the personal workspace auto-created on first login. Private workspaces cannot be deleted and have no members.
     example: false
 
   created_by:

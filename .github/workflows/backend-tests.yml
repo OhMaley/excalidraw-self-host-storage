@@ -1,0 +1,72 @@
+name: Backend — Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-tests.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-tests.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: backend
+
+env:
+  DATABASE_URL: postgres://test:test@localhost:5432/excalidraw
+  SQLX_OFFLINE: "true"
+
+jobs:
+  test:
+    name: Cargo tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: excalidraw
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          workspaces: backend
+
+      - name: Cache sqlx-cli
+        uses: actions/cache@v4
+        id: cache-sqlx
+        with:
+          path: ~/.cargo/bin/sqlx
+          key: sqlx-cli-${{ runner.os }}-${{ hashFiles('backend/Cargo.lock') }}
+
+      - name: Install sqlx-cli
+        if: steps.cache-sqlx.outputs.cache-hit != 'true'
+        run: cargo install sqlx-cli --no-default-features --features rustls,postgres
+
+      - name: Run migrations
+        run: sqlx migrate run
+
+      - name: Run tests
+        run: cargo test --all-targets
