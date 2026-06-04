@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            u.id   AS \"user_id!\",\n            u.name AS \"user_name!\",\n            wm.role AS \"role: WorkspaceRole\",\n            wm.joined_at\n        FROM workspace_members wm\n        JOIN users u ON u.id = wm.user_id\n        WHERE wm.workspace_id = $1 AND wm.user_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "user_name!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "role: WorkspaceRole",
+        "type_info": {
+          "Custom": {
+            "name": "workspace_role",
+            "kind": {
+              "Enum": [
+                "owner",
+                "admin",
+                "member"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "workspace_members",
+            "name": "role"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "joined_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "workspace_members",
+            "name": "joined_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "d5eb430e217202bb902a2a59b7d8fa580474fcc1a089a06f853037b279749ce7"
+}
