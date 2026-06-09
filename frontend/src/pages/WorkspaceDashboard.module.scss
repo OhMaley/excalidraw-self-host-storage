@@ -1,1 +1,73 @@
 @use "../styles/page-layout";
+
+// ── Page header ───────────────────────────────────────────────────────────────
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.separator {
+    height: 1px;
+    background-color: var(--color-on-background-gray);
+    margin-bottom: 1.5rem;
+}
+
+// ── Scroll area ───────────────────────────────────────────────────────────────
+
+.scrollRoot {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.scrollViewport {
+    width: 100%;
+    height: 100%;
+    padding-right: 6px;
+}
+
+.scrollbar {
+    display: flex;
+    user-select: none;
+    touch-action: none;
+    width: 6px;
+    padding: 2px 1px;
+    opacity: 0;
+    z-index: 2;
+    transition: opacity 0.15s ease;
+
+    &[data-state="visible"] {
+        opacity: 1;
+    }
+}
+
+.scrollbarThumb {
+    flex: 1;
+    border-radius: 3px;
+    background-color: var(--color-on-background-gray);
+    position: relative;
+}
+
+.pageTitle {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-on-surface);
+}
+
+.startButton {
+    flex-shrink: 0;
+    gap: 0.4rem;
+    padding: 0 1rem;
+}
+
+.startButtonIcon {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+}
+

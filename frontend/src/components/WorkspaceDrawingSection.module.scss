@@ -1,0 +1,36 @@
+.section {
+    margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--color-background-gray);
+    padding: 0.5rem 0 1rem;
+}
+
+.sectionSpinner {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.emptyHint {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    opacity: 0.5;
+}
+
+// ── Drawing grid ──────────────────────────────────────────────────────────────
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: 1.25rem;
+}
