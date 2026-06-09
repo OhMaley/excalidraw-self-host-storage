@@ -17,6 +17,7 @@
     flex-direction: row;
     width: 100%;
     align-items: center;
+    margin-bottom: 1rem;
 }
 
 .body {
@@ -24,6 +25,21 @@
     flex-direction: column;
     flex: 1 0 auto;
     width: 100%;
+    gap: 2rem;
+}
+
+.center {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.emptyMessage {
+    font-size: 0.875rem;
+    color: var(--color-text);
+    opacity: 0.5;
+    margin: 0;
 }
 
 .section {
@@ -48,7 +64,7 @@
 .sectionContent {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 24rem));
 }
 
 .headerButton {

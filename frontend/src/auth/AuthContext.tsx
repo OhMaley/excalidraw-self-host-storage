@@ -3,6 +3,9 @@ import { createContext, useEffect, useState, useCallback, useRef } from "react";
 // Components
 import Keycloak from "keycloak-js";
 
+// Services
+import { setKeycloak as registerKeycloak } from "@services/api";
+
 const ROLES = ["user", "admin"] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -73,6 +76,7 @@ function useKeycloakInit() {
         })
             .then((authenticated) => {
                 setKeycloak(kc);
+                registerKeycloak(kc);
                 setError(null);
                 setUser(authenticated ? parseUserFromToken(kc) : null);
             })
@@ -88,11 +92,11 @@ function useKeycloakInit() {
             });
     }, []);
 
-    return { keycloak, user, setUser, loading, error };
+    return { keycloak, user, loading, error };
 }
 
 export function AuthProvider({ children }: { readonly children: React.ReactNode }) {
-    const { keycloak, user, setUser, loading, error } = useKeycloakInit();
+    const { keycloak, user, loading, error } = useKeycloakInit();
 
     const login = useCallback(
         (redirectUri?: string) => {
@@ -105,8 +109,7 @@ export function AuthProvider({ children }: { readonly children: React.ReactNode 
     const logout = useCallback(() => {
         if (!keycloak) return;
         void keycloak.logout({ redirectUri: window.location.origin });
-        setUser(null);
-    }, [keycloak, setUser]);
+    }, [keycloak]);
 
     const hasRole = useCallback(
         (roles: Role[]) => !!user && user.roles.some((r) => roles.includes(r)),

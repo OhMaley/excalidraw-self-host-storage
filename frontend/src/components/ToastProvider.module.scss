@@ -1,0 +1,125 @@
+// ── Viewport ──────────────────────────────────────────────
+
+.toastViewport {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 22rem;
+    max-width: calc(100vw - 3rem);
+    outline: none;
+}
+
+// ── Toast base ────────────────────────────────────────────
+
+.toast,
+.toastError {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    background-color: var(--island-bg-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-island);
+    border: 1px solid var(--default-border-color);
+
+    &[data-state="open"] {
+        animation: toastSlideIn 0.2s ease;
+    }
+
+    &[data-state="closed"] {
+        animation: toastHide 0.15s ease forwards;
+    }
+
+    &[data-swipe="move"] {
+        transform: translateX(var(--radix-toast-swipe-move-x));
+    }
+
+    &[data-swipe="cancel"] {
+        transform: translateX(0);
+        transition: transform 0.2s ease-out;
+    }
+
+    &[data-swipe="end"] {
+        animation: toastSwipeOut 0.15s ease-out forwards;
+    }
+}
+
+.toastError {
+    border-color: var(--color-red);
+}
+
+// ── Content ───────────────────────────────────────────────
+
+.toastBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.toastTitle {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+
+    .toastError & {
+        color: var(--color-red);
+    }
+}
+
+.toastDescription {
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    opacity: 0.8;
+}
+
+.toastClose {
+    flex-shrink: 0;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--border-radius-sm);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--color-text);
+    opacity: 0.5;
+    padding: 0;
+    line-height: 1;
+
+    &:hover {
+        opacity: 1;
+        background-color: var(--button-hover-bg);
+    }
+}
+
+// ── Animations ────────────────────────────────────────────
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(calc(100% + 1.5rem));
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastHide {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes toastSwipeOut {
+    from { transform: translateX(var(--radix-toast-swipe-end-x)); }
+    to { transform: translateX(calc(100% + 1.5rem)); }
+}
