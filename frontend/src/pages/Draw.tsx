@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 
 // Components
-import Spinner from "@components/Spinner";
+import { Spinner } from "@components/Spinner";
 
 const ExcalidrawWrapper = lazy(() => import("@components/ExcalidrawWrapper"));
 

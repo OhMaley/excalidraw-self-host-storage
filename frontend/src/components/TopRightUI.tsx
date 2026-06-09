@@ -4,7 +4,7 @@ import { UserDropdownMenu } from "@components/UserDropdownMenu";
 // Hooks
 import { useAuth } from "@hooks/useAuth";
 
-export default function TopRightUI() {
+export function TopRightUI() {
     const { loading, isAuthenticated, user, login, logout } = useAuth();
 
     if (loading) return null;

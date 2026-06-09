@@ -2,12 +2,12 @@ import { Suspense } from "react";
 
 // Components
 import { Routes, Route, Navigate } from "react-router-dom";
-import Spinner from "@components/Spinner";
+import { Spinner } from "@components/Spinner";
 import { AppLayout } from "@components/AppLayout";
 
 // Auth guards
 import { RequireAuth } from "@auth/RequireAuth";
-import { RequireRole } from "@auth/RequireRoles";
+import { RequireRole } from "@auth/RequireRole";
 
 // Routes
 import { publicRoutes, fullscreenRoutes, adminRoutes, shellRoutes } from "./routes";
