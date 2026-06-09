@@ -1,5 +1,5 @@
 import { DrawingCard } from "@components/DrawingCard";
-import Spinner from "@components/Spinner";
+import { Spinner } from "@components/Spinner";
 import { type Drawing } from "@services/drawings";
 import styles from "./WorkspaceDrawingSection.module.scss";
 

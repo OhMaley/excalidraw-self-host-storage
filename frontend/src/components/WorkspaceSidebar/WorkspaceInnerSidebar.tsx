@@ -1,104 +1,28 @@
 import { useState, useEffect } from "react";
+import { NavLink, Link } from "react-router-dom";
 
-// Components
-import { NavLink, Link, useParams } from "react-router-dom";
-import { Separator } from "radix-ui";
-import Spinner from "@components/Spinner";
-
-// Hooks
-import { useAuth } from "@hooks/useAuth";
-
-// Services
-import { listWorkspaces, getWorkspace, type Workspace } from "@services/workspaces";
+import { Spinner } from "@components/Spinner";
+import { getWorkspace, type Workspace } from "@services/workspaces";
 import { listCollections, type Collection } from "@services/collections";
-
-// Utils
 import { getInitialFromFullName } from "@utils/userUtils";
 import { getColorFromId } from "@utils/colorUtils";
-
-// Icons
-import LockIcon from "../assets/icons/lock.svg?react";
-import UsersIcon from "../assets/icons/users.svg?react";
-import FolderIcon from "../assets/icons/folder.svg?react";
-import GearIcon from "../assets/icons/gear.svg?react";
-import PlusIcon from "../assets/icons/plus.svg?react";
-import ExitIcon from "../assets/icons/exit.svg?react";
-
-// Styles
+import FolderIcon from "../../assets/icons/folder.svg?react";
+import GearIcon from "../../assets/icons/gear.svg?react";
+import PlusIcon from "../../assets/icons/plus.svg?react";
+import UsersIcon from "../../assets/icons/users.svg?react";
+import ExitIcon from "../../assets/icons/exit.svg?react";
 import styles from "./WorkspaceSidebar.module.scss";
 
 function navClass({ isActive }: { isActive: boolean }) {
     return isActive ? `${styles.navItem} ${styles.active}` : styles.navItem;
 }
 
-const byName = (a: Workspace, b: Workspace) => a.name.localeCompare(b.name);
-
-// ── State A: workspace list ────────────────────────────────
-
-interface WorkspaceListSidebarProps {
-    readonly onLogout: () => void;
-}
-
-function WorkspaceListSidebar({ onLogout }: WorkspaceListSidebarProps) {
-    const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        void listWorkspaces()
-            .then(setWorkspaces)
-            .finally(() => setLoading(false));
-    }, []);
-
-    const privateWs = workspaces.filter((w) => w.is_private).sort(byName);
-    const teamWs = workspaces.filter((w) => !w.is_private).sort(byName);
-
-    return (
-        <>
-            <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                    <span className={styles.sectionLabel}>My Workspaces</span>
-                </div>
-                {loading ? (
-                    <Spinner size="1rem" />
-                ) : (
-                    <>
-                        {privateWs.map((w) => (
-                            <NavLink key={w.id} to={`/workspaces/${w.id}`} className={navClass}>
-                                <LockIcon className={styles.navIcon} />
-                                <span className={styles.navLabel}>{w.name}</span>
-                            </NavLink>
-                        ))}
-                        {privateWs.length > 0 && teamWs.length > 0 && (
-                            <Separator.Root className={styles.separator} />
-                        )}
-                        {teamWs.map((w) => (
-                            <NavLink key={w.id} to={`/workspaces/${w.id}`} className={navClass}>
-                                <UsersIcon className={styles.navIcon} />
-                                <span className={styles.navLabel}>{w.name}</span>
-                            </NavLink>
-                        ))}
-                    </>
-                )}
-            </div>
-
-            <div className={styles.sidebarBottom}>
-                <button className={`${styles.navItem} ${styles.signOut}`} onClick={onLogout}>
-                    <ExitIcon className={styles.navIcon} />
-                    Sign out
-                </button>
-            </div>
-        </>
-    );
-}
-
-// ── State B: inside a workspace ────────────────────────────
-
 interface WorkspaceInnerSidebarProps {
     readonly wsId: string;
     readonly onLogout: () => void;
 }
 
-function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarProps) {
+export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarProps) {
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
     const [collections, setCollections] = useState<Collection[]>([]);
     const [loadedWsId, setLoadedWsId] = useState<string | null>(null);
@@ -193,18 +117,5 @@ function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarProps) {
                 </button>
             </div>
         </>
-    );
-}
-
-// ── Root: picks state based on route ───────────────────────
-
-export function WorkspaceSidebar() {
-    const { wsId } = useParams<{ wsId?: string }>();
-    const { logout } = useAuth();
-
-    return wsId ? (
-        <WorkspaceInnerSidebar wsId={wsId} onLogout={logout} />
-    ) : (
-        <WorkspaceListSidebar onLogout={logout} />
     );
 }

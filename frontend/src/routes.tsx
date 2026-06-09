@@ -17,7 +17,7 @@ interface RouteConfig {
 
 const Draw = lazy(() => import("@pages/Draw"));
 const Admin = lazy(() => import("@pages/Admin"));
-const Workspaces = lazy(() => import("@pages/Workspaces"));
+const Workspaces = lazy(() => import("@pages/workspaces/Workspaces"));
 const WorkspaceDashboard = lazy(() => import("@pages/WorkspaceDashboard"));
 const CollectionView = lazy(() => import("@pages/CollectionView"));
 

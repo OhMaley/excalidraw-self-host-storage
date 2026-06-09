@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, lazy, Suspense } from "react";
 
 // Components
 import { Excalidraw, WelcomeScreen } from "@excalidraw/excalidraw";
-import TopRightUI from "@components/TopRightUI";
+import { TopRightUI } from "@components/TopRightUI";
 const NotFound = lazy(() => import("@pages/NotFound"));
 
 // Hooks

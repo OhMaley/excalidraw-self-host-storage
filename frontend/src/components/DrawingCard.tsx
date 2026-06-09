@@ -6,6 +6,8 @@ import type { Drawing } from "@services/drawings";
 
 // Icons
 import DotsIcon from "../assets/icons/dots.svg?react";
+import ThrashIcon from "../assets/icons/trash.svg?react";
+import PenIcon from "../assets/icons/pencil.svg?react";
 
 // Utils
 import { relativeTime } from "@utils/timeUtils";
@@ -57,12 +59,14 @@ export function DrawingCard({ drawing, to, visitedAt, onRename, onDelete }: Draw
                             className={styles.menuItem}
                             onSelect={() => onRename?.()}
                         >
+                            <PenIcon className={styles.dropdownMenuItemIcon} />
                             Rename
                         </DropdownMenu.Item>
                         <DropdownMenu.Item
                             className={`${styles.menuItem} ${styles.menuItemDelete}`}
                             onSelect={() => onDelete?.()}
                         >
+                            <ThrashIcon className={styles.dropdownMenuItemIcon} />
                             Delete
                         </DropdownMenu.Item>
                     </DropdownMenu.Content>

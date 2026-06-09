@@ -9,11 +9,7 @@ interface SpinnerProps {
     readonly mountDelayMs?: number;
 }
 
-export default function Spinner({
-    size = "1rem",
-    circleWidth = 8,
-    mountDelayMs = 0,
-}: SpinnerProps) {
+export function Spinner({ size = "1rem", circleWidth = 8, mountDelayMs = 0 }: SpinnerProps) {
     return (
         <div className={styles.container}>
             <svg
