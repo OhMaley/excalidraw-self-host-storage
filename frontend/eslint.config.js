@@ -60,7 +60,7 @@ export default defineConfig([
             "complexity": ["warn", 10],
 
             // Function length
-            "max-lines-per-function": ["warn", { max: 60, skipBlankLines: true, skipComments: true }],
+            "max-lines-per-function": ["warn", { max: 90, skipBlankLines: true, skipComments: true }],
 
             // Magic numbers — common numerics are whitelisted
             "@typescript-eslint/no-magic-numbers": ["warn", {

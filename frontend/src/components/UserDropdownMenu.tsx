@@ -9,7 +9,7 @@ import ExitIcon from "../assets/icons/exit.svg?react";
 import FolderIcon from "../assets/icons/folder.svg?react";
 
 // Type
-import type { User } from "@routes/AuthContext";
+import type { User } from "@auth/AuthContext";
 
 // Utils
 import { getInitialFromFullName } from "@utils/userUtils";

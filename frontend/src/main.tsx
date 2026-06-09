@@ -6,7 +6,8 @@ import App from "./App.tsx";
 import { BrowserRouter } from "react-router-dom";
 
 // Providers
-import { AuthProvider } from "@routes/AuthContext.tsx";
+import { AuthProvider } from "@auth/AuthContext";
+import { ToastProvider } from "@components/ToastProvider";
 
 // Style
 import "./styles/fonts.scss";
@@ -16,7 +17,9 @@ createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <AuthProvider>
             <BrowserRouter>
-                <App />
+                <ToastProvider>
+                    <App />
+                </ToastProvider>
             </BrowserRouter>
         </AuthProvider>
     </StrictMode>

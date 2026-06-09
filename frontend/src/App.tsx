@@ -3,32 +3,44 @@ import { Suspense } from "react";
 // Components
 import { Routes, Route, Navigate } from "react-router-dom";
 import Spinner from "@components/Spinner";
+import { AppLayout } from "@components/AppLayout";
+
+// Auth guards
+import { RequireAuth } from "@auth/RequireAuth";
+import { RequireRole } from "@auth/RequireRoles";
 
 // Routes
-import { publicRoutes, protectedRoutes } from "@routes/routes";
-import { RequireAuth } from "@routes/RequireAuth";
-import { RequireRole } from "@routes/RequireRoles";
+import { publicRoutes, fullscreenRoutes, adminRoutes, shellRoutes } from "./routes";
 
 function App() {
     return (
         <Suspense fallback={<Spinner size="3rem" mountDelayMs={150} />}>
             <Routes>
-                {/* Public */}
-                {publicRoutes.map(({ path, element: Element }) => (
-                    <Route key={path} path={path} element={<Element />} />
+                {/* Public — no auth */}
+                {publicRoutes.map(({ path, element: E }) => (
+                    <Route key={path} path={path} element={<E />} />
                 ))}
 
-                {/* Protected */}
+                {/* Auth required */}
                 <Route element={<RequireAuth />}>
-                    {protectedRoutes.map(({ path, element: Element, roleRequiredAmong }) =>
-                        roleRequiredAmong?.length ? (
-                            <Route element={<RequireRole requiresRoleAmong={roleRequiredAmong} />}>
-                                <Route path={path} element={<Element />} />
-                            </Route>
-                        ) : (
-                            <Route path={path} element={<Element />} />
-                        )
-                    )}
+                    {/* Full-screen — no shell (draw, dashboard) */}
+                    {fullscreenRoutes.map(({ path, element: E }) => (
+                        <Route key={path} path={path} element={<E />} />
+                    ))}
+
+                    {/* Admin only */}
+                    <Route element={<RequireRole requiresRoleAmong={["admin"]} />}>
+                        {adminRoutes.map(({ path, element: E }) => (
+                            <Route key={path} path={path} element={<E />} />
+                        ))}
+                    </Route>
+
+                    {/* Shell — AppLayout (sidebar + header) */}
+                    <Route element={<AppLayout />}>
+                        {shellRoutes.map(({ path, element: E }) => (
+                            <Route key={path} path={path} element={<E />} />
+                        ))}
+                    </Route>
                 </Route>
 
                 {/* Fallback */}

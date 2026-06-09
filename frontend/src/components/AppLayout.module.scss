@@ -1,0 +1,118 @@
+$header-height: 4rem;
+$sidebar-width: 13.5rem;
+
+.root {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+// ── Header ────────────────────────────────────────────────
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: $header-height;
+    padding: 0 1.25rem;
+    background-color: var(--island-bg-color);
+    border-bottom: 1px solid var(--default-border-color);
+}
+
+.appName {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.avatarRoot {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--button-size-md);
+    height: var(--button-size-md);
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.avatarFallback {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: #fff;
+    font-size: large;
+    font-weight: 500;
+    user-select: none;
+}
+
+// ── Body ──────────────────────────────────────────────────
+
+.body {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: hidden;
+}
+
+// ── Sidebar (ScrollArea) ───────────────────────────────────
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: $sidebar-width;
+    background-color: var(--island-bg-color);
+    border-right: 1px solid var(--default-border-color);
+    overflow: hidden;
+}
+
+.sidebarViewport {
+    width: 100%;
+    height: 100%;
+}
+
+.sidebarNav {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - #{$header-height});
+    padding: 0.75rem 0.5rem;
+}
+
+.scrollbar {
+    display: flex;
+    user-select: none;
+    touch-action: none;
+    width: 6px;
+    padding: 2px 1px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+
+    &[data-state="visible"] {
+        opacity: 1;
+    }
+}
+
+.scrollbarThumb {
+    flex: 1;
+    border-radius: 3px;
+    background-color: var(--default-border-color);
+    position: relative;
+}
+
+// ── Content ───────────────────────────────────────────────
+
+.content {
+    flex: 1;
+    overflow: auto;
+    height: 100%;
+}
+

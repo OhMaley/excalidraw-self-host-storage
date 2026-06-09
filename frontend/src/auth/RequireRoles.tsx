@@ -5,7 +5,7 @@ import { Outlet } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 
 // Types
-import type { Role } from "@routes/AuthContext";
+import type { Role } from "@auth/AuthContext";
 
 const AccessDenied = lazy(() => import("@pages/AccessDenied"));
 
