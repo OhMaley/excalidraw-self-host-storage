@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@hooks/useToast";
-import { listCollections } from "@services/collections";
-import { deleteDrawing, listDrawings, type Drawing } from "@services/drawings";
+import { fetchWorkspaceContent } from "@services/workspace";
+import { deleteDrawing, type Drawing } from "@services/drawings";
 import { getVisitedRecords } from "@utils/visitedDrawings";
 import { daysToMs } from "@utils/timeUtils";
+import { getColorFromId } from "@utils/colorUtils";
 
 const RECENT_DAYS = 30;
 const RECENT_CUTOFF_MS = daysToMs(RECENT_DAYS);
@@ -20,6 +21,7 @@ interface UseWorkspaceDashboardResult {
     readonly recentlyVisited: Drawing[];
     readonly recentlyModified: Drawing[];
     readonly visitedAtMap: Map<string, number>;
+    readonly collectionNameMap: Map<string, { name: string; color: string }>;
     readonly loading: boolean;
     readonly handleDelete: (drawing: Drawing) => void;
 }
@@ -29,6 +31,9 @@ export function useWorkspaceDashboard(wsId: string | undefined): UseWorkspaceDas
 
     const [recentlyVisited, setRecentlyVisited] = useState<Drawing[]>([]);
     const [visitedAtMap, setVisitedAtMap] = useState<Map<string, number>>(new Map());
+    const [collectionNameMap, setCollectionNameMap] = useState<
+        Map<string, { name: string; color: string }>
+    >(new Map());
     const [recentlyModified, setRecentlyModified] = useState<Drawing[]>([]);
     const [loadedWsId, setLoadedWsId] = useState<string | undefined>(undefined);
 
@@ -36,12 +41,23 @@ export function useWorkspaceDashboard(wsId: string | undefined): UseWorkspaceDas
 
     useEffect(() => {
         if (!wsId) return;
-        void listCollections(wsId)
-            .then((cols) => Promise.all(cols.map((c) => listDrawings(wsId, c.id))))
-            .then((batches) => {
+        void fetchWorkspaceContent(wsId)
+            .then(({ cols, batches }) => {
                 const now = Date.now();
                 const cutoff = now - RECENT_CUTOFF_MS;
                 const all = batches.flat().sort((a, b) => sortKey(b) - sortKey(a));
+
+                const colById = new Map(
+                    cols.map((c) => [c.id, { name: c.name, color: getColorFromId(c.id) }])
+                );
+                setCollectionNameMap(
+                    new Map(
+                        all.map((d) => [
+                            d.id,
+                            colById.get(d.collection_id) ?? { name: "", color: "" },
+                        ])
+                    )
+                );
 
                 setRecentlyModified(
                     all.filter((d) => new Date(d.updated_at ?? d.created_at).getTime() >= cutoff)
@@ -85,5 +101,12 @@ export function useWorkspaceDashboard(wsId: string | undefined): UseWorkspaceDas
             });
     }
 
-    return { recentlyVisited, recentlyModified, visitedAtMap, loading, handleDelete };
+    return {
+        recentlyVisited,
+        recentlyModified,
+        visitedAtMap,
+        collectionNameMap,
+        loading,
+        handleDelete,
+    };
 }

@@ -1,0 +1,14 @@
+// Shared base for Radix select/dropdown menu items.
+@mixin item-base($padding: 0.5rem 0.75rem) {
+    padding: $padding;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    color: var(--color-text);
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+
+    &[data-highlighted] {
+        background-color: var(--color-background-gray);
+    }
+}

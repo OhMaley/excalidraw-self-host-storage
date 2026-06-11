@@ -1,18 +1,293 @@
-import { useParams } from "react-router-dom";
+import { useState, useMemo, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ScrollArea, Select, Separator } from "radix-ui";
 
+// Hooks
+import { useCollectionView } from "@hooks/useCollectionView";
+import { useWorkspaceMetadata } from "@hooks/useWorkspaceMetadata";
+
+// Components
+import { DeleteDrawingDialog } from "@components/DeleteDrawingDialog";
+import { EditDrawingDialog } from "@components/EditDrawingDialog";
+import { DrawingCard } from "@components/DrawingCard";
+import { Spinner } from "@components/Spinner";
+import PlusIcon from "../assets/icons/plus.svg?react";
+import SearchIcon from "../assets/icons/search.svg?react";
+
+// Services
+import type { Collection } from "@services/collections";
+import { type Drawing, type DrawingUpdate } from "@services/drawings";
+
+// Utils
+import { getColorFromId } from "@utils/colorUtils";
+import { getInitialFromFullName } from "@utils/userUtils";
+
+// Styles
 import styles from "./CollectionView.module.scss";
+
+type SortOrder = "modified" | "created" | "name";
+type SortDir = "asc" | "desc";
+
+const SORT_LABELS: Record<SortOrder, string> = {
+    modified: "Last modified",
+    created: "Date created",
+    name: "Name",
+};
+
+function applyFilter(drawings: Drawing[], query: string): Drawing[] {
+    const q = query.trim().toLowerCase();
+    if (!q) return drawings;
+    return drawings.filter(
+        (d) =>
+            d.title.toLowerCase().includes(q) ||
+            d.tags.some((t) => t.toLowerCase().includes(q)) ||
+            (d.updated_by ?? d.created_by).name.toLowerCase().includes(q)
+    );
+}
+
+function applySort(drawings: Drawing[], order: SortOrder, dir: SortDir): Drawing[] {
+    const sorted = [...drawings].sort((a, b) => {
+        if (order === "name") return a.title.localeCompare(b.title);
+        if (order === "created")
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return (
+            new Date(b.updated_at ?? b.created_at).getTime() -
+            new Date(a.updated_at ?? a.created_at).getTime()
+        );
+    });
+    return dir === "asc" ? sorted.reverse() : sorted;
+}
+
+interface CollectionPageHeaderProps {
+    readonly collection: Collection | null;
+    readonly colId: string | undefined;
+    readonly onNewDrawing: () => void;
+}
+
+function CollectionPageHeader({ collection, colId, onNewDrawing }: CollectionPageHeaderProps) {
+    const avatarColor = colId ? getColorFromId(colId) : undefined;
+    const initials = collection ? getInitialFromFullName(collection.name, 2) : "";
+    const createdAt = collection
+        ? new Date(collection.created_at).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+          })
+        : "";
+    return (
+        <>
+            <div className={styles.pageHeader}>
+                <div className={styles.identity}>
+                    <div className={styles.avatar} style={{ backgroundColor: avatarColor }}>
+                        {initials}
+                    </div>
+                    <div className={styles.titleGroup}>
+                        <h2 className={styles.pageTitle}>{collection?.name ?? ""}</h2>
+                        {createdAt && <span className={styles.createdAt}>Created {createdAt}</span>}
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    className={`btn-md ${styles.newButton}`}
+                    onClick={onNewDrawing}
+                >
+                    <PlusIcon className={styles.newButtonIcon} />
+                    New drawing
+                </button>
+            </div>
+            <Separator.Root className={styles.separator} />
+        </>
+    );
+}
+
+interface CollectionToolbarProps {
+    readonly searchQuery: string;
+    readonly sortOrder: SortOrder;
+    readonly sortDir: SortDir;
+    readonly onSearchChange: (q: string) => void;
+    readonly onSortOrderChange: (order: SortOrder) => void;
+    readonly onSortDirToggle: () => void;
+}
+
+function CollectionToolbar({
+    searchQuery,
+    sortOrder,
+    sortDir,
+    onSearchChange,
+    onSortOrderChange,
+    onSortDirToggle,
+}: CollectionToolbarProps) {
+    return (
+        <div className={styles.toolbar}>
+            <div className={styles.searchBar}>
+                <input
+                    className={styles.searchInput}
+                    type="search"
+                    placeholder="Search or filter results…"
+                    value={searchQuery}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                />
+                <span className={styles.searchIcon} aria-hidden>
+                    <SearchIcon />
+                </span>
+            </div>
+            <div className={styles.sortControls}>
+                <Select.Root
+                    value={sortOrder}
+                    onValueChange={(v) => onSortOrderChange(v as SortOrder)}
+                >
+                    <Select.Trigger className={styles.sortTrigger} aria-label="Sort by">
+                        <Select.Value>{SORT_LABELS[sortOrder]}</Select.Value>
+                        <Select.Icon className={styles.sortChevron}>▾</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                        <Select.Content
+                            className={styles.selectContent}
+                            position="popper"
+                            sideOffset={4}
+                        >
+                            <Select.Viewport>
+                                {(Object.entries(SORT_LABELS) as [SortOrder, string][]).map(
+                                    ([value, label]) => (
+                                        <Select.Item
+                                            key={value}
+                                            value={value}
+                                            className={styles.selectItem}
+                                        >
+                                            <Select.ItemText>{label}</Select.ItemText>
+                                        </Select.Item>
+                                    )
+                                )}
+                            </Select.Viewport>
+                        </Select.Content>
+                    </Select.Portal>
+                </Select.Root>
+                <button
+                    type="button"
+                    className={styles.sortDirButton}
+                    onClick={onSortDirToggle}
+                    aria-label={sortDir === "asc" ? "Sort ascending" : "Sort descending"}
+                    title={sortDir === "asc" ? "Ascending" : "Descending"}
+                >
+                    {sortDir === "asc" ? "↑" : "↓"}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+interface CollectionGridProps {
+    readonly loading: boolean;
+    readonly totalCount: number;
+    readonly drawings: Drawing[];
+    readonly onEdit: (d: Drawing) => void;
+    readonly onDelete: (d: Drawing) => void;
+}
+
+function CollectionGrid({ loading, totalCount, drawings, onEdit, onDelete }: CollectionGridProps) {
+    if (loading)
+        return (
+            <div className={styles.spinnerContainer}>
+                <Spinner size="1.5rem" />
+            </div>
+        );
+    if (totalCount === 0) return <p className={styles.emptyHint}>No drawings yet. Start one!</p>;
+    if (drawings.length === 0)
+        return <p className={styles.emptyHint}>No drawings match your search.</p>;
+    return (
+        <div className={styles.grid}>
+            {drawings.map((d) => (
+                <DrawingCard
+                    key={d.id}
+                    drawing={d}
+                    to={`/draw/${d.id}`}
+                    onEdit={() => onEdit(d)}
+                    onDelete={() => onDelete(d)}
+                />
+            ))}
+        </div>
+    );
+}
 
 export default function CollectionView() {
     const { wsId, colId } = useParams<{ wsId: string; colId: string }>();
+    const navigate = useNavigate();
+    const { collection, drawings, loading, handleDelete, handleEdit } = useCollectionView(
+        wsId,
+        colId
+    );
+    const { collections, availableTags, addTags } = useWorkspaceMetadata(wsId);
+
+    const handleEditAndSync = useCallback(
+        (drawing: Drawing, updates: DrawingUpdate) =>
+            handleEdit(drawing, updates).then(() => {
+                if (updates.tags) addTags(updates.tags);
+            }),
+        [handleEdit, addTags]
+    );
+
+    const [deleteTarget, setDeleteTarget] = useState<Drawing | null>(null);
+    const [editTarget, setEditTarget] = useState<Drawing | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortOrder, setSortOrder] = useState<SortOrder>("modified");
+    const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+    const visibleDrawings = useMemo(
+        () => applySort(applyFilter(drawings, searchQuery), sortOrder, sortDir),
+        [drawings, searchQuery, sortOrder, sortDir]
+    );
+
+    function openEdit(d: Drawing) {
+        setTimeout(() => setEditTarget(d), 0);
+    }
+    function openDelete(d: Drawing) {
+        setTimeout(() => setDeleteTarget(d), 0);
+    }
 
     return (
         <div className={styles.container}>
-            <div className={styles.header}>
-                <h2>Collection</h2>
-            </div>
-            <p className={styles.placeholder}>
-                Workspace {wsId} / Collection {colId} — coming soon
-            </p>
+            <CollectionPageHeader
+                collection={collection}
+                colId={colId}
+                onNewDrawing={() => void navigate("/draw")}
+            />
+
+            <CollectionToolbar
+                searchQuery={searchQuery}
+                sortOrder={sortOrder}
+                sortDir={sortDir}
+                onSearchChange={setSearchQuery}
+                onSortOrderChange={setSortOrder}
+                onSortDirToggle={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+            />
+
+            <ScrollArea.Root className={styles.scrollRoot}>
+                <ScrollArea.Viewport className={styles.scrollViewport}>
+                    <CollectionGrid
+                        loading={loading}
+                        totalCount={drawings.length}
+                        drawings={visibleDrawings}
+                        onEdit={openEdit}
+                        onDelete={openDelete}
+                    />
+                </ScrollArea.Viewport>
+                <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
+                    <ScrollArea.Thumb className={styles.scrollbarThumb} />
+                </ScrollArea.Scrollbar>
+            </ScrollArea.Root>
+
+            <DeleteDrawingDialog
+                drawing={deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={handleDelete}
+            />
+            <EditDrawingDialog
+                drawing={editTarget}
+                collections={collections}
+                availableTags={availableTags}
+                onClose={() => setEditTarget(null)}
+                onConfirm={handleEditAndSync}
+            />
         </div>
     );
 }

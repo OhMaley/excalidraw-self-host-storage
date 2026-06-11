@@ -7,7 +7,9 @@ interface WorkspaceDrawingSectionProps {
     readonly title: string;
     readonly drawings: Drawing[];
     readonly loading: boolean;
+    readonly readOnly?: boolean;
     readonly visitedAtMap?: ReadonlyMap<string, number>;
+    readonly collectionNameMap?: ReadonlyMap<string, { name: string; color: string }>;
     readonly onDelete?: (drawing: Drawing) => void;
 }
 
@@ -15,7 +17,9 @@ export function WorkspaceDrawingSection({
     title,
     drawings,
     loading,
+    readOnly,
     visitedAtMap,
+    collectionNameMap,
     onDelete,
 }: WorkspaceDrawingSectionProps) {
     function renderContent() {
@@ -33,8 +37,11 @@ export function WorkspaceDrawingSection({
                         key={d.id}
                         drawing={d}
                         to={`/draw/${d.id}`}
+                        collectionName={collectionNameMap?.get(d.id)?.name}
+                        collectionColor={collectionNameMap?.get(d.id)?.color}
                         visitedAt={visitedAtMap?.get(d.id)}
-                        onDelete={() => onDelete?.(d)}
+                        readOnly={readOnly}
+                        onDelete={readOnly ? undefined : () => onDelete?.(d)}
                     />
                 ))}
             </div>

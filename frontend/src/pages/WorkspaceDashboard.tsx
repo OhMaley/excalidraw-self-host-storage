@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ScrollArea, Separator } from "radix-ui";
 
@@ -6,12 +5,8 @@ import { ScrollArea, Separator } from "radix-ui";
 import { useWorkspaceDashboard } from "@hooks/useWorkspaceDashboard";
 
 // Components
-import { DeleteDrawingDialog } from "@components/DeleteDrawingDialog";
 import { WorkspaceDrawingSection } from "@components/WorkspaceDrawingSection";
 import PlusIcon from "../assets/icons/plus.svg?react";
-
-// Services
-import { type Drawing } from "@services/drawings";
 
 // Styles
 import styles from "./WorkspaceDashboard.module.scss";
@@ -19,10 +14,8 @@ import styles from "./WorkspaceDashboard.module.scss";
 export default function WorkspaceDashboard() {
     const { wsId } = useParams<{ wsId: string }>();
     const navigate = useNavigate();
-    const { recentlyVisited, recentlyModified, visitedAtMap, loading, handleDelete } =
+    const { recentlyVisited, recentlyModified, visitedAtMap, collectionNameMap, loading } =
         useWorkspaceDashboard(wsId);
-
-    const [deleteTarget, setDeleteTarget] = useState<Drawing | null>(null);
 
     return (
         <div className={styles.container}>
@@ -46,31 +39,23 @@ export default function WorkspaceDashboard() {
                         title="Recently visited by you"
                         drawings={recentlyVisited}
                         loading={loading}
+                        readOnly
                         visitedAtMap={visitedAtMap}
-                        onDelete={(d) => {
-                            setTimeout(() => setDeleteTarget(d), 0);
-                        }}
+                        collectionNameMap={collectionNameMap}
                     />
 
                     <WorkspaceDrawingSection
                         title="Recently modified"
                         drawings={recentlyModified}
                         loading={loading}
-                        onDelete={(d) => {
-                            setTimeout(() => setDeleteTarget(d), 0);
-                        }}
+                        readOnly
+                        collectionNameMap={collectionNameMap}
                     />
                 </ScrollArea.Viewport>
                 <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
                     <ScrollArea.Thumb className={styles.scrollbarThumb} />
                 </ScrollArea.Scrollbar>
             </ScrollArea.Root>
-
-            <DeleteDrawingDialog
-                drawing={deleteTarget}
-                onClose={() => setDeleteTarget(null)}
-                onConfirm={handleDelete}
-            />
         </div>
     );
 }

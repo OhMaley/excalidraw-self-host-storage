@@ -1,3 +1,5 @@
+@use "../styles/popup-item";
+
 // ── Wrapper ───────────────────────────────────────────────────────────────────
 
 .wrapper {
@@ -58,6 +60,29 @@
     overflow: hidden;
 }
 
+.topLeft {
+    position: absolute;
+    top: 0.625rem;
+    left: 0.625rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    max-width: calc(100% - 1.25rem);
+}
+
+.collectionTag {
+    max-width: 100%;
+    font-size: 0.6875rem;
+    color: #fff;
+    background-color: color-mix(in srgb, var(--collection-color, var(--island-bg-color)) 80%, transparent);
+    padding: 0.1875rem 0.4375rem;
+    border-radius: var(--border-radius-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .timestamp {
     position: absolute;
     bottom: 0.625rem;
@@ -65,6 +90,45 @@
     font-size: 0.6875rem;
     color: var(--color-text);
     opacity: 0.65;
+}
+
+// ── Tag row ───────────────────────────────────────────────────────────────────
+
+.tagRow {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    max-width: 100%;
+}
+
+.thumbnailTag {
+    font-size: 0.625rem;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 7rem;
+    color: color-mix(in srgb, var(--tag-color) 90%, #000);
+    background-color: color-mix(in srgb, var(--tag-color) 18%, rgba(255, 255, 255, 0.72));
+    border: 1px solid color-mix(in srgb, var(--tag-color) 40%, transparent);
+    backdrop-filter: blur(4px);
+}
+
+.thumbnailTagMore {
+    font-size: 0.625rem;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    color: var(--color-text);
+    background-color: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(4px);
+    opacity: 0.8;
 }
 
 // ── Info ──────────────────────────────────────────────────────────────────────
@@ -146,17 +210,7 @@
 .menuItem {
     display: flex;
     align-items: center;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.875rem;
-    color: var(--color-text);
-    cursor: pointer;
-    outline: none;
-    user-select: none;
-
-    &[data-highlighted] {
-        background-color: var(--color-background-gray);
-    }
+    @include popup-item.item-base;
 }
 
 .dropdownMenuItemIcon {
@@ -171,5 +225,34 @@
     &[data-highlighted] {
         background-color: rgba(255, 107, 107, 0.08);
     }
+}
+
+// ── Description tooltip ───────────────────────────────────────────────────────
+
+.tooltip {
+    max-width: 22rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--island-bg-color);
+    color: var(--color-text);
+    border: 1px solid var(--default-border-color);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-island);
+    word-break: break-word;
+    z-index: 300;
+
+    animation: tooltipIn 0.1s ease;
+
+    @keyframes tooltipIn {
+        from { opacity: 0; transform: translateY(-2px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+}
+
+.tooltipArrow {
+    fill: var(--island-bg-color);
+    // Outline the arrow to match the border
+    filter: drop-shadow(0 1px 0 var(--default-border-color));
 }
 

@@ -1,0 +1,149 @@
+// ── Wrapper (positions the dropdown anchor) ───────────────────────────────────
+
+.wrapper {
+    position: relative;
+}
+
+// ── Container (acts as the field) ─────────────────────────────────────────────
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    min-height: 2.375rem;
+    background-color: var(--color-background-gray);
+    border: 1px solid var(--default-border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: text;
+    transition: border-color 0.15s ease;
+
+    &:focus-within {
+        border-color: var(--color-primary);
+    }
+
+    &[data-disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// ── Tag chip ──────────────────────────────────────────────────────────────────
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--tag-color);
+    background-color: color-mix(in srgb, var(--tag-color) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tag-color) 35%, transparent);
+    white-space: nowrap;
+}
+
+.chipRemove {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.875rem;
+    height: 0.875rem;
+    font-size: 0.875rem;
+    line-height: 1;
+    border-radius: 50%;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.65;
+    transition: opacity 0.1s ease;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+// ── Inline input ──────────────────────────────────────────────────────────────
+
+.input {
+    flex: 1 1 5rem;
+    min-width: 5rem;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-on-surface);
+    font-size: 0.875rem;
+    padding: 0;
+    line-height: 1.5;
+
+    &::placeholder {
+        color: var(--color-text);
+        opacity: 0.45;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+    }
+}
+
+// ── Dropdown ──────────────────────────────────────────────────────────────────
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 200;
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem;
+    background-color: var(--island-bg-color);
+    border: 1px solid var(--default-border-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-island);
+    max-height: 14rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+// ── Suggestion items ──────────────────────────────────────────────────────────
+
+.listItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4375rem 0.625rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    cursor: pointer;
+    user-select: none;
+}
+
+.listItemActive {
+    background-color: var(--color-background-gray);
+}
+
+.tagDot {
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--tag-color);
+}
+
+.createLabel {
+    color: var(--color-text);
+    opacity: 0.8;
+
+    strong {
+        font-weight: 600;
+        color: var(--color-on-surface);
+        opacity: 1;
+    }
+}
