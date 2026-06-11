@@ -1,4 +1,5 @@
 @use "../styles/page-layout";
+@use "../styles/scroll-area";
 
 // ── Page header ───────────────────────────────────────────────────────────────
 
@@ -14,42 +15,6 @@
     height: 1px;
     background-color: var(--color-on-background-gray);
     margin-bottom: 1.5rem;
-}
-
-// ── Scroll area ───────────────────────────────────────────────────────────────
-
-.scrollRoot {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.scrollViewport {
-    width: 100%;
-    height: 100%;
-    padding-right: 6px;
-}
-
-.scrollbar {
-    display: flex;
-    user-select: none;
-    touch-action: none;
-    width: 6px;
-    padding: 2px 1px;
-    opacity: 0;
-    z-index: 2;
-    transition: opacity 0.15s ease;
-
-    &[data-state="visible"] {
-        opacity: 1;
-    }
-}
-
-.scrollbarThumb {
-    flex: 1;
-    border-radius: 3px;
-    background-color: var(--color-on-background-gray);
-    position: relative;
 }
 
 .pageTitle {

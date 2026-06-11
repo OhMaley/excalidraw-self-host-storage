@@ -25,6 +25,23 @@ export async function listCollections(workspaceId: string): Promise<Collection[]
     return (await res.json()) as Collection[];
 }
 
+export async function getCollection(
+    workspaceId: string,
+    collectionId: string
+): Promise<Collection> {
+    const res = await apiFetch(
+        `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}`,
+        {
+            method: "GET",
+            headers: { Accept: "application/json" },
+        }
+    );
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, "Failed to load collection");
+    }
+    return (await res.json()) as Collection;
+}
+
 export async function getCollectionCount(workspaceId: string): Promise<number> {
     return listCollections(workspaceId).then((c) => c.length);
 }

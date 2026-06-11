@@ -2,6 +2,7 @@ import { useState } from "react";
 
 // Components
 import { Dialog, Form } from "radix-ui";
+import { DescriptionField } from "@components/DescriptionField";
 
 // Types + Services
 import type { Workspace } from "@services/workspaces";
@@ -59,18 +60,12 @@ function WorkspaceDialogForm({
                 </Form.Message>
             </Form.Field>
 
-            <Form.Field name="description" className={styles.field}>
-                <Form.Label className={styles.label}>Description</Form.Label>
-                <Form.Control asChild>
-                    <textarea
-                        className={styles.textarea}
-                        maxLength={500}
-                        placeholder="What is this workspace for? (optional)"
-                        disabled={loading}
-                        rows={3}
-                    />
-                </Form.Control>
-            </Form.Field>
+            <DescriptionField
+                maxLength={500}
+                placeholder="What is this workspace for? (optional)"
+                rows={3}
+                disabled={loading}
+            />
 
             {serverError && (
                 <p className={styles.error}>Failed to create workspace. Please try again.</p>

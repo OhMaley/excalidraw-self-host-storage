@@ -21,6 +21,33 @@ export interface Drawing {
     updated_at: string | null;
 }
 
+export interface DrawingUpdate {
+    title?: string;
+    description?: string | null;
+    tags?: string[];
+    collection_id?: string;
+}
+
+export async function updateDrawing(
+    workspaceId: string,
+    collectionId: string,
+    drawingId: string,
+    updates: DrawingUpdate
+): Promise<Drawing> {
+    const res = await apiFetch(
+        `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}/drawings/${encodeURIComponent(drawingId)}`,
+        {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updates),
+        }
+    );
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, "Failed to update drawing");
+    }
+    return (await res.json()) as Drawing;
+}
+
 export async function deleteDrawing(
     workspaceId: string,
     collectionId: string,

@@ -1,0 +1,71 @@
+@use "../styles/dialog-form";
+@use "../styles/popup-item";
+
+.title {
+    margin: 0 0 1.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+}
+
+// ── Collection select ─────────────────────────────────────────────────────────
+
+.selectTrigger {
+    @include dialog-form.form-control;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.selectIcon {
+    opacity: 0.6;
+    font-size: 0.75rem;
+}
+
+.selectContent {
+    background-color: var(--island-bg-color);
+    border: 1px solid var(--default-border-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-island);
+    padding: 0.25rem;
+    z-index: 200;
+    width: var(--radix-select-trigger-width);
+    max-height: 14rem;
+    overflow-y: auto;
+}
+
+.selectItem {
+    @include popup-item.item-base(0.4375rem 0.75rem);
+
+    &[data-highlighted] {
+        color: var(--color-on-surface);
+    }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+
+.cancelButton {
+    background-color: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--default-border-color);
+
+    &:hover:not(:disabled) {
+        background-color: var(--color-background-gray);
+    }
+}
+
+.saveButton {
+    background-color: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.1);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
