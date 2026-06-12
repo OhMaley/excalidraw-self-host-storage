@@ -1,0 +1,35 @@
+@mixin content($max-width: 22rem, $white-space: null) {
+    max-width: $max-width;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--island-bg-color);
+    color: var(--color-text);
+    border: 1px solid var(--default-border-color);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-island);
+    word-break: break-word;
+    z-index: 300;
+
+    @if $white-space {
+        white-space: $white-space;
+    }
+
+    animation: tooltipIn 0.1s ease;
+
+    @keyframes tooltipIn {
+        from {
+            opacity: 0;
+            transform: translateY(-2px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+@mixin arrow {
+    fill: var(--island-bg-color);
+    filter: drop-shadow(0 1px 0 var(--default-border-color));
+}

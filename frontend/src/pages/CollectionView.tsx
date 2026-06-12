@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DropdownMenu, ScrollArea, Select, Separator } from "radix-ui";
+import { DropdownMenu, ScrollArea, Select, Separator, Tooltip } from "radix-ui";
 
 // Hooks
 import { useCollectionView } from "@hooks/useCollectionView";
@@ -75,6 +75,22 @@ interface CollectionPageHeaderProps {
     readonly onDeleteCollection: () => void;
 }
 
+function CollectionDescription({ description }: { readonly description: string }) {
+    return (
+        <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+                <p className={styles.description}>{description}</p>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+                <Tooltip.Content className={styles.descriptionTooltip} side="bottom" sideOffset={6}>
+                    {description}
+                    <Tooltip.Arrow className={styles.descriptionTooltipArrow} />
+                </Tooltip.Content>
+            </Tooltip.Portal>
+        </Tooltip.Root>
+    );
+}
+
 function CollectionPageHeader({
     collection,
     colId,
@@ -101,6 +117,9 @@ function CollectionPageHeader({
                     <div className={styles.titleGroup}>
                         <h2 className={styles.pageTitle}>{collection?.name ?? ""}</h2>
                         {createdAt && <span className={styles.createdAt}>Created {createdAt}</span>}
+                        {collection?.description && (
+                            <CollectionDescription description={collection.description} />
+                        )}
                     </div>
                 </div>
                 <div className={styles.headerActions}>
@@ -261,6 +280,54 @@ function CollectionGrid({ loading, totalCount, drawings, onEdit, onDelete }: Col
     );
 }
 
+interface DrawingCountBarProps {
+    readonly total: number;
+    readonly visible: number;
+    readonly isFiltered: boolean;
+}
+
+function DrawingCountBar({ total, visible, isFiltered }: DrawingCountBarProps) {
+    const drawingWord = total === 1 ? "drawing" : "drawings";
+    const label = isFiltered ? `${visible} of ${total} ${drawingWord}` : `${total} ${drawingWord}`;
+    return (
+        <div className={styles.countBar}>
+            <span className={styles.countLabel}>{label}</span>
+            <div className={styles.countDivider} />
+        </div>
+    );
+}
+
+function useCollectionState(drawings: Drawing[]) {
+    const [deleteTarget, setDeleteTarget] = useState<Drawing | null>(null);
+    const [editTarget, setEditTarget] = useState<Drawing | null>(null);
+    const [deleteCollectionTarget, setDeleteCollectionTarget] = useState<Collection | null>(null);
+    const [editCollectionTarget, setEditCollectionTarget] = useState<Collection | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortOrder, setSortOrder] = useState<SortOrder>("modified");
+    const [sortDir, setSortDir] = useState<SortDir>("desc");
+    const visibleDrawings = useMemo(
+        () => applySort(applyFilter(drawings, searchQuery), sortOrder, sortDir),
+        [drawings, searchQuery, sortOrder, sortDir]
+    );
+    return {
+        deleteTarget,
+        setDeleteTarget,
+        editTarget,
+        setEditTarget,
+        deleteCollectionTarget,
+        setDeleteCollectionTarget,
+        editCollectionTarget,
+        setEditCollectionTarget,
+        searchQuery,
+        setSearchQuery,
+        sortOrder,
+        setSortOrder,
+        sortDir,
+        setSortDir,
+        visibleDrawings,
+    };
+}
+
 function useDeleteCollection(wsId: string | undefined) {
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -280,6 +347,67 @@ function useDeleteCollection(wsId: string | undefined) {
     };
 }
 
+interface CollectionDialogsProps {
+    readonly deleteTarget: Drawing | null;
+    readonly editTarget: Drawing | null;
+    readonly deleteCollectionTarget: Collection | null;
+    readonly editCollectionTarget: Collection | null;
+    readonly collections: Collection[];
+    readonly availableTags: string[];
+    readonly onCloseDeleteDrawing: () => void;
+    readonly onCloseEditDrawing: () => void;
+    readonly onCloseDeleteCollection: () => void;
+    readonly onCloseEditCollection: () => void;
+    readonly onConfirmDeleteDrawing: (d: Drawing) => void;
+    readonly onConfirmEditDrawing: (d: Drawing, u: DrawingUpdate) => Promise<void>;
+    readonly onConfirmDeleteCollection: (col: Collection) => void;
+    readonly onConfirmEditCollection: (name: string, description: string | null) => Promise<void>;
+}
+
+function CollectionDialogs({
+    deleteTarget,
+    editTarget,
+    deleteCollectionTarget,
+    editCollectionTarget,
+    collections,
+    availableTags,
+    onCloseDeleteDrawing,
+    onCloseEditDrawing,
+    onCloseDeleteCollection,
+    onCloseEditCollection,
+    onConfirmDeleteDrawing,
+    onConfirmEditDrawing,
+    onConfirmDeleteCollection,
+    onConfirmEditCollection,
+}: CollectionDialogsProps) {
+    return (
+        <>
+            <DeleteDrawingDialog
+                drawing={deleteTarget}
+                onClose={onCloseDeleteDrawing}
+                onConfirm={onConfirmDeleteDrawing}
+            />
+            <EditDrawingDialog
+                drawing={editTarget}
+                collections={collections}
+                availableTags={availableTags}
+                onClose={onCloseEditDrawing}
+                onConfirm={onConfirmEditDrawing}
+            />
+            <DeleteCollectionDialog
+                collection={deleteCollectionTarget}
+                onClose={onCloseDeleteCollection}
+                onConfirm={onConfirmDeleteCollection}
+            />
+            <EditCollectionDialog
+                collection={editCollectionTarget}
+                onClose={onCloseEditCollection}
+                onConfirm={onConfirmEditCollection}
+            />
+        </>
+    );
+}
+
 export default function CollectionView() {
     const { wsId, colId } = useParams<{ wsId: string; colId: string }>();
     const navigate = useNavigate();
@@ -289,33 +417,31 @@ export default function CollectionView() {
     const { collections, availableTags, addTags } = useWorkspaceMetadata(wsId);
     const { updateCollection } = useWorkspaceCollections();
 
-    const handleEditAndSync = useCallback(
-        (drawing: Drawing, updates: DrawingUpdate) =>
-            handleEdit(drawing, updates).then(() => {
-                if (updates.tags) addTags(updates.tags);
-            }),
-        [handleEdit, addTags]
-    );
+    const handleEditAndSync = (drawing: Drawing, updates: DrawingUpdate) =>
+        handleEdit(drawing, updates).then(() => {
+            if (updates.tags) addTags(updates.tags);
+        });
 
-    const [deleteTarget, setDeleteTarget] = useState<Drawing | null>(null);
-    const [editTarget, setEditTarget] = useState<Drawing | null>(null);
-    const [deleteCollectionTarget, setDeleteCollectionTarget] = useState<Collection | null>(null);
-    const [editCollectionTarget, setEditCollectionTarget] = useState<Collection | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sortOrder, setSortOrder] = useState<SortOrder>("modified");
-    const [sortDir, setSortDir] = useState<SortDir>("desc");
+    const {
+        deleteTarget,
+        setDeleteTarget,
+        editTarget,
+        setEditTarget,
+        deleteCollectionTarget,
+        setDeleteCollectionTarget,
+        editCollectionTarget,
+        setEditCollectionTarget,
+        searchQuery,
+        setSearchQuery,
+        sortOrder,
+        setSortOrder,
+        sortDir,
+        setSortDir,
+        visibleDrawings,
+    } = useCollectionState(drawings);
 
-    const visibleDrawings = useMemo(
-        () => applySort(applyFilter(drawings, searchQuery), sortOrder, sortDir),
-        [drawings, searchQuery, sortOrder, sortDir]
-    );
-
-    function openEdit(d: Drawing) {
-        setTimeout(() => setEditTarget(d), 0);
-    }
-    function openDelete(d: Drawing) {
-        setTimeout(() => setDeleteTarget(d), 0);
-    }
+    const openEdit = (d: Drawing) => setTimeout(() => setEditTarget(d), 0);
+    const openDelete = (d: Drawing) => setTimeout(() => setDeleteTarget(d), 0);
 
     return (
         <div className={styles.container}>
@@ -338,6 +464,14 @@ export default function CollectionView() {
                 onSortDirToggle={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
             />
 
+            {!loading && drawings.length > 0 && (
+                <DrawingCountBar
+                    total={drawings.length}
+                    visible={visibleDrawings.length}
+                    isFiltered={searchQuery.trim() !== ""}
+                />
+            )}
+
             <ScrollArea.Root className={styles.scrollRoot}>
                 <ScrollArea.Viewport className={styles.scrollViewport}>
                     <CollectionGrid
@@ -351,27 +485,21 @@ export default function CollectionView() {
                 <VScrollbar />
             </ScrollArea.Root>
 
-            <DeleteDrawingDialog
-                drawing={deleteTarget}
-                onClose={() => setDeleteTarget(null)}
-                onConfirm={handleDelete}
-            />
-            <EditDrawingDialog
-                drawing={editTarget}
+            <CollectionDialogs
+                deleteTarget={deleteTarget}
+                editTarget={editTarget}
+                deleteCollectionTarget={deleteCollectionTarget}
+                editCollectionTarget={editCollectionTarget}
                 collections={collections}
                 availableTags={availableTags}
-                onClose={() => setEditTarget(null)}
-                onConfirm={handleEditAndSync}
-            />
-            <DeleteCollectionDialog
-                collection={deleteCollectionTarget}
-                onClose={() => setDeleteCollectionTarget(null)}
-                onConfirm={handleDeleteCollection}
-            />
-            <EditCollectionDialog
-                collection={editCollectionTarget}
-                onClose={() => setEditCollectionTarget(null)}
-                onConfirm={(name, description) =>
+                onCloseDeleteDrawing={() => setDeleteTarget(null)}
+                onCloseEditDrawing={() => setEditTarget(null)}
+                onCloseDeleteCollection={() => setDeleteCollectionTarget(null)}
+                onCloseEditCollection={() => setEditCollectionTarget(null)}
+                onConfirmDeleteDrawing={handleDelete}
+                onConfirmEditDrawing={handleEditAndSync}
+                onConfirmDeleteCollection={handleDeleteCollection}
+                onConfirmEditCollection={(name, description) =>
                     handleEditCollection(name, description).then(updateCollection)
                 }
             />

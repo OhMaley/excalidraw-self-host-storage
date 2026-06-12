@@ -1,4 +1,5 @@
 @use "../styles/page-layout";
+@use "../styles/tooltip";
 @use "../styles/scroll-area";
 @use "../styles/popup-item";
 
@@ -6,21 +7,22 @@
 
 .pageHeader {
     display: flex;
-    align-items: center;
+    align-items: start;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .identity {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.875rem;
     min-width: 0;
 }
 
 .avatar {
     flex-shrink: 0;
+    margin-top: 0.25rem;
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 50%;
@@ -56,6 +58,30 @@
     opacity: 0.5;
 }
 
+.description {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+    font-style: italic;
+    color: var(--color-text);
+    opacity: 0.65;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    cursor: default;
+}
+
+.descriptionTooltip {
+    @include tooltip.content($max-width: 32rem, $white-space: pre-wrap);
+}
+
+.descriptionTooltipArrow {
+    @include tooltip.arrow;
+}
+
 .separator {
     height: 1px;
     background-color: var(--color-on-background-gray);
@@ -68,7 +94,30 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+// ── Drawing count bar ─────────────────────────────────────────────────────────
+
+.countBar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.countLabel {
+    white-space: nowrap;
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.countDivider {
+    flex: 1;
+    height: 1px;
+    background-color: var(--color-on-background-gray);
 }
 
 // ── Search bar ────────────────────────────────────────────────────────────────
@@ -221,9 +270,10 @@
 
 .headerActions {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
     flex-shrink: 0;
+    padding: 6px 0px;
 }
 
 .newButton {
