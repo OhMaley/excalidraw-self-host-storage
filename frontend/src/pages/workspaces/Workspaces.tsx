@@ -4,7 +4,8 @@ import { Separator } from "radix-ui";
 import { WorkspacesBody } from "./WorkspacesBody";
 import { NewWorkspaceDialog } from "@components/NewWorkspaceDialog";
 import { useToast } from "@hooks/useToast";
-import { listWorkspaces, type Workspace } from "@services/workspaces";
+import { useWorkspaces } from "@contexts/WorkspacesContext";
+import type { Workspace } from "@services/workspaces";
 import { getCollectionCount } from "@services/collections";
 import PlusIcon from "../../assets/icons/plus.svg?react";
 import styles from "./Workspaces.module.scss";
@@ -15,24 +16,21 @@ function toCountEntry(workspaceId: string): Promise<[string, number]> {
 
 export default function Workspaces() {
     const { showToast } = useToast();
-    const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+    const { workspaces, loading, addWorkspace } = useWorkspaces();
     const [collectionCounts, setCollectionCounts] = useState<Record<string, number>>({});
-    const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
-        listWorkspaces()
-            .then((ws) => {
-                setWorkspaces(ws);
-                return Promise.all(ws.map((w) => toCountEntry(w.id)));
-            })
+        if (loading) return;
+        Promise.all(workspaces.map((w) => toCountEntry(w.id)))
             .then((entries) => setCollectionCounts(Object.fromEntries(entries)))
-            .catch(() => showToast({ title: "Failed to load workspaces", variant: "error" }))
-            .finally(() => setLoading(false));
-    }, [showToast]);
+            .catch(() =>
+                showToast({ title: "Failed to load collection counts", variant: "error" })
+            );
+    }, [loading, workspaces, showToast]);
 
     function handleWorkspaceCreated(workspace: Workspace) {
-        setWorkspaces((prev) => [...prev, workspace]);
+        addWorkspace(workspace);
     }
 
     const privateWorkspaces = workspaces.filter((w) => w.is_private);
