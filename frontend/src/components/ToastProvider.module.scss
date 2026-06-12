@@ -1,3 +1,5 @@
+@use "../styles/icon-button";
+
 // ── Viewport ──────────────────────────────────────────────
 
 .toastViewport {
@@ -78,17 +80,9 @@
 }
 
 .toastClose {
+    @include icon-button.icon-button-base;
     flex-shrink: 0;
     align-self: flex-start;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: var(--border-radius-sm);
-    background: transparent;
-    border: none;
-    cursor: pointer;
     font-size: 0.75rem;
     color: var(--color-text);
     opacity: 0.5;

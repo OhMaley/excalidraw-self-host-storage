@@ -221,6 +221,7 @@ function EditDialogContent({
         <Dialog.Content
             ref={setContentEl}
             className={styles.content}
+            aria-describedby={undefined}
             onOpenAutoFocus={(e) => {
                 e.preventDefault();
                 titleInputRef.current?.focus();

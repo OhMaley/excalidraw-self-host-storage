@@ -6,6 +6,7 @@ import { useWorkspaceDashboard } from "@hooks/useWorkspaceDashboard";
 
 // Components
 import { WorkspaceDrawingSection } from "@components/WorkspaceDrawingSection";
+import { VScrollbar } from "@components/VScrollbar";
 import PlusIcon from "../assets/icons/plus.svg?react";
 
 // Styles
@@ -52,9 +53,7 @@ export default function WorkspaceDashboard() {
                         collectionNameMap={collectionNameMap}
                     />
                 </ScrollArea.Viewport>
-                <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
-                    <ScrollArea.Thumb className={styles.scrollbarThumb} />
-                </ScrollArea.Scrollbar>
+                <VScrollbar />
             </ScrollArea.Root>
         </div>
     );

@@ -1,0 +1,21 @@
+@use "./dialog-animations";
+
+@mixin overlay($opacity: 0.45) {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, $opacity);
+    z-index: 100;
+    animation: overlayShow 0.15s ease;
+}
+
+@mixin content-base {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 101;
+    background-color: var(--island-bg-color);
+    box-shadow: var(--shadow-island);
+    padding: 1.5rem;
+    animation: contentShow 0.15s ease;
+}

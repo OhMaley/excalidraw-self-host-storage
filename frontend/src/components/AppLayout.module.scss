@@ -1,3 +1,5 @@
+@use "../styles/avatar";
+
 $header-height: 4rem;
 $sidebar-width: 13.5rem;
 
@@ -30,27 +32,13 @@ $sidebar-width: 13.5rem;
 }
 
 .avatarRoot {
+    @include avatar.avatar-root;
     margin-left: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--button-size-md);
-    height: var(--button-size-md);
-    border-radius: 50%;
-    overflow: hidden;
     flex-shrink: 0;
 }
 
 .avatarFallback {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--color-primary);
-    color: #fff;
-    font-size: large;
-    font-weight: 500;
+    @include avatar.avatar-fallback;
     user-select: none;
 }
 

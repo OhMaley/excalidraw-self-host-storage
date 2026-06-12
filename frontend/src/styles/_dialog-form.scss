@@ -1,4 +1,4 @@
-@use "./dialog-animations";
+@use "./modal-base";
 
 // Shared mixin for input/select control sizing and states.
 @mixin form-control {
@@ -27,25 +27,13 @@
 }
 
 .overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.45);
-    z-index: 100;
-    animation: overlayShow 0.15s ease;
+    @include modal-base.overlay(0.45);
 }
 
 .content {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 101;
-    background-color: var(--island-bg-color);
+    @include modal-base.content-base;
     border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-island);
-    padding: 1.5rem;
     width: min(480px, calc(100vw - 2rem));
-    animation: contentShow 0.15s ease;
 }
 
 .form {
@@ -96,4 +84,19 @@
     justify-content: flex-end;
     gap: 0.5rem;
     margin-top: 0.25rem;
+}
+
+@mixin primary-button {
+    background-color: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.1);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 }

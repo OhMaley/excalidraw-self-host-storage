@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 defaults:
   run:
@@ -61,5 +62,49 @@ jobs:
         run: npm audit --audit-level=moderate
 
       - name: Outdated dependencies (npm-check-updates)
-        run: npx --yes npm-check-updates
-        continue-on-error: true
+        id: ncu
+        run: |
+          output=$(npx --yes npm-check-updates 2>&1)
+          echo "$output"
+          if echo "$output" | grep -q "Run npx npm-check-updates"; then
+            echo "has_updates=true" >> "$GITHUB_OUTPUT"
+            echo "$output" > /tmp/ncu-output.txt
+          else
+            echo "has_updates=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Warn on push when dependencies are outdated
+        if: steps.ncu.outputs.has_updates == 'true' && github.event_name != 'pull_request'
+        run: echo "::warning::Outdated npm dependencies detected. Run 'npm run check-updates' locally for details."
+
+      - name: Comment outdated dependencies on PR
+        if: steps.ncu.outputs.has_updates == 'true' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "<!-- ncu-outdated-deps -->"
+            echo "## 📦 Outdated npm dependencies"
+            echo ""
+            echo '```'
+            cat /tmp/ncu-output.txt
+            echo '```'
+            echo ""
+            echo "Run \`npm run check-updates\` locally to review."
+          } > /tmp/ncu-comment.txt
+
+          existingId=$(gh api \
+            "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --jq '[.[] | select(.body | contains("<!-- ncu-outdated-deps -->")) | .id][0] // empty')
+
+          if [ -n "$existingId" ]; then
+            gh api --method PATCH \
+              "repos/${{ github.repository }}/issues/comments/$existingId" \
+              --field body=@/tmp/ncu-comment.txt
+          else
+            gh pr comment "${{ github.event.pull_request.number }}" \
+              --repo "${{ github.repository }}" \
+              --body-file /tmp/ncu-comment.txt
+          fi
+
+          echo "::warning::Outdated npm dependencies detected. See PR comment for details."

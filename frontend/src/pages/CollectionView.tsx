@@ -14,6 +14,7 @@ import { DeleteDrawingDialog } from "@components/DeleteDrawingDialog";
 import { EditDrawingDialog } from "@components/EditDrawingDialog";
 import { DrawingCard } from "@components/DrawingCard";
 import { Spinner } from "@components/Spinner";
+import { VScrollbar } from "@components/VScrollbar";
 import DotsIcon from "../assets/icons/dots.svg?react";
 import PlusIcon from "../assets/icons/plus.svg?react";
 import SearchIcon from "../assets/icons/search.svg?react";
@@ -335,9 +336,7 @@ export default function CollectionView() {
                         onDelete={openDelete}
                     />
                 </ScrollArea.Viewport>
-                <ScrollArea.Scrollbar orientation="vertical" className={styles.scrollbar}>
-                    <ScrollArea.Thumb className={styles.scrollbarThumb} />
-                </ScrollArea.Scrollbar>
+                <VScrollbar />
             </ScrollArea.Root>
 
             <DeleteDrawingDialog

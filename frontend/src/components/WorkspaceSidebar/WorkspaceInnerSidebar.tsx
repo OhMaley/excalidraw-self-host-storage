@@ -3,6 +3,7 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 
 import { Spinner } from "@components/Spinner";
 import { NewCollectionDialog } from "@components/NewCollectionDialog";
+import { SidebarSignOut } from "./SidebarSignOut";
 import { getWorkspace, type Workspace } from "@services/workspaces";
 import { type Collection } from "@services/collections";
 import { useWorkspaceCollections } from "@contexts/WorkspaceCollectionsContext";
@@ -13,7 +14,6 @@ import FolderIcon from "../../assets/icons/folder.svg?react";
 import GearIcon from "../../assets/icons/gear.svg?react";
 import PlusIcon from "../../assets/icons/plus.svg?react";
 import UsersIcon from "../../assets/icons/users.svg?react";
-import ExitIcon from "../../assets/icons/exit.svg?react";
 import styles from "./WorkspaceSidebar.module.scss";
 
 function navClass({ isActive }: { isActive: boolean }) {
@@ -137,12 +137,7 @@ export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarP
                 />
             </div>
 
-            <div className={styles.sidebarBottom}>
-                <button className={`${styles.navItem} ${styles.signOut}`} onClick={onLogout}>
-                    <ExitIcon className={styles.navIcon} />
-                    Sign out
-                </button>
-            </div>
+            <SidebarSignOut onLogout={onLogout} />
 
             <NewCollectionDialog
                 wsId={wsId}

@@ -1,25 +1,13 @@
-@use "./dialog-animations";
+@use "./modal-base";
 
 .overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.35);
-    z-index: 100;
-    animation: overlayShow 0.15s ease;
+    @include modal-base.overlay(0.35);
 }
 
 .content {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 101;
+    @include modal-base.content-base;
     width: min(90vw, 26rem);
-    background-color: var(--island-bg-color);
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-island);
-    padding: 1.5rem;
-    animation: contentShow 0.15s ease;
 }
 
 .title {
