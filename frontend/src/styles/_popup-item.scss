@@ -1,3 +1,17 @@
+// Shared island surface appearance (no padding — use popup-content for menus).
+@mixin island-surface {
+    background-color: var(--island-bg-color);
+    border: 1px solid var(--default-border-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-island);
+}
+
+// Island surface with standard menu padding.
+@mixin popup-content {
+    @include island-surface;
+    padding: 0.25rem;
+}
+
 // Shared base for Radix select/dropdown menu items.
 @mixin item-base($padding: 0.5rem 0.75rem) {
     padding: $padding;

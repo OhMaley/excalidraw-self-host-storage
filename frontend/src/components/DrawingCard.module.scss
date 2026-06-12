@@ -204,12 +204,8 @@
 // ── Dropdown menu ─────────────────────────────────────────────────────────────
 
 .menuContent {
+    @include popup-item.popup-content;
     min-width: 9rem;
-    background-color: var(--island-bg-color);
-    border: 1px solid var(--default-border-color);
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-island);
-    padding: 0.25rem;
     z-index: 20;
 }
 

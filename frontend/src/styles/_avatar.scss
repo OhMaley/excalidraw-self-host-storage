@@ -1,0 +1,21 @@
+@mixin avatar-root {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--button-size-md);
+    height: var(--button-size-md);
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+@mixin avatar-fallback {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: #fff;
+    font-size: large;
+    font-weight: 500;
+}

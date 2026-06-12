@@ -3,10 +3,10 @@ import { Separator } from "radix-ui";
 
 import { Spinner } from "@components/Spinner";
 import { useWorkspaces } from "@contexts/WorkspacesContext";
+import { SidebarSignOut } from "./SidebarSignOut";
 import type { Workspace } from "@services/workspaces";
 import LockIcon from "../../assets/icons/lock.svg?react";
 import UsersIcon from "../../assets/icons/users.svg?react";
-import ExitIcon from "../../assets/icons/exit.svg?react";
 import styles from "./WorkspaceSidebar.module.scss";
 
 const byName = (a: Workspace, b: Workspace) => a.name.localeCompare(b.name);
@@ -54,12 +54,7 @@ export function WorkspaceListSidebar({ onLogout }: WorkspaceListSidebarProps) {
                 )}
             </div>
 
-            <div className={styles.sidebarBottom}>
-                <button className={`${styles.navItem} ${styles.signOut}`} onClick={onLogout}>
-                    <ExitIcon className={styles.navIcon} />
-                    Sign out
-                </button>
-            </div>
+            <SidebarSignOut onLogout={onLogout} />
         </>
     );
 }

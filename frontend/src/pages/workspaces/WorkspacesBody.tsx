@@ -15,14 +15,33 @@ interface WorkspacesBodyProps {
     readonly collectionCounts: Record<string, number>;
 }
 
+interface WorkspaceCardListProps {
+    readonly workspaces: Workspace[];
+    readonly collectionCounts: Record<string, number>;
+}
+
+function WorkspaceCardList({ workspaces, collectionCounts }: WorkspaceCardListProps) {
+    const navigate = useNavigate();
+    return (
+        <>
+            {workspaces.map((w) => (
+                <WorkspaceCard
+                    key={w.id}
+                    workspace={w}
+                    collectionCount={collectionCounts[w.id] ?? 0}
+                    onClick={() => void navigate(`/workspaces/${w.id}`)}
+                />
+            ))}
+        </>
+    );
+}
+
 export function WorkspacesBody({
     loading,
     privateWorkspaces,
     teamWorkspaces,
     collectionCounts,
 }: WorkspacesBodyProps) {
-    const navigate = useNavigate();
-
     if (loading)
         return (
             <div className={styles.center}>
@@ -33,14 +52,10 @@ export function WorkspacesBody({
     return (
         <div className={styles.body}>
             <WorkspaceSection icon={<LockIcon className={styles.icon} />} title="Private workspace">
-                {privateWorkspaces.map((w) => (
-                    <WorkspaceCard
-                        key={w.id}
-                        workspace={w}
-                        collectionCount={collectionCounts[w.id] ?? 0}
-                        onClick={() => void navigate(`/workspaces/${w.id}`)}
-                    />
-                ))}
+                <WorkspaceCardList
+                    workspaces={privateWorkspaces}
+                    collectionCounts={collectionCounts}
+                />
             </WorkspaceSection>
 
             <WorkspaceSection
@@ -48,14 +63,10 @@ export function WorkspacesBody({
                 title="Teams workspaces"
                 count={teamWorkspaces.length}
             >
-                {teamWorkspaces.map((w) => (
-                    <WorkspaceCard
-                        key={w.id}
-                        workspace={w}
-                        collectionCount={collectionCounts[w.id] ?? 0}
-                        onClick={() => void navigate(`/workspaces/${w.id}`)}
-                    />
-                ))}
+                <WorkspaceCardList
+                    workspaces={teamWorkspaces}
+                    collectionCounts={collectionCounts}
+                />
                 {teamWorkspaces.length === 0 && (
                     <p className={styles.emptyMessage}>
                         You are not a member of any teams workspace yet.
