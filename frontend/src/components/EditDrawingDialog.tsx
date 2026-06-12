@@ -3,6 +3,7 @@ import { Dialog, Form, Select } from "radix-ui";
 
 // Components
 import { DescriptionField } from "@components/DescriptionField";
+import { NameFormField } from "@components/NameFormField";
 import { TagsInput } from "@components/TagsInput";
 
 // Services
@@ -231,26 +232,13 @@ function EditDialogContent({
             <Dialog.Title className={styles.title}>Edit drawing</Dialog.Title>
 
             <Form.Root onSubmit={handleSubmit} className={styles.form}>
-                <Form.Field name="title" className={styles.field}>
-                    <Form.Label className={styles.label}>
-                        Name <span className={styles.required}>*</span>
-                    </Form.Label>
-                    <Form.Control asChild>
-                        <input
-                            ref={titleInputRef}
-                            className={styles.input}
-                            type="text"
-                            required
-                            maxLength={100}
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            disabled={loading}
-                        />
-                    </Form.Control>
-                    <Form.Message className={styles.message} match="valueMissing">
-                        Please enter a name.
-                    </Form.Message>
-                </Form.Field>
+                <NameFormField
+                    fieldName="title"
+                    value={title}
+                    inputRef={titleInputRef}
+                    disabled={loading}
+                    onChange={setTitle}
+                />
 
                 <DescriptionField
                     maxLength={500}

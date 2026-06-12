@@ -10,12 +10,14 @@ import { useWorkspaceCollections } from "@contexts/WorkspaceCollectionsContext";
 
 // Components
 import { DeleteCollectionDialog } from "@components/DeleteCollectionDialog";
+import { EditCollectionDialog } from "@components/EditCollectionDialog";
 import { DeleteDrawingDialog } from "@components/DeleteDrawingDialog";
 import { EditDrawingDialog } from "@components/EditDrawingDialog";
 import { DrawingCard } from "@components/DrawingCard";
 import { Spinner } from "@components/Spinner";
 import { VScrollbar } from "@components/VScrollbar";
 import DotsIcon from "../assets/icons/dots.svg?react";
+import PencilIcon from "../assets/icons/pencil.svg?react";
 import PlusIcon from "../assets/icons/plus.svg?react";
 import SearchIcon from "../assets/icons/search.svg?react";
 import TrashIcon from "../assets/icons/trash.svg?react";
@@ -69,6 +71,7 @@ interface CollectionPageHeaderProps {
     readonly collection: Collection | null;
     readonly colId: string | undefined;
     readonly onNewDrawing: () => void;
+    readonly onEditCollection: () => void;
     readonly onDeleteCollection: () => void;
 }
 
@@ -76,6 +79,7 @@ function CollectionPageHeader({
     collection,
     colId,
     onNewDrawing,
+    onEditCollection,
     onDeleteCollection,
 }: CollectionPageHeaderProps) {
     const avatarColor = colId ? getColorFromId(colId) : undefined;
@@ -124,6 +128,13 @@ function CollectionPageHeader({
                                 align="end"
                                 sideOffset={4}
                             >
+                                <DropdownMenu.Item
+                                    className={styles.optionsMenuItem}
+                                    onSelect={onEditCollection}
+                                >
+                                    <PencilIcon className={styles.optionsMenuItemIcon} />
+                                    Edit collection
+                                </DropdownMenu.Item>
                                 <DropdownMenu.Item
                                     className={`${styles.optionsMenuItem} ${styles.optionsMenuItemDelete}`}
                                     onSelect={onDeleteCollection}
@@ -273,11 +284,10 @@ export default function CollectionView() {
     const { wsId, colId } = useParams<{ wsId: string; colId: string }>();
     const navigate = useNavigate();
     const handleDeleteCollection = useDeleteCollection(wsId);
-    const { collection, drawings, loading, handleDelete, handleEdit } = useCollectionView(
-        wsId,
-        colId
-    );
+    const { collection, drawings, loading, handleDelete, handleEdit, handleEditCollection } =
+        useCollectionView(wsId, colId);
     const { collections, availableTags, addTags } = useWorkspaceMetadata(wsId);
+    const { updateCollection } = useWorkspaceCollections();
 
     const handleEditAndSync = useCallback(
         (drawing: Drawing, updates: DrawingUpdate) =>
@@ -290,6 +300,7 @@ export default function CollectionView() {
     const [deleteTarget, setDeleteTarget] = useState<Drawing | null>(null);
     const [editTarget, setEditTarget] = useState<Drawing | null>(null);
     const [deleteCollectionTarget, setDeleteCollectionTarget] = useState<Collection | null>(null);
+    const [editCollectionTarget, setEditCollectionTarget] = useState<Collection | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortOrder, setSortOrder] = useState<SortOrder>("modified");
     const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -312,6 +323,7 @@ export default function CollectionView() {
                 collection={collection}
                 colId={colId}
                 onNewDrawing={() => void navigate("/draw")}
+                onEditCollection={() => setTimeout(() => setEditCollectionTarget(collection), 0)}
                 onDeleteCollection={() =>
                     setTimeout(() => setDeleteCollectionTarget(collection), 0)
                 }
@@ -355,6 +367,13 @@ export default function CollectionView() {
                 collection={deleteCollectionTarget}
                 onClose={() => setDeleteCollectionTarget(null)}
                 onConfirm={handleDeleteCollection}
+            />
+            <EditCollectionDialog
+                collection={editCollectionTarget}
+                onClose={() => setEditCollectionTarget(null)}
+                onConfirm={(name, description) =>
+                    handleEditCollection(name, description).then(updateCollection)
+                }
             />
         </div>
     );

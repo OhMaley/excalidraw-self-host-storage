@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@hooks/useToast";
-import { getCollection, type Collection } from "@services/collections";
+import { getCollection, updateCollection, type Collection } from "@services/collections";
 import {
     deleteDrawing,
     listDrawings,
@@ -32,6 +32,10 @@ interface UseCollectionViewResult {
     readonly loading: boolean;
     readonly handleDelete: (drawing: Drawing) => void;
     readonly handleEdit: (drawing: Drawing, updates: DrawingUpdate) => Promise<void>;
+    readonly handleEditCollection: (
+        name: string,
+        description: string | null
+    ) => Promise<Collection>;
 }
 
 export function useCollectionView(
@@ -83,5 +87,13 @@ export function useCollectionView(
         });
     }
 
-    return { collection, drawings, loading, handleDelete, handleEdit };
+    function handleEditCollection(name: string, description: string | null): Promise<Collection> {
+        if (!wsId || !colId) return Promise.reject(new Error("No workspace or collection"));
+        return updateCollection(wsId, colId, name, description).then((updated) => {
+            setCollection(updated);
+            return updated;
+        });
+    }
+
+    return { collection, drawings, loading, handleDelete, handleEdit, handleEditCollection };
 }

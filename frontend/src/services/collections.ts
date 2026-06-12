@@ -7,6 +7,7 @@ import { API_BASE, apiFetch, postJson } from "@services/api";
 export interface Collection {
     id: string;
     name: string;
+    description: string | null;
     workspace_id: string;
     created_at: string;
 }
@@ -62,6 +63,26 @@ export function createCollection(
         { name, description },
         "Failed to create collection"
     );
+}
+
+export async function updateCollection(
+    workspaceId: string,
+    collectionId: string,
+    name: string,
+    description: string | null
+): Promise<Collection> {
+    const res = await apiFetch(
+        `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}`,
+        {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, description }),
+        }
+    );
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, "Failed to update collection");
+    }
+    return (await res.json()) as Collection;
 }
 
 export async function getCollectionCount(workspaceId: string): Promise<number> {
