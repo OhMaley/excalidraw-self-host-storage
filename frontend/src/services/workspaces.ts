@@ -2,7 +2,7 @@
 import { HttpError } from "@utils/httpError";
 
 // Services
-import { API_BASE, apiFetch } from "@services/api";
+import { API_BASE, apiFetch, postJson } from "@services/api";
 
 interface WorkspaceUser {
     id: string;
@@ -42,17 +42,10 @@ export async function getWorkspace(id: string): Promise<Workspace> {
     return (await res.json()) as Workspace;
 }
 
-export async function createWorkspace(
-    name: string,
-    description: string | null
-): Promise<Workspace> {
-    const res = await apiFetch(`${API_BASE}/workspaces`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ name, description }),
-    });
-    if (!res.ok) {
-        throw new HttpError(res.status, res.statusText, "Failed to create workspace");
-    }
-    return (await res.json()) as Workspace;
+export function createWorkspace(name: string, description: string | null): Promise<Workspace> {
+    return postJson<Workspace>(
+        `${API_BASE}/workspaces`,
+        { name, description },
+        "Failed to create workspace"
+    );
 }

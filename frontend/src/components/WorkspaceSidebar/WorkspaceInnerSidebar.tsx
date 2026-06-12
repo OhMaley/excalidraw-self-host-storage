@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 
 import { Spinner } from "@components/Spinner";
+import { NewCollectionDialog } from "@components/NewCollectionDialog";
 import { getWorkspace, type Workspace } from "@services/workspaces";
-import { listCollections, type Collection } from "@services/collections";
-import { getInitialFromFullName } from "@utils/userUtils";
+import { type Collection } from "@services/collections";
+import { useWorkspaceCollections } from "@contexts/WorkspaceCollectionsContext";
+import { useToast } from "@hooks/useToast";
+import { getInitials } from "@utils/stringUtils";
 import { getColorFromId } from "@utils/colorUtils";
 import FolderIcon from "../../assets/icons/folder.svg?react";
 import GearIcon from "../../assets/icons/gear.svg?react";
@@ -17,52 +20,76 @@ function navClass({ isActive }: { isActive: boolean }) {
     return isActive ? `${styles.navItem} ${styles.active}` : styles.navItem;
 }
 
+function WorkspaceHeader({ workspace }: { readonly workspace: Workspace | null }) {
+    if (!workspace) return null;
+    const avatarColor = getColorFromId(workspace.id);
+    const initials = getInitials(workspace.name);
+    return (
+        <div className={styles.workspaceHeader}>
+            <div className={styles.workspaceAvatar} style={{ backgroundColor: avatarColor }}>
+                {initials}
+            </div>
+            <span className={styles.workspaceName}>{workspace.name}</span>
+        </div>
+    );
+}
+
+interface CollectionsListProps {
+    readonly loading: boolean;
+    readonly collections: Collection[];
+    readonly wsId: string;
+    readonly onNew: () => void;
+}
+
+function CollectionsList({ loading, collections, wsId, onNew }: CollectionsListProps) {
+    if (loading) return <Spinner size="1rem" />;
+    if (collections.length === 0)
+        return (
+            <button className={styles.emptyHint} onClick={onNew}>
+                + New collection
+            </button>
+        );
+    return (
+        <>
+            {collections.map((col) => (
+                <NavLink
+                    key={col.id}
+                    to={`/workspaces/${wsId}/collections/${col.id}`}
+                    className={navClass}
+                >
+                    <span
+                        className={styles.collectionDot}
+                        style={{ backgroundColor: getColorFromId(col.id) }}
+                    />
+                    <span className={styles.navLabel}>{col.name}</span>
+                </NavLink>
+            ))}
+        </>
+    );
+}
+
 interface WorkspaceInnerSidebarProps {
     readonly wsId: string;
     readonly onLogout: () => void;
 }
 
 export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarProps) {
+    const navigate = useNavigate();
+    const { showToast } = useToast();
+    const { collections, loading, addCollection } = useWorkspaceCollections();
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
-    const [collections, setCollections] = useState<Collection[]>([]);
-    const [loadedWsId, setLoadedWsId] = useState<string | null>(null);
-
-    const loading = loadedWsId !== wsId;
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
-        void Promise.all([getWorkspace(wsId), listCollections(wsId)])
-            .then(([ws, cols]) => {
-                setWorkspace(ws);
-                setCollections(cols);
-                setLoadedWsId(wsId);
-            })
-            .catch(() => setLoadedWsId(wsId));
-    }, [wsId]);
+        if (!wsId) return;
+        void getWorkspace(wsId)
+            .then(setWorkspace)
+            .catch(() => showToast({ title: "Failed to load workspace", variant: "error" }));
+    }, [wsId, showToast]);
 
-    const avatarColor = workspace ? getColorFromId(workspace.id) : undefined;
-    const initials = workspace ? getInitialFromFullName(workspace.name, 2) : "";
-
-    function renderCollections() {
-        if (loading) return <Spinner size="1rem" />;
-        if (collections.length === 0)
-            return <span className={styles.emptyHint}>No collections yet</span>;
-        return (
-            <>
-                {collections.map((col) => (
-                    <NavLink
-                        key={col.id}
-                        to={`/workspaces/${wsId}/collections/${col.id}`}
-                        className={navClass}
-                    >
-                        <span
-                            className={styles.collectionDot}
-                            style={{ backgroundColor: getColorFromId(col.id) }}
-                        />
-                        <span className={styles.navLabel}>{col.name}</span>
-                    </NavLink>
-                ))}
-            </>
-        );
+    function handleCollectionCreated(col: Collection) {
+        addCollection(col);
+        void navigate(`/workspaces/${wsId}/collections/${col.id}`);
     }
 
     return (
@@ -71,17 +98,7 @@ export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarP
                 ← All workspaces
             </Link>
 
-            {workspace && (
-                <div className={styles.workspaceHeader}>
-                    <div
-                        className={styles.workspaceAvatar}
-                        style={{ backgroundColor: avatarColor }}
-                    >
-                        {initials}
-                    </div>
-                    <span className={styles.workspaceName}>{workspace.name}</span>
-                </div>
-            )}
+            <WorkspaceHeader workspace={workspace} />
 
             <div className={styles.section}>
                 <NavLink to={`/workspaces/${wsId}`} end className={navClass}>
@@ -103,11 +120,21 @@ export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarP
             <div className={styles.section}>
                 <div className={styles.sectionHeader}>
                     <span className={styles.sectionLabel}>Collections</span>
-                    <button className={styles.iconButton}>
+                    <button
+                        className={styles.iconButton}
+                        onClick={() => setDialogOpen(true)}
+                        title="New collection"
+                        aria-label="New collection"
+                    >
                         <PlusIcon className={styles.iconButtonIcon} />
                     </button>
                 </div>
-                {renderCollections()}
+                <CollectionsList
+                    loading={loading}
+                    collections={collections}
+                    wsId={wsId}
+                    onNew={() => setDialogOpen(true)}
+                />
             </div>
 
             <div className={styles.sidebarBottom}>
@@ -116,6 +143,13 @@ export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarP
                     Sign out
                 </button>
             </div>
+
+            <NewCollectionDialog
+                wsId={wsId}
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                onCreated={handleCollectionCreated}
+            />
         </>
     );
 }

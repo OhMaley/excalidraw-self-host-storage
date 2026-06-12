@@ -1,7 +1,3 @@
-@use '../styles/error-page';
+@use "../styles/error-page";
 
-@include error-page.layout(
-    '../assets/images/undraw_connection_lost.svg',
-    800,
-    430.493
-);
+@include error-page.layout("../assets/images/undraw_connection_lost.svg", 800, 430.493);

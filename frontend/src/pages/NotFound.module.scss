@@ -1,7 +1,3 @@
-@use '../styles/error-page';
+@use "../styles/error-page";
 
-@include error-page.layout(
-    '../assets/images/undraw_page_not_found.svg',
-    860.13137,
-    571.14799
-);
+@include error-page.layout("../assets/images/undraw_page_not_found.svg", 860.13137, 571.14799);
