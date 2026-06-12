@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Separator } from "radix-ui";
 
 import { Spinner } from "@components/Spinner";
-import { listWorkspaces, type Workspace } from "@services/workspaces";
+import { useWorkspaces } from "@contexts/WorkspacesContext";
+import type { Workspace } from "@services/workspaces";
 import LockIcon from "../../assets/icons/lock.svg?react";
 import UsersIcon from "../../assets/icons/users.svg?react";
 import ExitIcon from "../../assets/icons/exit.svg?react";
@@ -20,14 +20,7 @@ interface WorkspaceListSidebarProps {
 }
 
 export function WorkspaceListSidebar({ onLogout }: WorkspaceListSidebarProps) {
-    const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        void listWorkspaces()
-            .then(setWorkspaces)
-            .finally(() => setLoading(false));
-    }, []);
+    const { workspaces, loading } = useWorkspaces();
 
     const privateWorkspaces = workspaces.filter((w) => w.is_private).sort(byName);
     const teamWorkspaces = workspaces.filter((w) => !w.is_private).sort(byName);
