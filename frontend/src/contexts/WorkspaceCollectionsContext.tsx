@@ -8,6 +8,7 @@ interface WorkspaceCollectionsContextValue {
     readonly loading: boolean;
     readonly addCollection: (col: Collection) => void;
     readonly removeCollection: (colId: string) => void;
+    readonly updateCollection: (col: Collection) => void;
 }
 
 const WorkspaceCollectionsContext = createContext<WorkspaceCollectionsContextValue | null>(null);
@@ -44,9 +45,13 @@ export function WorkspaceCollectionsProvider({
         setCollections((prev) => prev.filter((c) => c.id !== colId));
     }, []);
 
+    const updateCollection = useCallback((col: Collection) => {
+        setCollections((prev) => prev.map((c) => (c.id === col.id ? col : c)));
+    }, []);
+
     return (
         <WorkspaceCollectionsContext.Provider
-            value={{ collections, loading, addCollection, removeCollection }}
+            value={{ collections, loading, addCollection, removeCollection, updateCollection }}
         >
             {children}
         </WorkspaceCollectionsContext.Provider>

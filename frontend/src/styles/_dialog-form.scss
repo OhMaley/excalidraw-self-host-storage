@@ -100,3 +100,13 @@
         cursor: not-allowed;
     }
 }
+
+@mixin cancel-button {
+    background-color: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--default-border-color);
+
+    &:hover:not(:disabled) {
+        background-color: var(--color-background-gray);
+    }
+}

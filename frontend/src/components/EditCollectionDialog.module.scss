@@ -1,0 +1,16 @@
+@use "../styles/dialog-form";
+
+.title {
+    margin: 0 0 1.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+}
+
+.cancelButton {
+    @include dialog-form.cancel-button;
+}
+
+.saveButton {
+    @include dialog-form.primary-button;
+}
