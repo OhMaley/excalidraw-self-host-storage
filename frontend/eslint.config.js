@@ -57,20 +57,26 @@ export default defineConfig([
             // --- Code quality ---
 
             // Cyclomatic complexity (hard fail above 15, warn above 10)
-            "complexity": ["warn", 10],
+            complexity: ["warn", 10],
 
             // Function length
-            "max-lines-per-function": ["warn", { max: 90, skipBlankLines: true, skipComments: true }],
+            "max-lines-per-function": [
+                "warn",
+                { max: 90, skipBlankLines: true, skipComments: true },
+            ],
 
             // Magic numbers — common numerics are whitelisted
-            "@typescript-eslint/no-magic-numbers": ["warn", {
-                ignore: [-1, 0, 1, 2, 10, 100, 1000],
-                ignoreArrayIndexes: true,
-                ignoreDefaultValues: true,
-                ignoreClassFieldInitialValues: true,
-                ignoreTypeIndexes: true,
-                ignoreEnums: true,
-            }],
+            "@typescript-eslint/no-magic-numbers": [
+                "warn",
+                {
+                    ignore: [-1, 0, 1, 2, 10, 100, 1000],
+                    ignoreArrayIndexes: true,
+                    ignoreDefaultValues: true,
+                    ignoreClassFieldInitialValues: true,
+                    ignoreTypeIndexes: true,
+                    ignoreEnums: true,
+                },
+            ],
 
             // SonarJS overrides — start in warn mode to avoid blocking PRs
             // while the team addresses existing violations

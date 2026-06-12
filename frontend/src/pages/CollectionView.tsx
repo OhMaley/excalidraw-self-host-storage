@@ -1,26 +1,32 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ScrollArea, Select, Separator } from "radix-ui";
+import { DropdownMenu, ScrollArea, Select, Separator } from "radix-ui";
 
 // Hooks
 import { useCollectionView } from "@hooks/useCollectionView";
 import { useWorkspaceMetadata } from "@hooks/useWorkspaceMetadata";
+import { useToast } from "@hooks/useToast";
+import { useWorkspaceCollections } from "@contexts/WorkspaceCollectionsContext";
 
 // Components
+import { DeleteCollectionDialog } from "@components/DeleteCollectionDialog";
 import { DeleteDrawingDialog } from "@components/DeleteDrawingDialog";
 import { EditDrawingDialog } from "@components/EditDrawingDialog";
 import { DrawingCard } from "@components/DrawingCard";
 import { Spinner } from "@components/Spinner";
+import DotsIcon from "../assets/icons/dots.svg?react";
 import PlusIcon from "../assets/icons/plus.svg?react";
 import SearchIcon from "../assets/icons/search.svg?react";
+import TrashIcon from "../assets/icons/trash.svg?react";
 
 // Services
 import type { Collection } from "@services/collections";
-import { type Drawing, type DrawingUpdate } from "@services/drawings";
+import { deleteCollection } from "@services/collections";
+import type { Drawing, DrawingUpdate } from "@services/drawings";
 
 // Utils
 import { getColorFromId } from "@utils/colorUtils";
-import { getInitialFromFullName } from "@utils/userUtils";
+import { getInitials } from "@utils/stringUtils";
 
 // Styles
 import styles from "./CollectionView.module.scss";
@@ -62,11 +68,17 @@ interface CollectionPageHeaderProps {
     readonly collection: Collection | null;
     readonly colId: string | undefined;
     readonly onNewDrawing: () => void;
+    readonly onDeleteCollection: () => void;
 }
 
-function CollectionPageHeader({ collection, colId, onNewDrawing }: CollectionPageHeaderProps) {
+function CollectionPageHeader({
+    collection,
+    colId,
+    onNewDrawing,
+    onDeleteCollection,
+}: CollectionPageHeaderProps) {
     const avatarColor = colId ? getColorFromId(colId) : undefined;
-    const initials = collection ? getInitialFromFullName(collection.name, 2) : "";
+    const initials = collection ? getInitials(collection.name) : "";
     const createdAt = collection
         ? new Date(collection.created_at).toLocaleDateString(undefined, {
               year: "numeric",
@@ -86,14 +98,42 @@ function CollectionPageHeader({ collection, colId, onNewDrawing }: CollectionPag
                         {createdAt && <span className={styles.createdAt}>Created {createdAt}</span>}
                     </div>
                 </div>
-                <button
-                    type="button"
-                    className={`btn-md ${styles.newButton}`}
-                    onClick={onNewDrawing}
-                >
-                    <PlusIcon className={styles.newButtonIcon} />
-                    New drawing
-                </button>
+                <div className={styles.headerActions}>
+                    <button
+                        type="button"
+                        className={`btn-md ${styles.newButton}`}
+                        onClick={onNewDrawing}
+                    >
+                        <PlusIcon className={styles.newButtonIcon} />
+                        New drawing
+                    </button>
+                    <DropdownMenu.Root>
+                        <DropdownMenu.Trigger asChild>
+                            <button
+                                type="button"
+                                className={styles.optionsButton}
+                                aria-label="Collection options"
+                            >
+                                <DotsIcon className={styles.optionsButtonIcon} />
+                            </button>
+                        </DropdownMenu.Trigger>
+                        <DropdownMenu.Portal>
+                            <DropdownMenu.Content
+                                className={styles.optionsMenuContent}
+                                align="end"
+                                sideOffset={4}
+                            >
+                                <DropdownMenu.Item
+                                    className={`${styles.optionsMenuItem} ${styles.optionsMenuItemDelete}`}
+                                    onSelect={onDeleteCollection}
+                                >
+                                    <TrashIcon className={styles.optionsMenuItemIcon} />
+                                    Delete collection
+                                </DropdownMenu.Item>
+                            </DropdownMenu.Content>
+                        </DropdownMenu.Portal>
+                    </DropdownMenu.Root>
+                </div>
             </div>
             <Separator.Root className={styles.separator} />
         </>
@@ -209,9 +249,29 @@ function CollectionGrid({ loading, totalCount, drawings, onEdit, onDelete }: Col
     );
 }
 
+function useDeleteCollection(wsId: string | undefined) {
+    const navigate = useNavigate();
+    const { showToast } = useToast();
+    const { removeCollection } = useWorkspaceCollections();
+    return (col: Collection) => {
+        deleteCollection(wsId!, col.id)
+            .then(() => {
+                removeCollection(col.id);
+                void navigate(`/workspaces/${wsId}`);
+            })
+            .catch(() =>
+                showToast({
+                    title: "Failed to delete collection. Please try again.",
+                    variant: "error",
+                })
+            );
+    };
+}
+
 export default function CollectionView() {
     const { wsId, colId } = useParams<{ wsId: string; colId: string }>();
     const navigate = useNavigate();
+    const handleDeleteCollection = useDeleteCollection(wsId);
     const { collection, drawings, loading, handleDelete, handleEdit } = useCollectionView(
         wsId,
         colId
@@ -228,6 +288,7 @@ export default function CollectionView() {
 
     const [deleteTarget, setDeleteTarget] = useState<Drawing | null>(null);
     const [editTarget, setEditTarget] = useState<Drawing | null>(null);
+    const [deleteCollectionTarget, setDeleteCollectionTarget] = useState<Collection | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortOrder, setSortOrder] = useState<SortOrder>("modified");
     const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -250,6 +311,9 @@ export default function CollectionView() {
                 collection={collection}
                 colId={colId}
                 onNewDrawing={() => void navigate("/draw")}
+                onDeleteCollection={() =>
+                    setTimeout(() => setDeleteCollectionTarget(collection), 0)
+                }
             />
 
             <CollectionToolbar
@@ -287,6 +351,11 @@ export default function CollectionView() {
                 availableTags={availableTags}
                 onClose={() => setEditTarget(null)}
                 onConfirm={handleEditAndSync}
+            />
+            <DeleteCollectionDialog
+                collection={deleteCollectionTarget}
+                onClose={() => setDeleteCollectionTarget(null)}
+                onConfirm={handleDeleteCollection}
             />
         </div>
     );

@@ -12,7 +12,7 @@ import FolderIcon from "../assets/icons/folder.svg?react";
 import type { User } from "@auth/AuthContext";
 
 // Utils
-import { getInitialFromFullName } from "@utils/userUtils";
+import { getInitials } from "@utils/stringUtils";
 
 // Styles
 import styles from "./UserDropdownMenu.module.scss";
@@ -23,7 +23,7 @@ interface UserDropdownMenuProps {
 }
 
 export function UserDropdownMenu({ user, logout }: UserDropdownMenuProps) {
-    const initials = getInitialFromFullName(user.name, 2);
+    const initials = getInitials(user.name);
     const email = user.email ?? null;
 
     return (

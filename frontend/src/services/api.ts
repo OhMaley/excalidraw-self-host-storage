@@ -1,4 +1,5 @@
 import type Keycloak from "keycloak-js";
+import { HttpError } from "@utils/httpError";
 
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "";
 
@@ -27,4 +28,16 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
     });
+}
+
+export async function postJson<T>(url: string, body: unknown, errorMessage: string): Promise<T> {
+    const res = await apiFetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, errorMessage);
+    }
+    return (await res.json()) as T;
 }

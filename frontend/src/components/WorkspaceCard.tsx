@@ -2,7 +2,7 @@
 import type { Workspace } from "@services/workspaces";
 
 // Utils
-import { getInitialFromFullName } from "@utils/userUtils";
+import { getInitials } from "@utils/stringUtils";
 import { getColorFromId } from "@utils/colorUtils";
 
 // Styles
@@ -15,7 +15,7 @@ interface WorkspaceCardProps {
 }
 
 export function WorkspaceCard({ workspace, collectionCount, onClick }: WorkspaceCardProps) {
-    const initials = getInitialFromFullName(workspace.name, 2);
+    const initials = getInitials(workspace.name);
     const avatarColor = getColorFromId(workspace.id);
     const createdAt = new Date(workspace.created_at).toLocaleDateString(undefined, {
         year: "numeric",
