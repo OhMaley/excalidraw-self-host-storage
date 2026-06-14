@@ -3,7 +3,7 @@ import { createContext, useContext } from "react";
 export interface ToastMessage {
     title: string;
     description?: string;
-    variant?: "error" | "default";
+    variant?: "error" | "warning" | "default";
 }
 
 interface ToastContextType {
