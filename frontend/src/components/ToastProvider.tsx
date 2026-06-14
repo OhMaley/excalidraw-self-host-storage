@@ -14,6 +14,12 @@ interface ToastState extends ToastMessage {
     key: number;
 }
 
+const variantClass: Record<NonNullable<ToastMessage["variant"]>, string> = {
+    default: styles.toast,
+    error: styles.toastError,
+    warning: styles.toastWarning,
+};
+
 export function ToastProvider({ children }: { readonly children: React.ReactNode }) {
     const [toast, setToast] = useState<ToastState | null>(null);
     const keyRef = useRef(0);
@@ -31,7 +37,7 @@ export function ToastProvider({ children }: { readonly children: React.ReactNode
                         key={toast.key}
                         open={toast.open}
                         onOpenChange={(open) => setToast((prev) => prev && { ...prev, open })}
-                        className={toast.variant === "error" ? styles.toastError : styles.toast}
+                        className={variantClass[toast.variant ?? "default"]}
                         duration={6000}
                     >
                         <div className={styles.toastBody}>
