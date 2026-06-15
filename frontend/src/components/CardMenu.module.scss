@@ -1,0 +1,17 @@
+@use "../styles/card-menu";
+
+.content {
+    @include card-menu.menu-content;
+}
+
+.item {
+    @include card-menu.menu-item;
+}
+
+.itemIcon {
+    @include card-menu.dropdown-item-icon;
+}
+
+.itemDelete {
+    @include card-menu.menu-item-delete;
+}

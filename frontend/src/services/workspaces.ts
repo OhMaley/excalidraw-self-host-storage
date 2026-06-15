@@ -49,3 +49,12 @@ export function createWorkspace(name: string, description: string | null): Promi
         "Failed to create workspace"
     );
 }
+
+export async function deleteWorkspace(id: string): Promise<void> {
+    const res = await apiFetch(`${API_BASE}/workspaces/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+    });
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, "Failed to delete workspace");
+    }
+}

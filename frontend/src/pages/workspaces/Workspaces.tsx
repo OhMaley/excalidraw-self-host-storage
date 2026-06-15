@@ -3,10 +3,12 @@ import { Separator } from "radix-ui";
 
 import { WorkspacesBody } from "./WorkspacesBody";
 import { NewWorkspaceDialog } from "@components/NewWorkspaceDialog";
+import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
 import { useToast } from "@hooks/useToast";
 import { useWorkspaces } from "@contexts/WorkspacesContext";
 import type { Workspace } from "@services/workspaces";
 import { getCollectionCount } from "@services/collections";
+import { deleteWorkspace } from "@services/workspaces";
 import PlusIcon from "../../assets/icons/plus.svg?react";
 import styles from "./Workspaces.module.scss";
 
@@ -16,9 +18,10 @@ function toCountEntry(workspaceId: string): Promise<[string, number]> {
 
 export default function Workspaces() {
     const { showToast } = useToast();
-    const { workspaces, loading, addWorkspace } = useWorkspaces();
+    const { workspaces, loading, addWorkspace, removeWorkspace } = useWorkspaces();
     const [collectionCounts, setCollectionCounts] = useState<Record<string, number>>({});
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [pendingDelete, setPendingDelete] = useState<Workspace | null>(null);
 
     useEffect(() => {
         if (loading) return;
@@ -31,6 +34,17 @@ export default function Workspaces() {
 
     function handleWorkspaceCreated(workspace: Workspace) {
         addWorkspace(workspace);
+    }
+
+    async function handleDeleteConfirm() {
+        if (!pendingDelete) return;
+        try {
+            await deleteWorkspace(pendingDelete.id);
+            removeWorkspace(pendingDelete.id);
+            setPendingDelete(null);
+        } catch {
+            showToast({ title: "Failed to delete workspace", variant: "error" });
+        }
     }
 
     const privateWorkspaces = workspaces.filter((w) => w.is_private);
@@ -54,11 +68,24 @@ export default function Workspaces() {
                 privateWorkspaces={privateWorkspaces}
                 teamWorkspaces={teamWorkspaces}
                 collectionCounts={collectionCounts}
+                onDelete={setPendingDelete}
             />
             <NewWorkspaceDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 onCreated={handleWorkspaceCreated}
+            />
+            <DeleteConfirmDialog
+                open={pendingDelete !== null}
+                title="Delete workspace"
+                description={
+                    <>
+                        Are you sure you want to delete <strong>{pendingDelete?.name}</strong>? This
+                        will permanently delete all its collections and drawings.
+                    </>
+                }
+                onClose={() => setPendingDelete(null)}
+                onConfirm={() => void handleDeleteConfirm()}
             />
         </div>
     );

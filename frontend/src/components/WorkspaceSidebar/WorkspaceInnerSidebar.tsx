@@ -11,7 +11,6 @@ import { useToast } from "@hooks/useToast";
 import { getInitials } from "@utils/stringUtils";
 import { getColorFromId } from "@utils/colorUtils";
 import FolderIcon from "../../assets/icons/folder.svg?react";
-import GearIcon from "../../assets/icons/gear.svg?react";
 import PlusIcon from "../../assets/icons/plus.svg?react";
 import UsersIcon from "../../assets/icons/users.svg?react";
 import styles from "./WorkspaceSidebar.module.scss";
@@ -105,10 +104,6 @@ export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarP
                     <FolderIcon className={styles.navIcon} />
                     <span className={styles.navLabel}>Dashboard</span>
                 </NavLink>
-                <button className={styles.navItem} aria-disabled="true">
-                    <GearIcon className={styles.navIcon} />
-                    <span className={styles.navLabel}>Workspace Settings</span>
-                </button>
                 {workspace && !workspace.is_private && (
                     <button className={styles.navItem} aria-disabled="true">
                         <UsersIcon className={styles.navIcon} />

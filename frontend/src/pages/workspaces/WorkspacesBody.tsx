@@ -13,14 +13,16 @@ interface WorkspacesBodyProps {
     readonly privateWorkspaces: Workspace[];
     readonly teamWorkspaces: Workspace[];
     readonly collectionCounts: Record<string, number>;
+    readonly onDelete: (workspace: Workspace) => void;
 }
 
 interface WorkspaceCardListProps {
     readonly workspaces: Workspace[];
     readonly collectionCounts: Record<string, number>;
+    readonly onDelete: (workspace: Workspace) => void;
 }
 
-function WorkspaceCardList({ workspaces, collectionCounts }: WorkspaceCardListProps) {
+function WorkspaceCardList({ workspaces, collectionCounts, onDelete }: WorkspaceCardListProps) {
     const navigate = useNavigate();
     return (
         <>
@@ -30,6 +32,7 @@ function WorkspaceCardList({ workspaces, collectionCounts }: WorkspaceCardListPr
                     workspace={w}
                     collectionCount={collectionCounts[w.id] ?? 0}
                     onClick={() => void navigate(`/workspaces/${w.id}`)}
+                    onDelete={() => onDelete(w)}
                 />
             ))}
         </>
@@ -41,6 +44,7 @@ export function WorkspacesBody({
     privateWorkspaces,
     teamWorkspaces,
     collectionCounts,
+    onDelete,
 }: WorkspacesBodyProps) {
     if (loading)
         return (
@@ -55,6 +59,7 @@ export function WorkspacesBody({
                 <WorkspaceCardList
                     workspaces={privateWorkspaces}
                     collectionCounts={collectionCounts}
+                    onDelete={onDelete}
                 />
             </WorkspaceSection>
 
@@ -66,6 +71,7 @@ export function WorkspacesBody({
                 <WorkspaceCardList
                     workspaces={teamWorkspaces}
                     collectionCounts={collectionCounts}
+                    onDelete={onDelete}
                 />
                 {teamWorkspaces.length === 0 && (
                     <p className={styles.emptyMessage}>
