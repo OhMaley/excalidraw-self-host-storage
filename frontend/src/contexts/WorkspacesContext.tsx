@@ -7,6 +7,7 @@ interface WorkspacesContextValue {
     readonly workspaces: Workspace[];
     readonly loading: boolean;
     readonly addWorkspace: (ws: Workspace) => void;
+    readonly removeWorkspace: (id: string) => void;
 }
 
 const WorkspacesContext = createContext<WorkspacesContextValue | null>(null);
@@ -29,8 +30,12 @@ export function WorkspacesProvider({ children }: WorkspacesProviderProps) {
         setWorkspaces((prev) => [...prev, ws]);
     }, []);
 
+    const removeWorkspace = useCallback((id: string) => {
+        setWorkspaces((prev) => prev.filter((ws) => ws.id !== id));
+    }, []);
+
     return (
-        <WorkspacesContext.Provider value={{ workspaces, loading, addWorkspace }}>
+        <WorkspacesContext.Provider value={{ workspaces, loading, addWorkspace, removeWorkspace }}>
             {children}
         </WorkspacesContext.Provider>
     );

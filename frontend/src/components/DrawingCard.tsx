@@ -4,8 +4,10 @@ import { DropdownMenu, Tooltip } from "radix-ui";
 // Services
 import type { Drawing } from "@services/drawings";
 
+// Components
+import { CardMenu, cardMenuStyles } from "@components/CardMenu";
+
 // Icons
-import DotsIcon from "../assets/icons/dots.svg?react";
 import ThrashIcon from "../assets/icons/trash.svg?react";
 import PenIcon from "../assets/icons/pencil.svg?react";
 
@@ -57,28 +59,24 @@ interface DrawingCardMenuProps {
 
 function DrawingCardMenu({ onEdit, onDelete }: DrawingCardMenuProps) {
     return (
-        <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-                <button type="button" className={styles.menuButton} aria-label="Drawing options">
-                    <DotsIcon className={styles.menuButtonIcon} />
-                </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-                <DropdownMenu.Content className={styles.menuContent} align="end" sideOffset={4}>
-                    <DropdownMenu.Item className={styles.menuItem} onSelect={() => onEdit?.()}>
-                        <PenIcon className={styles.dropdownMenuItemIcon} />
-                        Edit
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item
-                        className={`${styles.menuItem} ${styles.menuItemDelete}`}
-                        onSelect={() => onDelete?.()}
-                    >
-                        <ThrashIcon className={styles.dropdownMenuItemIcon} />
-                        Delete
-                    </DropdownMenu.Item>
-                </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-        </DropdownMenu.Root>
+        <CardMenu
+            label="Drawing options"
+            triggerClassName={styles.menuButton}
+            iconClassName={styles.menuButtonIcon}
+            contentClassName={cardMenuStyles.content}
+        >
+            <DropdownMenu.Item className={cardMenuStyles.item} onSelect={() => onEdit?.()}>
+                <PenIcon className={cardMenuStyles.itemIcon} />
+                Edit
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+                className={`${cardMenuStyles.item} ${cardMenuStyles.itemDelete}`}
+                onSelect={() => onDelete?.()}
+            >
+                <ThrashIcon className={cardMenuStyles.itemIcon} />
+                Delete
+            </DropdownMenu.Item>
+        </CardMenu>
     );
 }
 
