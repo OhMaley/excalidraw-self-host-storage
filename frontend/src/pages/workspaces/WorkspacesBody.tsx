@@ -13,16 +13,23 @@ interface WorkspacesBodyProps {
     readonly privateWorkspaces: Workspace[];
     readonly teamWorkspaces: Workspace[];
     readonly collectionCounts: Record<string, number>;
+    readonly onEdit: (workspace: Workspace) => void;
     readonly onDelete: (workspace: Workspace) => void;
 }
 
 interface WorkspaceCardListProps {
     readonly workspaces: Workspace[];
     readonly collectionCounts: Record<string, number>;
+    readonly onEdit: (workspace: Workspace) => void;
     readonly onDelete: (workspace: Workspace) => void;
 }
 
-function WorkspaceCardList({ workspaces, collectionCounts, onDelete }: WorkspaceCardListProps) {
+function WorkspaceCardList({
+    workspaces,
+    collectionCounts,
+    onEdit,
+    onDelete,
+}: WorkspaceCardListProps) {
     const navigate = useNavigate();
     return (
         <>
@@ -32,6 +39,7 @@ function WorkspaceCardList({ workspaces, collectionCounts, onDelete }: Workspace
                     workspace={w}
                     collectionCount={collectionCounts[w.id] ?? 0}
                     onClick={() => void navigate(`/workspaces/${w.id}`)}
+                    onEdit={() => onEdit(w)}
                     onDelete={() => onDelete(w)}
                 />
             ))}
@@ -44,6 +52,7 @@ export function WorkspacesBody({
     privateWorkspaces,
     teamWorkspaces,
     collectionCounts,
+    onEdit,
     onDelete,
 }: WorkspacesBodyProps) {
     if (loading)
@@ -59,6 +68,7 @@ export function WorkspacesBody({
                 <WorkspaceCardList
                     workspaces={privateWorkspaces}
                     collectionCounts={collectionCounts}
+                    onEdit={onEdit}
                     onDelete={onDelete}
                 />
             </WorkspaceSection>
@@ -71,6 +81,7 @@ export function WorkspacesBody({
                 <WorkspaceCardList
                     workspaces={teamWorkspaces}
                     collectionCounts={collectionCounts}
+                    onEdit={onEdit}
                     onDelete={onDelete}
                 />
                 {teamWorkspaces.length === 0 && (

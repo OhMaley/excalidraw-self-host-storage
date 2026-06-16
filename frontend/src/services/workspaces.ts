@@ -2,7 +2,7 @@
 import { HttpError } from "@utils/httpError";
 
 // Services
-import { API_BASE, apiFetch, postJson } from "@services/api";
+import { API_BASE, apiFetch, patchJson, postJson } from "@services/api";
 
 interface WorkspaceUser {
     id: string;
@@ -47,6 +47,18 @@ export function createWorkspace(name: string, description: string | null): Promi
         `${API_BASE}/workspaces`,
         { name, description },
         "Failed to create workspace"
+    );
+}
+
+export function updateWorkspace(
+    id: string,
+    name: string,
+    description: string | null
+): Promise<Workspace> {
+    return patchJson<Workspace>(
+        `${API_BASE}/workspaces/${encodeURIComponent(id)}`,
+        { name, description },
+        "Failed to update workspace"
     );
 }
 

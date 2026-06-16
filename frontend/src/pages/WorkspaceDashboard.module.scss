@@ -46,25 +46,10 @@
 // ── Workspace options menu ────────────────────────────────────────────────────
 
 .menuButton {
-    height: auto;
-    background-color: transparent;
-    color: var(--color-text);
-    padding: 0.375rem;
-    border-radius: var(--border-radius-sm);
-    transition: background-color 0.15s ease;
-
-    &:hover {
-        background-color: var(--color-background-gray);
-    }
-
-    &:focus {
-        border-color: transparent;
-    }
+    @include card-menu.header-trigger-button;
 }
 
 .menuButtonIcon {
-    width: 1.125rem;
-    height: 1.125rem;
-    display: block;
+    @include card-menu.menu-button-icon(1.125rem);
 }
 
