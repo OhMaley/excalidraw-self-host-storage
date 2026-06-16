@@ -15,6 +15,7 @@ interface WorkspaceCardProps {
     readonly workspace: Workspace;
     readonly collectionCount: number;
     readonly onClick?: () => void;
+    readonly onEdit?: () => void;
     readonly onDelete?: () => void;
 }
 
@@ -22,6 +23,7 @@ export function WorkspaceCard({
     workspace,
     collectionCount,
     onClick,
+    onEdit,
     onDelete,
 }: WorkspaceCardProps) {
     const initials = getInitials(workspace.name);
@@ -51,9 +53,10 @@ export function WorkspaceCard({
                     </div>
                 </div>
             </button>
-            {!workspace.is_private && onDelete && (
+            {onEdit && (
                 <WorkspaceMenu
-                    onDelete={onDelete}
+                    onEdit={onEdit}
+                    onDelete={workspace.is_private ? undefined : onDelete}
                     triggerClassName={styles.menuButton}
                     iconClassName={styles.menuButtonIcon}
                 />

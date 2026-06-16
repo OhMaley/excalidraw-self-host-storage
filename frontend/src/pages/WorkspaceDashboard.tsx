@@ -8,11 +8,12 @@ import { useWorkspaces } from "@contexts/WorkspacesContext";
 import { useToast } from "@hooks/useToast";
 
 // Services
-import { deleteWorkspace } from "@services/workspaces";
+import { deleteWorkspace, updateWorkspace } from "@services/workspaces";
 
 // Components
 import { WorkspaceDrawingSection } from "@components/WorkspaceDrawingSection";
 import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
+import { EditWorkspaceDialog } from "@components/EditWorkspaceDialog";
 import { WorkspaceMenu } from "@components/WorkspaceMenu";
 import { VScrollbar } from "@components/VScrollbar";
 
@@ -26,13 +27,19 @@ export default function WorkspaceDashboard() {
     const { wsId } = useParams<{ wsId: string }>();
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const { workspaces, removeWorkspace } = useWorkspaces();
+    const { workspaces, replaceWorkspace, removeWorkspace } = useWorkspaces();
     const { recentlyVisited, recentlyModified, visitedAtMap, collectionNameMap, loading } =
         useWorkspaceDashboard(wsId);
 
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     const workspace = workspaces.find((w) => w.id === wsId);
+
+    function handleEditConfirm(name: string, description: string | null): Promise<void> {
+        if (!wsId) return Promise.reject(new Error("No workspace"));
+        return updateWorkspace(wsId, name, description).then(replaceWorkspace);
+    }
 
     async function handleDeleteConfirm() {
         if (!wsId) return;
@@ -58,9 +65,12 @@ export default function WorkspaceDashboard() {
                         <PlusIcon className={styles.startButtonIcon} />
                         Start drawing
                     </button>
-                    {workspace && !workspace.is_private && (
+                    {workspace && (
                         <WorkspaceMenu
-                            onDelete={() => setDeleteDialogOpen(true)}
+                            onEdit={() => setEditDialogOpen(true)}
+                            onDelete={
+                                workspace.is_private ? undefined : () => setDeleteDialogOpen(true)
+                            }
                             triggerClassName={styles.menuButton}
                             iconClassName={styles.menuButtonIcon}
                         />
@@ -91,6 +101,12 @@ export default function WorkspaceDashboard() {
                 </ScrollArea.Viewport>
                 <VScrollbar />
             </ScrollArea.Root>
+
+            <EditWorkspaceDialog
+                workspace={editDialogOpen ? (workspace ?? null) : null}
+                onClose={() => setEditDialogOpen(false)}
+                onConfirm={handleEditConfirm}
+            />
 
             <DeleteConfirmDialog
                 open={deleteDialogOpen}

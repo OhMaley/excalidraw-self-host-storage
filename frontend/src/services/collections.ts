@@ -2,7 +2,7 @@
 import { HttpError } from "@utils/httpError";
 
 // Services
-import { API_BASE, apiFetch, postJson } from "@services/api";
+import { API_BASE, apiFetch, patchJson, postJson } from "@services/api";
 
 export interface Collection {
     id: string;
@@ -65,24 +65,17 @@ export function createCollection(
     );
 }
 
-export async function updateCollection(
+export function updateCollection(
     workspaceId: string,
     collectionId: string,
     name: string,
     description: string | null
 ): Promise<Collection> {
-    const res = await apiFetch(
+    return patchJson<Collection>(
         `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, description }),
-        }
+        { name, description },
+        "Failed to update collection"
     );
-    if (!res.ok) {
-        throw new HttpError(res.status, res.statusText, "Failed to update collection");
-    }
-    return (await res.json()) as Collection;
 }
 
 export async function getCollectionCount(workspaceId: string): Promise<number> {

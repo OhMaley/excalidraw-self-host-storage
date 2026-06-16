@@ -2,6 +2,7 @@
 @use "../styles/tooltip";
 @use "../styles/scroll-area";
 @use "../styles/popup-item";
+@use "../styles/card-menu";
 
 // ── Page header ───────────────────────────────────────────────────────────────
 
@@ -290,34 +291,11 @@
 // ── Collection options menu ───────────────────────────────────────────────────
 
 .optionsButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--button-size-md);
-    height: var(--button-size-md);
-    padding: 0;
-    flex-shrink: 0;
-    background-color: var(--color-background-gray);
-    border: 1px solid transparent;
-    border-radius: var(--border-radius-sm);
-    color: var(--color-on-surface);
-    cursor: pointer;
-    transition:
-        background-color 120ms ease,
-        border-color 120ms ease;
-
-    &:hover,
-    &[data-state="open"] {
-        background-color: var(--button-hover-bg);
-        border-color: var(--default-border-color);
-    }
+    @include card-menu.header-trigger-button;
 }
 
 .optionsButtonIcon {
-    width: 1.125rem;
-    height: 1.125rem;
-    display: block;
-    flex-shrink: 0;
+    @include card-menu.menu-button-icon(1.125rem);
 }
 
 .optionsMenuContent {

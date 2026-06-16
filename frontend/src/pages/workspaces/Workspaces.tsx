@@ -3,12 +3,13 @@ import { Separator } from "radix-ui";
 
 import { WorkspacesBody } from "./WorkspacesBody";
 import { NewWorkspaceDialog } from "@components/NewWorkspaceDialog";
+import { EditWorkspaceDialog } from "@components/EditWorkspaceDialog";
 import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
 import { useToast } from "@hooks/useToast";
 import { useWorkspaces } from "@contexts/WorkspacesContext";
 import type { Workspace } from "@services/workspaces";
 import { getCollectionCount } from "@services/collections";
-import { deleteWorkspace } from "@services/workspaces";
+import { deleteWorkspace, updateWorkspace } from "@services/workspaces";
 import PlusIcon from "../../assets/icons/plus.svg?react";
 import styles from "./Workspaces.module.scss";
 
@@ -18,9 +19,11 @@ function toCountEntry(workspaceId: string): Promise<[string, number]> {
 
 export default function Workspaces() {
     const { showToast } = useToast();
-    const { workspaces, loading, addWorkspace, removeWorkspace } = useWorkspaces();
+    const { workspaces, loading, addWorkspace, replaceWorkspace, removeWorkspace } =
+        useWorkspaces();
     const [collectionCounts, setCollectionCounts] = useState<Record<string, number>>({});
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [editTarget, setEditTarget] = useState<Workspace | null>(null);
     const [pendingDelete, setPendingDelete] = useState<Workspace | null>(null);
 
     useEffect(() => {
@@ -34,6 +37,11 @@ export default function Workspaces() {
 
     function handleWorkspaceCreated(workspace: Workspace) {
         addWorkspace(workspace);
+    }
+
+    function handleEditConfirm(name: string, description: string | null): Promise<void> {
+        if (!editTarget) return Promise.reject(new Error("No workspace selected"));
+        return updateWorkspace(editTarget.id, name, description).then(replaceWorkspace);
     }
 
     async function handleDeleteConfirm() {
@@ -68,12 +76,18 @@ export default function Workspaces() {
                 privateWorkspaces={privateWorkspaces}
                 teamWorkspaces={teamWorkspaces}
                 collectionCounts={collectionCounts}
+                onEdit={setEditTarget}
                 onDelete={setPendingDelete}
             />
             <NewWorkspaceDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 onCreated={handleWorkspaceCreated}
+            />
+            <EditWorkspaceDialog
+                workspace={editTarget}
+                onClose={() => setEditTarget(null)}
+                onConfirm={handleEditConfirm}
             />
             <DeleteConfirmDialog
                 open={pendingDelete !== null}

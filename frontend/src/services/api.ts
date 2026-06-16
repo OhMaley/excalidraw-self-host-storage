@@ -30,9 +30,14 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
     });
 }
 
-export async function postJson<T>(url: string, body: unknown, errorMessage: string): Promise<T> {
+async function sendJson<T>(
+    method: string,
+    url: string,
+    body: unknown,
+    errorMessage: string
+): Promise<T> {
     const res = await apiFetch(url, {
-        method: "POST",
+        method,
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(body),
     });
@@ -40,4 +45,12 @@ export async function postJson<T>(url: string, body: unknown, errorMessage: stri
         throw new HttpError(res.status, res.statusText, errorMessage);
     }
     return (await res.json()) as T;
+}
+
+export function postJson<T>(url: string, body: unknown, errorMessage: string): Promise<T> {
+    return sendJson<T>("POST", url, body, errorMessage);
+}
+
+export function patchJson<T>(url: string, body: unknown, errorMessage: string): Promise<T> {
+    return sendJson<T>("PATCH", url, body, errorMessage);
 }
