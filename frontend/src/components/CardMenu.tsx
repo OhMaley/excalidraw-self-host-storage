@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { DropdownMenu } from "radix-ui";
-import DotsIcon from "../assets/icons/dots.svg?react";
+import DotsIcon from "@assets/icons/dots.svg?react";
 import styles from "./CardMenu.module.scss";
 
 export { styles as cardMenuStyles };

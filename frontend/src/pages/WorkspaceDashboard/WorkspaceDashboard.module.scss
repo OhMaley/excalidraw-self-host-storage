@@ -1,6 +1,6 @@
-@use "../styles/page-layout";
-@use "../styles/scroll-area";
-@use "../styles/card-menu";
+@use "../../styles/page-layout";
+@use "../../styles/scroll-area";
+@use "../../styles/card-menu";
 
 // ── Page header ───────────────────────────────────────────────────────────────
 
@@ -13,9 +13,7 @@
 }
 
 .separator {
-    height: 1px;
-    background-color: var(--color-on-background-gray);
-    margin-bottom: 1.5rem;
+    @include page-layout.separator;
 }
 
 .pageTitle {

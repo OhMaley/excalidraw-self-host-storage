@@ -1,3 +1,4 @@
+@use "../../styles/avatar";
 @use "../../styles/icon-button";
 
 .section {
@@ -128,17 +129,7 @@
 }
 
 .workspaceAvatar {
-    flex-shrink: 0;
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: var(--border-radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
+    @include avatar.colored-avatar(1.75rem, 0.6875rem, var(--border-radius-sm));
 }
 
 .workspaceName {
@@ -193,10 +184,8 @@
 // ── Bottom slot ────────────────────────────────────────────
 
 .sidebarBottom {
-    position: sticky;
-    bottom: 0;
-    margin-top: auto;
-    padding-top: 0.5rem;
+    flex-shrink: 0;
+    padding: 0.5rem;
     background-color: var(--island-bg-color);
     border-top: 1px solid var(--default-border-color);
 }

@@ -5,9 +5,9 @@ import { Outlet } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 
 // Types
-import type { Role } from "@auth/AuthContext";
+import type { Role } from "@contexts/AuthContext";
 
-const AccessDenied = lazy(() => import("@pages/AccessDenied"));
+const AccessDenied = lazy(() => import("@components/ErrorPages/AccessDenied"));
 
 interface RequireRoleProps {
     requiresRoleAmong: Role[];

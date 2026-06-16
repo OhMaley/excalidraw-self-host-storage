@@ -31,3 +31,12 @@
     background-color: var(--color-on-background-gray);
     position: relative;
 }
+
+// Pins a section title to the top of a ScrollArea.Viewport while scrolling
+// past it, with a matching background so content doesn't show through.
+@mixin sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--color-background-gray);
+}

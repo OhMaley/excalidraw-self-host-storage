@@ -3,13 +3,15 @@ import { useToast } from "@hooks/useToast";
 import { fetchWorkspaceContent } from "@services/workspace";
 import { type Collection } from "@services/collections";
 
-interface UseWorkspaceMetadataResult {
+interface UseWorkspaceTagsAndCollectionsResult {
     readonly collections: Collection[];
     readonly availableTags: string[];
     readonly addTags: (tags: string[]) => void;
 }
 
-export function useWorkspaceMetadata(wsId: string | undefined): UseWorkspaceMetadataResult {
+export function useWorkspaceTagsAndCollections(
+    wsId: string | undefined
+): UseWorkspaceTagsAndCollectionsResult {
     const { showToast } = useToast();
 
     const [collections, setCollections] = useState<Collection[]>([]);

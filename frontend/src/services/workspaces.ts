@@ -1,8 +1,5 @@
-// Utils
-import { HttpError } from "@utils/httpError";
-
 // Services
-import { API_BASE, apiFetch, patchJson, postJson } from "@services/api";
+import { API_BASE, deleteRequest, getJson, patchJson, postJson } from "@services/api";
 
 interface WorkspaceUser {
     id: string;
@@ -20,26 +17,15 @@ export interface Workspace {
     updated_at: string | null;
 }
 
-export async function listWorkspaces(): Promise<Workspace[]> {
-    const res = await apiFetch(`${API_BASE}/workspaces`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-    });
-    if (!res.ok) {
-        throw new HttpError(res.status, res.statusText, "Failed to load workspaces");
-    }
-    return (await res.json()) as Workspace[];
+export function listWorkspaces(): Promise<Workspace[]> {
+    return getJson<Workspace[]>(`${API_BASE}/workspaces`, "Failed to load workspaces");
 }
 
-export async function getWorkspace(id: string): Promise<Workspace> {
-    const res = await apiFetch(`${API_BASE}/workspaces/${encodeURIComponent(id)}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-    });
-    if (!res.ok) {
-        throw new HttpError(res.status, res.statusText, "Failed to load workspace");
-    }
-    return (await res.json()) as Workspace;
+export function getWorkspace(id: string): Promise<Workspace> {
+    return getJson<Workspace>(
+        `${API_BASE}/workspaces/${encodeURIComponent(id)}`,
+        "Failed to load workspace"
+    );
 }
 
 export function createWorkspace(name: string, description: string | null): Promise<Workspace> {
@@ -62,11 +48,9 @@ export function updateWorkspace(
     );
 }
 
-export async function deleteWorkspace(id: string): Promise<void> {
-    const res = await apiFetch(`${API_BASE}/workspaces/${encodeURIComponent(id)}`, {
-        method: "DELETE",
-    });
-    if (!res.ok) {
-        throw new HttpError(res.status, res.statusText, "Failed to delete workspace");
-    }
+export function deleteWorkspace(id: string): Promise<void> {
+    return deleteRequest(
+        `${API_BASE}/workspaces/${encodeURIComponent(id)}`,
+        "Failed to delete workspace"
+    );
 }

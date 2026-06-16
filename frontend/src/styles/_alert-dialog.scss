@@ -1,4 +1,5 @@
 @use "./modal-base";
+@use "./dialog-form";
 
 .overlay {
     @include modal-base.overlay(0.35);
@@ -31,17 +32,8 @@
 }
 
 .cancelButton {
-    background-color: transparent;
-    color: var(--color-text);
-    border: 1px solid var(--color-on-background-gray);
+    @include dialog-form.cancel-button;
     padding: 0 1rem;
-
-    &:hover {
-        background-color: var(--color-background-gray);
-    }
-    &:active {
-        background-color: var(--color-on-background-gray);
-    }
 }
 
 .deleteButton {

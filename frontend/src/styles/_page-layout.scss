@@ -7,20 +7,16 @@
     background-color: var(--color-background-gray);
 }
 
-.header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1.5rem;
-
-    h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--color-on-surface);
-    }
+// Shared 1px section divider used below page headers.
+@mixin separator($margin-bottom: 1.5rem) {
+    height: 1px;
+    background-color: var(--color-on-background-gray);
+    margin-bottom: $margin-bottom;
 }
 
-.placeholder {
+// Shared muted hint text for empty states / placeholders.
+@mixin empty-text {
+    margin: 0;
     font-size: 0.875rem;
     color: var(--color-text);
     opacity: 0.5;

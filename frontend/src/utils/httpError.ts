@@ -13,3 +13,8 @@ export class HttpError extends Error {
         this.statusText = statusText;
     }
 }
+
+export function toHttpError(error: unknown, message: string): HttpError {
+    if (error instanceof HttpError) return error;
+    return new HttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Fetch error", message);
+}

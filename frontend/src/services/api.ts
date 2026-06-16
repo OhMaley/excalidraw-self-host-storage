@@ -19,7 +19,7 @@ async function getToken(): Promise<string | undefined> {
     return _keycloak.token;
 }
 
-export async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const token = await getToken();
     return fetch(url, {
         ...options,
@@ -53,4 +53,22 @@ export function postJson<T>(url: string, body: unknown, errorMessage: string): P
 
 export function patchJson<T>(url: string, body: unknown, errorMessage: string): Promise<T> {
     return sendJson<T>("PATCH", url, body, errorMessage);
+}
+
+export async function getJson<T>(url: string, errorMessage: string): Promise<T> {
+    const res = await apiFetch(url, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+    });
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, errorMessage);
+    }
+    return (await res.json()) as T;
+}
+
+export async function deleteRequest(url: string, errorMessage: string): Promise<void> {
+    const res = await apiFetch(url, { method: "DELETE" });
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, errorMessage);
+    }
 }

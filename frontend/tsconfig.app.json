@@ -32,7 +32,8 @@
             "@services/*": ["./src/services/*"],
             "@utils/*": ["./src/utils/*"],
             "@auth/*": ["./src/auth/*"],
-            "@contexts/*": ["./src/contexts/*"]
+            "@contexts/*": ["./src/contexts/*"],
+            "@assets/*": ["./src/assets/*"],
         }
     },
     "include": ["src"]

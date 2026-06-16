@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { Separator } from "radix-ui";
+import { ScrollArea, Separator } from "radix-ui";
 
 import { WorkspacesBody } from "./WorkspacesBody";
-import { NewWorkspaceDialog } from "@components/NewWorkspaceDialog";
+import { VScrollbar } from "@components/VScrollbar";
+import { NewWorkspaceDialog } from "./NewWorkspaceDialog";
 import { EditWorkspaceDialog } from "@components/EditWorkspaceDialog";
 import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
 import { useToast } from "@hooks/useToast";
-import { useWorkspaces } from "@contexts/WorkspacesContext";
+import { useWorkspaces } from "@hooks/useWorkspaces";
 import type { Workspace } from "@services/workspaces";
 import { getCollectionCount } from "@services/collections";
 import { deleteWorkspace, updateWorkspace } from "@services/workspaces";
-import PlusIcon from "../../assets/icons/plus.svg?react";
+import PlusIcon from "@assets/icons/plus.svg?react";
 import styles from "./Workspaces.module.scss";
 
 function toCountEntry(workspaceId: string): Promise<[string, number]> {
@@ -71,14 +72,19 @@ export default function Workspaces() {
                 </button>
             </div>
             <Separator.Root className={styles.separator} />
-            <WorkspacesBody
-                loading={loading}
-                privateWorkspaces={privateWorkspaces}
-                teamWorkspaces={teamWorkspaces}
-                collectionCounts={collectionCounts}
-                onEdit={setEditTarget}
-                onDelete={setPendingDelete}
-            />
+            <ScrollArea.Root className={styles.scrollRoot}>
+                <ScrollArea.Viewport className={styles.scrollViewport}>
+                    <WorkspacesBody
+                        loading={loading}
+                        privateWorkspaces={privateWorkspaces}
+                        teamWorkspaces={teamWorkspaces}
+                        collectionCounts={collectionCounts}
+                        onEdit={setEditTarget}
+                        onDelete={setPendingDelete}
+                    />
+                </ScrollArea.Viewport>
+                <VScrollbar />
+            </ScrollArea.Root>
             <NewWorkspaceDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}

@@ -4,7 +4,7 @@ import { Dialog, Form, Select } from "radix-ui";
 // Components
 import { DescriptionField } from "@components/DescriptionField";
 import { NameFormField } from "@components/NameFormField";
-import { TagsInput } from "@components/TagsInput";
+import { TagsInput } from "./TagsInput";
 
 // Services
 import type { Drawing, DrawingUpdate } from "@services/drawings";

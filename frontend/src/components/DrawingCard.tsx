@@ -8,8 +8,8 @@ import type { Drawing } from "@services/drawings";
 import { CardMenu, cardMenuStyles } from "@components/CardMenu";
 
 // Icons
-import ThrashIcon from "../assets/icons/trash.svg?react";
-import PenIcon from "../assets/icons/pencil.svg?react";
+import ThrashIcon from "@assets/icons/trash.svg?react";
+import PenIcon from "@assets/icons/pencil.svg?react";
 
 // Utils
 import { relativeTime } from "@utils/timeUtils";

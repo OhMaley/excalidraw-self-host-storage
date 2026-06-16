@@ -4,21 +4,21 @@ import { ScrollArea, Separator } from "radix-ui";
 
 // Hooks
 import { useWorkspaceDashboard } from "@hooks/useWorkspaceDashboard";
-import { useWorkspaces } from "@contexts/WorkspacesContext";
+import { useWorkspaces } from "@hooks/useWorkspaces";
 import { useToast } from "@hooks/useToast";
 
 // Services
 import { deleteWorkspace, updateWorkspace } from "@services/workspaces";
 
 // Components
-import { WorkspaceDrawingSection } from "@components/WorkspaceDrawingSection";
+import { WorkspaceDrawingSection } from "./WorkspaceDrawingSection";
 import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
 import { EditWorkspaceDialog } from "@components/EditWorkspaceDialog";
 import { WorkspaceMenu } from "@components/WorkspaceMenu";
 import { VScrollbar } from "@components/VScrollbar";
 
 // Icons
-import PlusIcon from "../assets/icons/plus.svg?react";
+import PlusIcon from "@assets/icons/plus.svg?react";
 
 // Styles
 import styles from "./WorkspaceDashboard.module.scss";
