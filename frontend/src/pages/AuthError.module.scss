@@ -1,5 +1,0 @@
-@use "../styles/error-page";
-
-.image {
-    @include error-page.image("../assets/images/undraw_connection_lost.svg", 800, 430.493);
-}

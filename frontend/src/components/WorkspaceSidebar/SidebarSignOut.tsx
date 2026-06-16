@@ -1,4 +1,4 @@
-import ExitIcon from "../../assets/icons/exit.svg?react";
+import ExitIcon from "@assets/icons/exit.svg?react";
 import styles from "./WorkspaceSidebar.module.scss";
 
 interface SidebarSignOutProps {

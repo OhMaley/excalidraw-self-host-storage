@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } fro
 
 // Components
 import { Excalidraw, WelcomeScreen } from "@excalidraw/excalidraw";
-import { TopRightUI } from "@components/TopRightUI";
-const NotFound = lazy(() => import("@pages/NotFound"));
+import { TopRightUI } from "./TopRightUI";
+const NotFound = lazy(() => import("@components/ErrorPages/NotFound"));
 
 // Hooks
 import { useStorage } from "@hooks/useStorage";
@@ -22,7 +22,7 @@ import "@excalidraw/excalidraw/index.css";
 
 // Utils
 import { hydrateScene } from "@utils/sceneUtils";
-import { HttpError, HttpStatus } from "@utils/httpError";
+import { HttpError, HttpStatus, toHttpError } from "@utils/httpError";
 import { saveDraft, loadDraft } from "@utils/draftStorage";
 
 type OnChangeElements = Parameters<NonNullable<ExcalidrawProps["onChange"]>>[0];
@@ -66,9 +66,10 @@ export default function ExcalidrawWrapper({ drawingId }: ExcalidrawWrapperProps)
                 setBackendState({ status: "ready", data });
             } catch (error) {
                 if (cancelled) return;
-                if (error instanceof HttpError) {
-                    setBackendState({ status: "error", error });
-                }
+                setBackendState({
+                    status: "error",
+                    error: toHttpError(error, "Failed to load drawing"),
+                });
             }
         };
 

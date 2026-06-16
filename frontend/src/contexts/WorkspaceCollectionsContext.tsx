@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import type { ReactNode } from "react";
 
 import { listCollections, type Collection } from "@services/collections";
 
-interface WorkspaceCollectionsContextValue {
+export interface WorkspaceCollectionsContextValue {
     readonly collections: Collection[];
     readonly loading: boolean;
     readonly addCollection: (col: Collection) => void;
@@ -11,7 +11,9 @@ interface WorkspaceCollectionsContextValue {
     readonly updateCollection: (col: Collection) => void;
 }
 
-const WorkspaceCollectionsContext = createContext<WorkspaceCollectionsContextValue | null>(null);
+export const WorkspaceCollectionsContext = createContext<WorkspaceCollectionsContextValue | null>(
+    null
+);
 
 interface WorkspaceCollectionsProviderProps {
     readonly wsId: string | undefined;
@@ -56,11 +58,4 @@ export function WorkspaceCollectionsProvider({
             {children}
         </WorkspaceCollectionsContext.Provider>
     );
-}
-
-export function useWorkspaceCollections(): WorkspaceCollectionsContextValue {
-    const ctx = useContext(WorkspaceCollectionsContext);
-    if (!ctx)
-        throw new Error("useWorkspaceCollections must be used within WorkspaceCollectionsProvider");
-    return ctx;
 }

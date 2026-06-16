@@ -109,4 +109,8 @@
     &:hover:not(:disabled) {
         background-color: var(--color-background-gray);
     }
+
+    &:active:not(:disabled) {
+        background-color: var(--color-on-background-gray);
+    }
 }

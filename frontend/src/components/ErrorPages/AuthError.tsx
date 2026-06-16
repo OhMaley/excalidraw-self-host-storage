@@ -1,4 +1,4 @@
-import { ErrorPage } from "@components/ErrorPage";
+import { ErrorPage } from "./ErrorPage";
 import styles from "./AuthError.module.scss";
 
 export default function AuthError() {

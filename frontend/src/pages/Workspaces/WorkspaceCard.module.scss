@@ -1,4 +1,5 @@
-@use "../styles/card-menu";
+@use "../../styles/avatar";
+@use "../../styles/card-menu";
 
 // ── Wrapper ───────────────────────────────────────────────────────────────────
 
@@ -49,17 +50,7 @@
 }
 
 .avatar {
-    flex-shrink: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 0.8125rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
+    @include avatar.colored-avatar;
 }
 
 .content {

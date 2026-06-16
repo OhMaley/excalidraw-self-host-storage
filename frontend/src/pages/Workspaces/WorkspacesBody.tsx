@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 
 import { WorkspaceSection } from "./WorkspaceSection";
-import { WorkspaceCard } from "@components/WorkspaceCard";
+import { WorkspaceCard } from "./WorkspaceCard";
 import { Spinner } from "@components/Spinner";
 import type { Workspace } from "@services/workspaces";
-import LockIcon from "../../assets/icons/lock.svg?react";
-import UsersIcon from "../../assets/icons/users.svg?react";
+import LockIcon from "@assets/icons/lock.svg?react";
+import UsersIcon from "@assets/icons/users.svg?react";
 import styles from "./Workspaces.module.scss";
 
 interface WorkspacesBodyProps {
@@ -57,8 +57,8 @@ export function WorkspacesBody({
 }: WorkspacesBodyProps) {
     if (loading)
         return (
-            <div className={styles.center}>
-                <Spinner size="2rem" />
+            <div className={styles.spinnerContainer}>
+                <Spinner size="1.5rem" />
             </div>
         );
 
@@ -85,7 +85,7 @@ export function WorkspacesBody({
                     onDelete={onDelete}
                 />
                 {teamWorkspaces.length === 0 && (
-                    <p className={styles.emptyMessage}>
+                    <p className={styles.emptyHint}>
                         You are not a member of any teams workspace yet.
                     </p>
                 )}

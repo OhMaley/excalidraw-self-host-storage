@@ -1,8 +1,8 @@
 import { DropdownMenu } from "radix-ui";
 
 import { CardMenu, cardMenuStyles } from "@components/CardMenu";
-import PencilIcon from "../assets/icons/pencil.svg?react";
-import TrashIcon from "../assets/icons/trash.svg?react";
+import PencilIcon from "@assets/icons/pencil.svg?react";
+import TrashIcon from "@assets/icons/trash.svg?react";
 
 interface WorkspaceMenuProps {
     readonly onEdit: () => void;

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 // Components
-import { UserDropdownMenu } from "@components/UserDropdownMenu";
+import { UserDropdownMenu } from "./UserDropdownMenu";
 
 // Hooks
 import { useAuth } from "@hooks/useAuth";

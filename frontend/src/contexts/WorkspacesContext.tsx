@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import type { ReactNode } from "react";
 
 import { listWorkspaces, type Workspace } from "@services/workspaces";
 
-interface WorkspacesContextValue {
+export interface WorkspacesContextValue {
     readonly workspaces: Workspace[];
     readonly loading: boolean;
     readonly addWorkspace: (ws: Workspace) => void;
@@ -11,7 +11,7 @@ interface WorkspacesContextValue {
     readonly removeWorkspace: (id: string) => void;
 }
 
-const WorkspacesContext = createContext<WorkspacesContextValue | null>(null);
+export const WorkspacesContext = createContext<WorkspacesContextValue | null>(null);
 
 interface WorkspacesProviderProps {
     readonly children: ReactNode;
@@ -46,10 +46,4 @@ export function WorkspacesProvider({ children }: WorkspacesProviderProps) {
             {children}
         </WorkspacesContext.Provider>
     );
-}
-
-export function useWorkspaces(): WorkspacesContextValue {
-    const ctx = useContext(WorkspacesContext);
-    if (!ctx) throw new Error("useWorkspaces must be used within WorkspacesProvider");
-    return ctx;
 }

@@ -15,11 +15,11 @@ interface RouteConfig {
  * Lazy-loaded pages (route-level splitting)     *
  * --------------------------------------------- */
 
-const Draw = lazy(() => import("@pages/Draw"));
+const Draw = lazy(() => import("@pages/Draw/Draw"));
 const Admin = lazy(() => import("@pages/Admin"));
-const Workspaces = lazy(() => import("@pages/workspaces/Workspaces"));
-const WorkspaceDashboard = lazy(() => import("@pages/WorkspaceDashboard"));
-const CollectionView = lazy(() => import("@pages/CollectionView"));
+const Workspaces = lazy(() => import("@pages/Workspaces/Workspaces"));
+const WorkspaceDashboard = lazy(() => import("@pages/WorkspaceDashboard/WorkspaceDashboard"));
+const CollectionView = lazy(() => import("@pages/CollectionView/CollectionView"));
 
 /* --------------------------------------------- *
  * Route groups                                  *

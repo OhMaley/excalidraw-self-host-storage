@@ -3,13 +3,13 @@ import { Avatar, DropdownMenu } from "radix-ui";
 import { Link } from "react-router-dom";
 
 // Icons
-import UserIcon from "../assets/icons/user.svg?react";
-import GearIcon from "../assets/icons/gear.svg?react";
-import ExitIcon from "../assets/icons/exit.svg?react";
-import FolderIcon from "../assets/icons/folder.svg?react";
+import UserIcon from "@assets/icons/user.svg?react";
+import GearIcon from "@assets/icons/gear.svg?react";
+import ExitIcon from "@assets/icons/exit.svg?react";
+import FolderIcon from "@assets/icons/folder.svg?react";
 
 // Type
-import type { User } from "@auth/AuthContext";
+import type { User } from "@contexts/AuthContext";
 
 // Utils
 import { getInitials } from "@utils/stringUtils";

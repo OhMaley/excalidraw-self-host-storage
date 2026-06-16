@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 // Components
 import { Spinner } from "@components/Spinner";
 
-const ExcalidrawWrapper = lazy(() => import("@components/ExcalidrawWrapper"));
+const ExcalidrawWrapper = lazy(() => import("./ExcalidrawWrapper"));
 
 export default function Draw() {
     const { drawingId } = useParams<{ drawingId: string }>();

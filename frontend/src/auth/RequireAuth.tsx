@@ -5,8 +5,8 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import { Spinner } from "@components/Spinner";
 
-// Pages
-const AuthError = lazy(() => import("@pages/AuthError"));
+// Components
+const AuthError = lazy(() => import("@components/ErrorPages/AuthError"));
 
 export const RequireAuth = () => {
     const { loading, isAuthenticated, error, login } = useAuth();

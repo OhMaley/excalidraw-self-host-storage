@@ -4,23 +4,23 @@ import { DropdownMenu, ScrollArea, Select, Separator, Tooltip } from "radix-ui";
 
 // Hooks
 import { useCollectionView } from "@hooks/useCollectionView";
-import { useWorkspaceMetadata } from "@hooks/useWorkspaceMetadata";
+import { useWorkspaceTagsAndCollections } from "@hooks/useWorkspaceTagsAndCollections";
 import { useToast } from "@hooks/useToast";
-import { useWorkspaceCollections } from "@contexts/WorkspaceCollectionsContext";
+import { useWorkspaceCollections } from "@hooks/useWorkspaceCollections";
 
 // Components
-import { DeleteCollectionDialog } from "@components/DeleteCollectionDialog";
-import { EditCollectionDialog } from "@components/EditCollectionDialog";
-import { DeleteDrawingDialog } from "@components/DeleteDrawingDialog";
-import { EditDrawingDialog } from "@components/EditDrawingDialog";
+import { DeleteCollectionDialog } from "./DeleteCollectionDialog";
+import { EditCollectionDialog } from "./EditCollectionDialog";
+import { DeleteDrawingDialog } from "./DeleteDrawingDialog";
+import { EditDrawingDialog } from "./EditDrawingDialog";
 import { DrawingCard } from "@components/DrawingCard";
 import { Spinner } from "@components/Spinner";
 import { VScrollbar } from "@components/VScrollbar";
-import DotsIcon from "../assets/icons/dots.svg?react";
-import PencilIcon from "../assets/icons/pencil.svg?react";
-import PlusIcon from "../assets/icons/plus.svg?react";
-import SearchIcon from "../assets/icons/search.svg?react";
-import TrashIcon from "../assets/icons/trash.svg?react";
+import DotsIcon from "@assets/icons/dots.svg?react";
+import PencilIcon from "@assets/icons/pencil.svg?react";
+import PlusIcon from "@assets/icons/plus.svg?react";
+import SearchIcon from "@assets/icons/search.svg?react";
+import TrashIcon from "@assets/icons/trash.svg?react";
 
 // Services
 import type { Collection } from "@services/collections";
@@ -414,7 +414,7 @@ export default function CollectionView() {
     const handleDeleteCollection = useDeleteCollection(wsId);
     const { collection, drawings, loading, handleDelete, handleEdit, handleEditCollection } =
         useCollectionView(wsId, colId);
-    const { collections, availableTags, addTags } = useWorkspaceMetadata(wsId);
+    const { collections, availableTags, addTags } = useWorkspaceTagsAndCollections(wsId);
     const { updateCollection } = useWorkspaceCollections();
 
     const handleEditAndSync = (drawing: Drawing, updates: DrawingUpdate) =>

@@ -2,17 +2,16 @@ import { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 
 import { Spinner } from "@components/Spinner";
-import { NewCollectionDialog } from "@components/NewCollectionDialog";
-import { SidebarSignOut } from "./SidebarSignOut";
+import { NewCollectionDialog } from "./NewCollectionDialog";
 import { getWorkspace, type Workspace } from "@services/workspaces";
 import { type Collection } from "@services/collections";
-import { useWorkspaceCollections } from "@contexts/WorkspaceCollectionsContext";
+import { useWorkspaceCollections } from "@hooks/useWorkspaceCollections";
 import { useToast } from "@hooks/useToast";
 import { getInitials } from "@utils/stringUtils";
 import { getColorFromId } from "@utils/colorUtils";
-import FolderIcon from "../../assets/icons/folder.svg?react";
-import PlusIcon from "../../assets/icons/plus.svg?react";
-import UsersIcon from "../../assets/icons/users.svg?react";
+import FolderIcon from "@assets/icons/folder.svg?react";
+import PlusIcon from "@assets/icons/plus.svg?react";
+import UsersIcon from "@assets/icons/users.svg?react";
 import styles from "./WorkspaceSidebar.module.scss";
 
 function navClass({ isActive }: { isActive: boolean }) {
@@ -69,10 +68,9 @@ function CollectionsList({ loading, collections, wsId, onNew }: CollectionsListP
 
 interface WorkspaceInnerSidebarProps {
     readonly wsId: string;
-    readonly onLogout: () => void;
 }
 
-export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarProps) {
+export function WorkspaceInnerSidebar({ wsId }: WorkspaceInnerSidebarProps) {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const { collections, loading, addCollection } = useWorkspaceCollections();
@@ -131,8 +129,6 @@ export function WorkspaceInnerSidebar({ wsId, onLogout }: WorkspaceInnerSidebarP
                     onNew={() => setDialogOpen(true)}
                 />
             </div>
-
-            <SidebarSignOut onLogout={onLogout} />
 
             <NewCollectionDialog
                 wsId={wsId}

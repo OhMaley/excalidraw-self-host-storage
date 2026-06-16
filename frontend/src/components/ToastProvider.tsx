@@ -3,8 +3,8 @@ import { useState, useCallback, useRef } from "react";
 // Components
 import { Toast } from "radix-ui";
 
-// Hooks
-import { ToastContext, type ToastMessage } from "@hooks/useToast";
+// Contexts
+import { ToastContext, type ToastMessage } from "@contexts/ToastContext";
 
 // Styles
 import styles from "./ToastProvider.module.scss";
