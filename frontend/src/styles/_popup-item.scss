@@ -26,3 +26,26 @@
         background-color: var(--color-background-gray);
     }
 }
+
+// Radix Select.Content popper for a single-choice dropdown (sort menus, role picker, ...).
+@mixin select-content {
+    @include popup-content;
+    min-width: var(--radix-select-trigger-width);
+    z-index: 20;
+}
+
+// Radix Select.Item for a single-choice dropdown, paired with select-content above.
+@mixin select-item {
+    display: flex;
+    align-items: center;
+    @include item-base;
+
+    &[data-highlighted] {
+        color: var(--color-on-surface);
+    }
+
+    &[data-state="checked"] {
+        color: var(--color-primary);
+        font-weight: 500;
+    }
+}

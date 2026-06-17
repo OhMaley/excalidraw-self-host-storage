@@ -6,6 +6,7 @@ interface DeleteConfirmDialogProps {
     readonly open: boolean;
     readonly title: string;
     readonly description: ReactNode;
+    readonly confirmLabel?: string;
     readonly onClose: () => void;
     readonly onConfirm: () => void;
 }
@@ -14,6 +15,7 @@ export function DeleteConfirmDialog({
     open,
     title,
     description,
+    confirmLabel = "Delete",
     onClose,
     onConfirm,
 }: DeleteConfirmDialogProps) {
@@ -46,7 +48,7 @@ export function DeleteConfirmDialog({
                                 className={styles.deleteButton}
                                 onClick={onConfirm}
                             >
-                                Delete
+                                {confirmLabel}
                             </button>
                         </AlertDialog.Action>
                     </div>

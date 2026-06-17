@@ -19,6 +19,7 @@ const Draw = lazy(() => import("@pages/Draw/Draw"));
 const Admin = lazy(() => import("@pages/Admin"));
 const Workspaces = lazy(() => import("@pages/Workspaces/Workspaces"));
 const WorkspaceDashboard = lazy(() => import("@pages/WorkspaceDashboard/WorkspaceDashboard"));
+const WorkspaceMembers = lazy(() => import("@pages/WorkspaceMembers/WorkspaceMembers"));
 const CollectionView = lazy(() => import("@pages/CollectionView/CollectionView"));
 
 /* --------------------------------------------- *
@@ -41,5 +42,6 @@ export const adminRoutes: RouteConfig[] = [{ path: "/admin", element: Admin }];
 export const shellRoutes: RouteConfig[] = [
     { path: "/workspaces", element: Workspaces },
     { path: "/workspaces/:wsId", element: WorkspaceDashboard },
+    { path: "/workspaces/:wsId/members", element: WorkspaceMembers },
     { path: "/workspaces/:wsId/collections/:colId", element: CollectionView },
 ];
