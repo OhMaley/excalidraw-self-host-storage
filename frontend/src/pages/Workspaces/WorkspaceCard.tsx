@@ -1,3 +1,5 @@
+import { Avatar } from "radix-ui";
+
 // Types
 import type { Workspace } from "@services/workspaces";
 
@@ -39,9 +41,9 @@ export function WorkspaceCard({
     return (
         <div className={styles.wrapper}>
             <button type="button" className={styles.card} onClick={onClick}>
-                <div className={styles.avatar} style={{ backgroundColor: avatarColor }}>
-                    {initials}
-                </div>
+                <Avatar.Root className={styles.avatar} style={{ backgroundColor: avatarColor }}>
+                    <Avatar.Fallback>{initials}</Avatar.Fallback>
+                </Avatar.Root>
                 <div className={styles.content}>
                     <h4 className={styles.name}>{workspace.name}</h4>
                     {workspace.description && (

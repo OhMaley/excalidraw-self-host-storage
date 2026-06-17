@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
+import { Avatar } from "radix-ui";
 
 import { Spinner } from "@components/Spinner";
 import { NewCollectionDialog } from "./NewCollectionDialog";
@@ -24,9 +25,12 @@ function WorkspaceHeader({ workspace }: { readonly workspace: Workspace | null }
     const initials = getInitials(workspace.name);
     return (
         <div className={styles.workspaceHeader}>
-            <div className={styles.workspaceAvatar} style={{ backgroundColor: avatarColor }}>
-                {initials}
-            </div>
+            <Avatar.Root
+                className={styles.workspaceAvatar}
+                style={{ backgroundColor: avatarColor }}
+            >
+                <Avatar.Fallback>{initials}</Avatar.Fallback>
+            </Avatar.Root>
             <span className={styles.workspaceName}>{workspace.name}</span>
         </div>
     );
