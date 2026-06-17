@@ -28,7 +28,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
-        "@redocly/cli": "^2.33.2",
+        "@redocly/cli": "^2.34.0",
         "@types/node": "^25.9.3",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
@@ -42,7 +42,7 @@
         "eslint-plugin-react-refresh": "^0.5.3",
         "eslint-plugin-sonarjs": "^4.0.3",
         "globals": "^17.6.0",
-        "jscpd": "^5.0.9",
+        "jscpd": "^5.0.10",
         "knip": "^6.17.1",
         "prettier": "^3.8.4",
         "sass": "^1.101.0",

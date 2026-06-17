@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DropdownMenu, ScrollArea, Select, Separator, Tooltip } from "radix-ui";
+import { DropdownMenu, ScrollArea, Separator, Tooltip } from "radix-ui";
 
 // Hooks
 import { useCollectionView } from "@hooks/useCollectionView";
@@ -14,12 +14,12 @@ import { EditCollectionDialog } from "./EditCollectionDialog";
 import { DeleteDrawingDialog } from "./DeleteDrawingDialog";
 import { EditDrawingDialog } from "./EditDrawingDialog";
 import { DrawingCard } from "@components/DrawingCard";
+import { SearchSortToolbar } from "@components/SearchSortToolbar";
 import { Spinner } from "@components/Spinner";
 import { VScrollbar } from "@components/VScrollbar";
 import DotsIcon from "@assets/icons/dots.svg?react";
 import PencilIcon from "@assets/icons/pencil.svg?react";
 import PlusIcon from "@assets/icons/plus.svg?react";
-import SearchIcon from "@assets/icons/search.svg?react";
 import TrashIcon from "@assets/icons/trash.svg?react";
 
 // Services
@@ -42,6 +42,10 @@ const SORT_LABELS: Record<SortOrder, string> = {
     created: "Date created",
     name: "Name",
 };
+
+const SORT_OPTIONS = (Object.entries(SORT_LABELS) as [SortOrder, string][]).map(
+    ([value, label]) => ({ value, label })
+);
 
 function applyFilter(drawings: Drawing[], query: string): Drawing[] {
     const q = query.trim().toLowerCase();
@@ -171,7 +175,7 @@ function CollectionPageHeader({
     );
 }
 
-interface CollectionToolbarProps {
+interface CollectionSearchSortToolbarProps {
     readonly searchQuery: string;
     readonly sortOrder: SortOrder;
     readonly sortDir: SortDir;
@@ -180,70 +184,26 @@ interface CollectionToolbarProps {
     readonly onSortDirToggle: () => void;
 }
 
-function CollectionToolbar({
+function CollectionSearchSortToolbar({
     searchQuery,
     sortOrder,
     sortDir,
     onSearchChange,
     onSortOrderChange,
     onSortDirToggle,
-}: CollectionToolbarProps) {
+}: CollectionSearchSortToolbarProps) {
     return (
-        <div className={styles.toolbar}>
-            <div className={styles.searchBar}>
-                <input
-                    className={styles.searchInput}
-                    type="search"
-                    placeholder="Search or filter results…"
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                />
-                <span className={styles.searchIcon} aria-hidden>
-                    <SearchIcon />
-                </span>
-            </div>
-            <div className={styles.sortControls}>
-                <Select.Root
-                    value={sortOrder}
-                    onValueChange={(v) => onSortOrderChange(v as SortOrder)}
-                >
-                    <Select.Trigger className={styles.sortTrigger} aria-label="Sort by">
-                        <Select.Value>{SORT_LABELS[sortOrder]}</Select.Value>
-                        <Select.Icon className={styles.sortChevron}>▾</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                        <Select.Content
-                            className={styles.selectContent}
-                            position="popper"
-                            sideOffset={4}
-                        >
-                            <Select.Viewport>
-                                {(Object.entries(SORT_LABELS) as [SortOrder, string][]).map(
-                                    ([value, label]) => (
-                                        <Select.Item
-                                            key={value}
-                                            value={value}
-                                            className={styles.selectItem}
-                                        >
-                                            <Select.ItemText>{label}</Select.ItemText>
-                                        </Select.Item>
-                                    )
-                                )}
-                            </Select.Viewport>
-                        </Select.Content>
-                    </Select.Portal>
-                </Select.Root>
-                <button
-                    type="button"
-                    className={styles.sortDirButton}
-                    onClick={onSortDirToggle}
-                    aria-label={sortDir === "asc" ? "Sort ascending" : "Sort descending"}
-                    title={sortDir === "asc" ? "Ascending" : "Descending"}
-                >
-                    {sortDir === "asc" ? "↑" : "↓"}
-                </button>
-            </div>
-        </div>
+        <SearchSortToolbar
+            className={styles.toolbar}
+            searchQuery={searchQuery}
+            searchPlaceholder="Search or filter results…"
+            sortValue={sortOrder}
+            sortOptions={SORT_OPTIONS}
+            sortDir={sortDir}
+            onSearchChange={onSearchChange}
+            onSortValueChange={onSortOrderChange}
+            onSortDirToggle={onSortDirToggle}
+        />
     );
 }
 
@@ -454,8 +414,7 @@ export default function CollectionView() {
                     setTimeout(() => setDeleteCollectionTarget(collection), 0)
                 }
             />
-
-            <CollectionToolbar
+            <CollectionSearchSortToolbar
                 searchQuery={searchQuery}
                 sortOrder={sortOrder}
                 sortDir={sortDir}
@@ -463,7 +422,6 @@ export default function CollectionView() {
                 onSortOrderChange={setSortOrder}
                 onSortDirToggle={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
             />
-
             {!loading && drawings.length > 0 && (
                 <DrawingCountBar
                     total={drawings.length}
@@ -471,7 +429,6 @@ export default function CollectionView() {
                     isFiltered={searchQuery.trim() !== ""}
                 />
             )}
-
             <ScrollArea.Root className={styles.scrollRoot}>
                 <ScrollArea.Viewport className={styles.scrollViewport}>
                     <CollectionGrid

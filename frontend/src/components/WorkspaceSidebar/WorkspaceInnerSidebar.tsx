@@ -103,10 +103,10 @@ export function WorkspaceInnerSidebar({ wsId }: WorkspaceInnerSidebarProps) {
                     <span className={styles.navLabel}>Dashboard</span>
                 </NavLink>
                 {workspace && !workspace.is_private && (
-                    <button className={styles.navItem} aria-disabled="true">
+                    <NavLink to={`/workspaces/${wsId}/members`} className={navClass}>
                         <UsersIcon className={styles.navIcon} />
                         <span className={styles.navLabel}>Team Members</span>
-                    </button>
+                    </NavLink>
                 )}
             </div>
 
