@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DropdownMenu, ScrollArea, Separator, Tooltip } from "radix-ui";
+import { Avatar, DropdownMenu, ScrollArea, Separator, Tooltip } from "radix-ui";
 
 // Hooks
 import { useCollectionView } from "@hooks/useCollectionView";
@@ -115,9 +115,9 @@ function CollectionPageHeader({
         <>
             <div className={styles.pageHeader}>
                 <div className={styles.identity}>
-                    <div className={styles.avatar} style={{ backgroundColor: avatarColor }}>
-                        {initials}
-                    </div>
+                    <Avatar.Root className={styles.avatar} style={{ backgroundColor: avatarColor }}>
+                        <Avatar.Fallback>{initials}</Avatar.Fallback>
+                    </Avatar.Root>
                     <div className={styles.titleGroup}>
                         <h2 className={styles.pageTitle}>{collection?.name ?? ""}</h2>
                         {createdAt && <span className={styles.createdAt}>Created {createdAt}</span>}

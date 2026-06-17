@@ -11,6 +11,7 @@ import { ROLES, type Role, type User } from "@contexts/AuthContext";
 
 interface TokenParsed {
     sub: string;
+    name?: string;
     preferred_username?: string;
     email?: string;
     resource_access?: Record<string, { roles: string[] }>;
@@ -24,7 +25,7 @@ function parseUserFromToken(kc: Keycloak): User | null {
     const roles: Role[] = rawRoles.filter((r): r is Role => ROLES.includes(r as Role));
     return {
         id: token.sub,
-        name: token.preferred_username ?? "User",
+        name: token.name ?? token.preferred_username ?? "User",
         email: token.email,
         roles,
     };
