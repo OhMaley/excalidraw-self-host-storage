@@ -12,7 +12,7 @@ import { deleteWorkspace, updateWorkspace } from "@services/workspaces";
 
 // Components
 import { WorkspaceDrawingSection } from "./WorkspaceDrawingSection";
-import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
+import { DeleteWorkspaceDialog } from "@components/DeleteWorkspaceDialog";
 import { EditWorkspaceDialog } from "@components/EditWorkspaceDialog";
 import { WorkspaceMenu } from "@components/WorkspaceMenu";
 import { VScrollbar } from "@components/VScrollbar";
@@ -108,15 +108,8 @@ export default function WorkspaceDashboard() {
                 onConfirm={handleEditConfirm}
             />
 
-            <DeleteConfirmDialog
-                open={deleteDialogOpen}
-                title="Delete workspace"
-                description={
-                    <>
-                        Are you sure you want to delete <strong>{workspace?.name}</strong>? This
-                        will permanently delete all its collections and drawings.
-                    </>
-                }
+            <DeleteWorkspaceDialog
+                workspace={deleteDialogOpen ? (workspace ?? null) : null}
                 onClose={() => setDeleteDialogOpen(false)}
                 onConfirm={() => void handleDeleteConfirm()}
             />

@@ -1,5 +1,6 @@
 import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
 import type { Collection } from "@services/collections";
+import styles from "@components/DeleteConfirmDialog.module.scss";
 
 interface DeleteCollectionDialogProps {
     readonly collection: Collection | null;
@@ -18,8 +19,8 @@ export function DeleteCollectionDialog({
             title="Delete collection?"
             description={
                 <>
-                    &ldquo;{collection?.name ?? ""}&rdquo; and all its drawings will be permanently
-                    deleted. This action cannot be undone.
+                    <strong className={styles.entityName}>{collection?.name ?? ""}</strong> and all
+                    its drawings will be permanently deleted. This action cannot be undone.
                 </>
             }
             onClose={onClose}

@@ -5,7 +5,7 @@ import { WorkspacesBody } from "./WorkspacesBody";
 import { VScrollbar } from "@components/VScrollbar";
 import { NewWorkspaceDialog } from "./NewWorkspaceDialog";
 import { EditWorkspaceDialog } from "@components/EditWorkspaceDialog";
-import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
+import { DeleteWorkspaceDialog } from "@components/DeleteWorkspaceDialog";
 import { useToast } from "@hooks/useToast";
 import { useWorkspaces } from "@hooks/useWorkspaces";
 import type { Workspace } from "@services/workspaces";
@@ -95,15 +95,8 @@ export default function Workspaces() {
                 onClose={() => setEditTarget(null)}
                 onConfirm={handleEditConfirm}
             />
-            <DeleteConfirmDialog
-                open={pendingDelete !== null}
-                title="Delete workspace"
-                description={
-                    <>
-                        Are you sure you want to delete <strong>{pendingDelete?.name}</strong>? This
-                        will permanently delete all its collections and drawings.
-                    </>
-                }
+            <DeleteWorkspaceDialog
+                workspace={pendingDelete}
                 onClose={() => setPendingDelete(null)}
                 onConfirm={() => void handleDeleteConfirm()}
             />
