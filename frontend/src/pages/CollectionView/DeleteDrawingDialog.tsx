@@ -1,5 +1,6 @@
 import { DeleteConfirmDialog } from "@components/DeleteConfirmDialog";
 import type { Drawing } from "@services/drawings";
+import styles from "@components/DeleteConfirmDialog.module.scss";
 
 interface DeleteDrawingDialogProps {
     readonly drawing: Drawing | null;
@@ -14,8 +15,8 @@ export function DeleteDrawingDialog({ drawing, onClose, onConfirm }: DeleteDrawi
             title="Delete drawing?"
             description={
                 <>
-                    &ldquo;{drawing?.title ?? ""}&rdquo; will be permanently deleted. This action
-                    cannot be undone.
+                    <strong className={styles.entityName}>{drawing?.title ?? ""}</strong> will be
+                    permanently deleted. This action cannot be undone.
                 </>
             }
             onClose={onClose}

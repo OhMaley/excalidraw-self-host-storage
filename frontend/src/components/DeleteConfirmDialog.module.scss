@@ -1,1 +1,6 @@
 @use "../styles/alert-dialog";
+
+.entityName {
+    font-weight: 600;
+    color: var(--color-text-bold);
+}
