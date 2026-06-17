@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@hooks/useAuth";
 import { useToast } from "@hooks/useToast";
 import { fetchWorkspaceContent } from "@services/workspace";
 import { deleteDrawing, type Drawing } from "@services/drawings";
@@ -28,6 +29,7 @@ interface UseWorkspaceDashboardResult {
 
 export function useWorkspaceDashboard(wsId: string | undefined): UseWorkspaceDashboardResult {
     const { showToast } = useToast();
+    const { user } = useAuth();
 
     const [recentlyVisited, setRecentlyVisited] = useState<Drawing[]>([]);
     const [visitedAtMap, setVisitedAtMap] = useState<Map<string, number>>(new Map());
@@ -40,7 +42,7 @@ export function useWorkspaceDashboard(wsId: string | undefined): UseWorkspaceDas
     const loading = loadedWsId !== wsId;
 
     useEffect(() => {
-        if (!wsId) return;
+        if (!wsId || !user) return;
         void fetchWorkspaceContent(wsId)
             .then(({ cols, batches }) => {
                 const now = Date.now();
@@ -63,7 +65,7 @@ export function useWorkspaceDashboard(wsId: string | undefined): UseWorkspaceDas
                     all.filter((d) => new Date(d.updated_at ?? d.created_at).getTime() >= cutoff)
                 );
 
-                const visitedRecords = getVisitedRecords(cutoff);
+                const visitedRecords = getVisitedRecords(user.id, cutoff);
                 const visitRank = new Map(visitedRecords.map((r, i) => [r.id, i]));
                 const newVisitedAtMap = new Map(visitedRecords.map((r) => [r.id, r.ts]));
                 setVisitedAtMap(newVisitedAtMap);
@@ -82,7 +84,7 @@ export function useWorkspaceDashboard(wsId: string | undefined): UseWorkspaceDas
                 showToast({ title: "Failed to load drawings", variant: "error" });
                 setLoadedWsId(wsId);
             });
-    }, [wsId, showToast]);
+    }, [wsId, user, showToast]);
 
     function handleDelete(drawing: Drawing): void {
         if (!wsId) return;

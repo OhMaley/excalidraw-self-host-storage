@@ -11,6 +11,9 @@ import { CardMenu, cardMenuStyles } from "@components/CardMenu";
 import ThrashIcon from "@assets/icons/trash.svg?react";
 import PenIcon from "@assets/icons/pencil.svg?react";
 
+// Hooks
+import { useAuth } from "@hooks/useAuth";
+
 // Utils
 import { relativeTime } from "@utils/timeUtils";
 import { recordVisit } from "@utils/visitedDrawings";
@@ -90,6 +93,7 @@ export function DrawingCard({
     onEdit,
     onDelete,
 }: DrawingCardProps) {
+    const { user } = useAuth();
     const lastModifiedBy = drawing.updated_by ?? drawing.created_by;
     const timestamp =
         visitedAt !== undefined
@@ -103,7 +107,7 @@ export function DrawingCard({
                     <NavLink
                         to={to}
                         className={styles.card}
-                        onClick={() => recordVisit(drawing.id)}
+                        onClick={() => user && recordVisit(user.id, drawing.id)}
                     >
                         <div className={styles.thumbnail}>
                             <div className={styles.topLeft}>
