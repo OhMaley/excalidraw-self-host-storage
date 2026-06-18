@@ -42,6 +42,8 @@ components:
       $ref: "./components/schemas/User.yaml"
     Drawing:
       $ref: "./components/schemas/Drawing.yaml"
+    ExcalidrawFile:
+      $ref: "./components/schemas/ExcalidrawFile.yaml"
     Workspace:
       $ref: "./components/schemas/Workspace.yaml"
     WorkspaceMember:
@@ -76,6 +78,8 @@ paths:
     $ref: "./paths/drawings.yaml#/list"
   /workspaces/{workspaceId}/collections/{collectionId}/drawings/{drawingId}:
     $ref: "./paths/drawings.yaml#/single"
+  /workspaces/{workspaceId}/collections/{collectionId}/drawings/{drawingId}/content:
+    $ref: "./paths/drawing_content.yaml#/content"
 
   /workspaces:
     $ref: "./paths/workspaces.yaml#/list"

@@ -1,0 +1,51 @@
+content:
+  parameters:
+    - $ref: "../components/parameters.yaml#/WorkspaceId"
+    - $ref: "../components/parameters.yaml#/CollectionId"
+    - $ref: "../components/parameters.yaml#/DrawingId"
+
+  get:
+    operationId: getDrawingContent
+    summary: Fetch a drawing's Excalidraw canvas content.
+    description: >
+      Returns the raw Excalidraw JSON for the specified drawing.
+      Returns `204 No Content` if the drawing exists but has never been saved.
+    tags: [Drawings]
+    responses:
+      "200":
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas/ExcalidrawFile.yaml"
+      "204":
+        description: Drawing exists but has no saved content yet.
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
+
+  put:
+    operationId: putDrawingContent
+    summary: Save a drawing's Excalidraw canvas content.
+    description: >
+      Replaces the drawing's canvas content with the provided Excalidraw JSON.
+      Also updates the drawing's `updated_by` and `updated_at` metadata.
+    tags: [Drawings]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/ExcalidrawFile.yaml"
+    responses:
+      "204":
+        description: Content saved.
+      "401":
+        $ref: "../components/responses.yaml#/Unauthorized"
+      "403":
+        $ref: "../components/responses.yaml#/Forbidden"
+      "404":
+        $ref: "../components/responses.yaml#/NotFound"
