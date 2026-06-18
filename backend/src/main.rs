@@ -5,6 +5,7 @@ mod error;
 mod models;
 mod routes;
 mod state;
+mod storage;
 
 use axum::http::{header, Method};
 use tower_http::{
@@ -16,6 +17,7 @@ use tracing_subscriber::EnvFilter;
 
 use auth::JwksStore;
 use state::AppState;
+use storage::StorageBackend;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -32,7 +34,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     jwks.prefetch().await?;
     tracing::info!("JWKS keys loaded");
 
-    let state = AppState { pool, jwks };
+    let storage = StorageBackend::local(config.storage_local_path);
+    storage.init().await?;
+    tracing::info!("storage initialized");
+
+    let state = AppState { pool, jwks, storage };
 
     let cors = build_cors(&config.cors_allowed_origins);
     let trace = TraceLayer::new_for_http()
@@ -55,7 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn build_cors(allowed_origins: &str) -> CorsLayer {
-    let methods = [Method::GET, Method::POST, Method::PATCH, Method::DELETE];
+    let methods = [Method::GET, Method::POST, Method::PATCH, Method::PUT, Method::DELETE];
     let headers = [header::AUTHORIZATION, header::CONTENT_TYPE];
 
     if allowed_origins == "*" {

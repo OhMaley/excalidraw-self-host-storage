@@ -163,6 +163,17 @@ pub async fn delete(pool: &PgPool, drawing_id: Uuid) -> Result<(), AppError> {
     Ok(())
 }
 
+pub async fn touch(pool: &PgPool, drawing_id: Uuid, user_id: &str) -> Result<(), AppError> {
+    sqlx::query!(
+        "UPDATE drawings SET updated_by = $1, updated_at = NOW() WHERE id = $2",
+        user_id,
+        drawing_id
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -284,6 +295,58 @@ mod tests {
         let d = create(&pool, col_id, &user_id, "To Delete", None, &[]).await.unwrap();
         delete(&pool, d.id).await.unwrap();
         assert!(get(&pool, col_id, d.id).await.unwrap().is_none());
+
+        cleanup_user(&pool, &user_id).await;
+    }
+
+    #[tokio::test]
+    async fn touch_sets_updated_by_and_updated_at() {
+        let pool = test_pool().await;
+        let user_id = seed_user(&pool).await;
+        let ws_id = seed_workspace(&pool, &user_id).await;
+        let col_id = seed_collection(&pool, ws_id, &user_id).await;
+
+        let d = create(&pool, col_id, &user_id, "T", None, &[]).await.unwrap();
+        assert!(d.updated_by.is_none());
+        assert!(d.updated_at.is_none());
+
+        touch(&pool, d.id, &user_id).await.unwrap();
+
+        let after = get(&pool, col_id, d.id).await.unwrap().expect("should exist");
+        assert_eq!(after.updated_by.as_ref().map(|u| &u.id), Some(&user_id));
+        assert!(after.updated_at.is_some());
+
+        cleanup_user(&pool, &user_id).await;
+    }
+
+    #[tokio::test]
+    async fn touch_attributes_to_the_given_user() {
+        let pool = test_pool().await;
+        let owner_id = seed_user(&pool).await;
+        let editor_id = seed_user(&pool).await;
+        let ws_id = seed_workspace(&pool, &owner_id).await;
+        let col_id = seed_collection(&pool, ws_id, &owner_id).await;
+
+        let d = create(&pool, col_id, &owner_id, "T", None, &[]).await.unwrap();
+        touch(&pool, d.id, &editor_id).await.unwrap();
+
+        let after = get(&pool, col_id, d.id).await.unwrap().expect("should exist");
+        assert_eq!(after.created_by.id, owner_id);         // creator unchanged
+        assert_eq!(after.updated_by.as_ref().map(|u| &u.id), Some(&editor_id)); // touch recorded
+
+        // owner cleanup cascades the drawing; then editor row is safe to remove
+        cleanup_user(&pool, &owner_id).await;
+        cleanup_user(&pool, &editor_id).await;
+    }
+
+    #[tokio::test]
+    async fn touch_nonexistent_drawing_does_not_error() {
+        let pool = test_pool().await;
+        let user_id = seed_user(&pool).await;
+
+        // UPDATE affecting 0 rows must not surface as an error.
+        let result = touch(&pool, Uuid::new_v4(), &user_id).await;
+        assert!(result.is_ok(), "touch on a missing drawing should return Ok(())");
 
         cleanup_user(&pool, &user_id).await;
     }

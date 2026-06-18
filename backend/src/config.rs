@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, path::PathBuf};
 
 pub struct Config {
     pub database_url: String,
@@ -7,6 +7,8 @@ pub struct Config {
     pub keycloak_issuer: String,
     /// Comma-separated list of allowed origins, or `*` to allow all.
     pub cors_allowed_origins: String,
+    /// Base directory for local drawing file storage.
+    pub storage_local_path: PathBuf,
 }
 
 impl Config {
@@ -21,6 +23,9 @@ impl Config {
             keycloak_issuer: required("KEYCLOAK_ISSUER")?,
             cors_allowed_origins: env::var("CORS_ALLOWED_ORIGINS")
                 .unwrap_or_else(|_| "*".to_string()),
+            storage_local_path: env::var("STORAGE_LOCAL_PATH")
+                .unwrap_or_else(|_| "./drawings".to_string())
+                .into(),
         })
     }
 }
