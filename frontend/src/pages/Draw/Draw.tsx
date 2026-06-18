@@ -7,10 +7,14 @@ import { Spinner } from "@components/Spinner";
 const ExcalidrawWrapper = lazy(() => import("./ExcalidrawWrapper"));
 
 export default function Draw() {
-    const { drawingId } = useParams<{ drawingId: string }>();
+    const { wsId, colId, drawingId } = useParams<{
+        wsId: string;
+        colId: string;
+        drawingId: string;
+    }>();
     return (
         <Suspense fallback={<Spinner size="3rem" />}>
-            <ExcalidrawWrapper drawingId={drawingId} />
+            <ExcalidrawWrapper wsId={wsId} colId={colId} drawingId={drawingId} />
         </Suspense>
     );
 }

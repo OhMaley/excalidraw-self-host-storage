@@ -1,5 +1,4 @@
 @use "../../styles/dialog-form";
-@use "../../styles/popup-item";
 @use "../../styles/icon-button";
 
 .title {
@@ -7,37 +6,6 @@
     font-size: 1rem;
     font-weight: 600;
     color: var(--color-on-surface);
-}
-
-// ── Collection select ─────────────────────────────────────────────────────────
-
-.selectTrigger {
-    @include dialog-form.form-control;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-}
-
-.selectIcon {
-    opacity: 0.6;
-    font-size: 0.75rem;
-}
-
-.selectContent {
-    @include popup-item.popup-content;
-    z-index: 200;
-    width: var(--radix-select-trigger-width);
-    max-height: 14rem;
-    overflow-y: auto;
-}
-
-.selectItem {
-    @include popup-item.item-base(0.4375rem 0.75rem);
-
-    &[data-highlighted] {
-        color: var(--color-on-surface);
-    }
 }
 
 // ── Buttons ───────────────────────────────────────────────────────────────────

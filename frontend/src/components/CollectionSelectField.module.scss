@@ -1,0 +1,22 @@
+@use "../styles/dialog-form";
+@use "../styles/popup-item";
+
+// .field and .label forwarded from dialog-form via @use
+
+.selectTrigger {
+    @include dialog-form.select-trigger;
+}
+
+.selectIcon {
+    @include dialog-form.select-icon;
+}
+
+.selectContent {
+    @include popup-item.select-content;
+    max-height: 14rem;
+    overflow-y: auto;
+}
+
+.selectItem {
+    @include popup-item.select-item;
+}

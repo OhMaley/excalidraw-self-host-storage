@@ -4,6 +4,7 @@ import { type Drawing } from "@services/drawings";
 import styles from "./WorkspaceDrawingSection.module.scss";
 
 interface WorkspaceDrawingSectionProps {
+    readonly wsId: string;
     readonly title: string;
     readonly drawings: Drawing[];
     readonly loading: boolean;
@@ -14,6 +15,7 @@ interface WorkspaceDrawingSectionProps {
 }
 
 export function WorkspaceDrawingSection({
+    wsId,
     title,
     drawings,
     loading,
@@ -36,7 +38,7 @@ export function WorkspaceDrawingSection({
                     <DrawingCard
                         key={d.id}
                         drawing={d}
-                        to={`/draw/${d.id}`}
+                        to={`/workspaces/${wsId}/collections/${d.collection_id}/drawings/${d.id}`}
                         collectionName={collectionNameMap?.get(d.id)?.name}
                         collectionColor={collectionNameMap?.get(d.id)?.color}
                         visitedAt={visitedAtMap?.get(d.id)}

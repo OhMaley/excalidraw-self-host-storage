@@ -114,3 +114,16 @@
         background-color: var(--color-on-background-gray);
     }
 }
+
+@mixin select-trigger {
+    @include form-control;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+@mixin select-icon {
+    opacity: 0.6;
+    font-size: 0.75rem;
+}
