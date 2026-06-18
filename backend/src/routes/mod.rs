@@ -53,6 +53,10 @@ pub fn build_router() -> Router<AppState> {
             get(drawings::get)
                 .patch(drawings::update)
                 .delete(drawings::delete),
+        )
+        .route(
+            "/{workspace_id}/collections/{collection_id}/drawings/{drawing_id}/content",
+            get(drawings::get_content).put(drawings::put_content),
         );
 
     Router::new()

@@ -33,6 +33,9 @@ pub enum AppError {
 
     #[error(transparent)]
     Sqlx(#[from] sqlx::Error),
+
+    #[error("internal error: {0}")]
+    Internal(String),
 }
 
 impl IntoResponse for AppError {
@@ -51,6 +54,10 @@ impl IntoResponse for AppError {
                 "UNPROCESSABLE_ENTITY",
                 msg,
             ),
+            AppError::Internal(msg) => {
+                tracing::error!("internal error: {msg}");
+                (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "internal server error".to_string())
+            }
             AppError::Sqlx(e) => match e {
                 sqlx::Error::RowNotFound => {
                     (StatusCode::NOT_FOUND, "NOT_FOUND", "resource not found".to_string())
