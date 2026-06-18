@@ -1,5 +1,5 @@
 import type Keycloak from "keycloak-js";
-import { HttpError } from "@utils/httpError";
+import { HttpError, HttpStatus } from "@utils/httpError";
 
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "";
 
@@ -68,6 +68,29 @@ export async function getJson<T>(url: string, errorMessage: string): Promise<T> 
 
 export async function deleteRequest(url: string, errorMessage: string): Promise<void> {
     const res = await apiFetch(url, { method: "DELETE" });
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, errorMessage);
+    }
+}
+
+export async function getJsonOrNull<T>(url: string, errorMessage: string): Promise<T | null> {
+    const res = await apiFetch(url, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+    });
+    if (res.status === HttpStatus.NO_CONTENT) return null;
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, errorMessage);
+    }
+    return (await res.json()) as T;
+}
+
+export async function putJson(url: string, body: unknown, errorMessage: string): Promise<void> {
+    const res = await apiFetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+    });
     if (!res.ok) {
         throw new HttpError(res.status, res.statusText, errorMessage);
     }

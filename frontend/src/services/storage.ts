@@ -1,24 +1,40 @@
 // Types
-import type { SceneData, AppState } from "@excalidraw/excalidraw/types";
+import type { AppState, BinaryFiles, ExcalidrawProps } from "@excalidraw/excalidraw/types";
 
 // Services
-import { API_BASE, getJson, postJson } from "@services/api";
+import { API_BASE, getJsonOrNull, putJson } from "@services/api";
 
-export interface StoredDrawing {
-    id?: string;
-    elements?: SceneData["elements"];
-    appState?: Partial<AppState>;
-    collaborators?: SceneData["collaborators"];
-    captureUpdate?: SceneData["captureUpdate"];
+type ExcalidrawElements = Parameters<NonNullable<ExcalidrawProps["onChange"]>>[0];
+
+export interface ExcalidrawFile {
+    type: "excalidraw";
+    version: number;
+    source: string;
+    elements: ExcalidrawElements;
+    appState: Partial<AppState>;
+    files: BinaryFiles | null;
 }
 
-export function loadDrawing(id: string): Promise<StoredDrawing> {
-    return getJson<StoredDrawing>(
-        `${API_BASE}/drawings/${encodeURIComponent(id)}`,
-        "Failed to load drawing"
+export function loadDrawingContent(
+    wsId: string,
+    colId: string,
+    drawingId: string
+): Promise<ExcalidrawFile | null> {
+    return getJsonOrNull<ExcalidrawFile>(
+        `${API_BASE}/workspaces/${encodeURIComponent(wsId)}/collections/${encodeURIComponent(colId)}/drawings/${encodeURIComponent(drawingId)}/content`,
+        "Failed to load drawing content"
     );
 }
 
-export function saveDrawing(body: StoredDrawing): Promise<{ id: string }> {
-    return postJson<{ id: string }>(`${API_BASE}/drawings`, body, "Failed to save drawing");
+export function saveDrawingContent(
+    wsId: string,
+    colId: string,
+    drawingId: string,
+    content: ExcalidrawFile
+): Promise<void> {
+    return putJson(
+        `${API_BASE}/workspaces/${encodeURIComponent(wsId)}/collections/${encodeURIComponent(colId)}/drawings/${encodeURIComponent(drawingId)}/content`,
+        content,
+        "Failed to save drawing content"
+    );
 }

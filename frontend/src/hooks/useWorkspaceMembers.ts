@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@hooks/useToast";
 import {
     getMyMembership,
@@ -38,7 +38,7 @@ export function useWorkspaceMembers(wsId: string | undefined): UseWorkspaceMembe
 
     const loading = loadedKey !== wsId;
 
-    function fetchAll(): void {
+    const fetchAll = useCallback(() => {
         if (!wsId) return;
         void Promise.all([listMembers(wsId), getMyMembership(wsId)])
             .then(([all, me]) => {
@@ -50,9 +50,9 @@ export function useWorkspaceMembers(wsId: string | undefined): UseWorkspaceMembe
                 showToast({ title: "Failed to load members", variant: "error" });
                 setLoadedKey(wsId);
             });
-    }
+    }, [wsId, showToast]);
 
-    useEffect(fetchAll, [wsId]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(fetchAll, [fetchAll]);
 
     function handleRoleChange(member: WorkspaceMember, role: "admin" | "member"): void {
         if (!wsId) return;

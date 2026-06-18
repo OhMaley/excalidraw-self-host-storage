@@ -6,9 +6,23 @@ use axum::{
     Json,
 };
 use serde::Deserialize;
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{auth::AuthUser, db, error::AppError, models::Drawing, state::AppState};
+
+// Ensures the `files` key is always present in stored drawing JSON, defaulting to `{}`.
+// Drawings saved before this field was introduced may omit it, which breaks the frontend.
+fn ensure_files_field(bytes: Vec<u8>) -> Result<Bytes, AppError> {
+    let mut value: Value = serde_json::from_slice(&bytes)
+        .map_err(|e| AppError::Internal(format!("invalid drawing JSON: {e}")))?;
+    if let Some(obj) = value.as_object_mut() {
+        obj.entry("files").or_insert(Value::Object(Default::default()));
+    }
+    let vec = serde_json::to_vec(&value)
+        .map_err(|e| AppError::Internal(format!("failed to serialize drawing: {e}")))?;
+    Ok(Bytes::from(vec))
+}
 
 #[derive(Deserialize)]
 pub(super) struct CreateBody {
@@ -150,12 +164,15 @@ pub async fn get_content(
         .ok_or_else(|| AppError::NotFound("drawing not found".to_string()))?;
 
     match state.storage.load(drawing_id).await.map_err(|e| AppError::Internal(e.to_string()))? {
-        Some(bytes) => Ok((
-            StatusCode::OK,
-            [(header::CONTENT_TYPE, "application/json")],
-            bytes,
-        )
-            .into_response()),
+        Some(bytes) => {
+            let body = ensure_files_field(bytes)?;
+            Ok((
+                StatusCode::OK,
+                [(header::CONTENT_TYPE, "application/json")],
+                body,
+            )
+                .into_response())
+        }
         None => Ok(StatusCode::NO_CONTENT.into_response()),
     }
 }

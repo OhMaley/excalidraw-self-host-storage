@@ -31,6 +31,9 @@ dist-ssr
 # backend
 backend/target
 
+# local drawing storage (docker default)
+.storage/
+
 # AI
 CLAUDE.md
 .claude

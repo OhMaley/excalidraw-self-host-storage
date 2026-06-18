@@ -1,7 +1,8 @@
 import { useState, useRef, useId, type SyntheticEvent } from "react";
-import { Dialog, Form, Select } from "radix-ui";
+import { Dialog, Form } from "radix-ui";
 
 // Components
+import { CollectionSelectField } from "@components/CollectionSelectField";
 import { DescriptionField } from "@components/DescriptionField";
 import { NameFormField } from "@components/NameFormField";
 import { TagsInput } from "./TagsInput";
@@ -27,14 +28,6 @@ interface EditDialogContentProps {
     readonly availableTags: string[];
     readonly onClose: () => void;
     readonly onConfirm: (drawing: Drawing, updates: DrawingUpdate) => Promise<void>;
-}
-
-interface CollectionSelectFieldProps {
-    readonly collections: Collection[];
-    readonly collectionId: string;
-    readonly contentEl: HTMLDivElement | null;
-    readonly loading: boolean;
-    readonly onChange: (id: string) => void;
 }
 
 interface TagsFieldProps {
@@ -117,54 +110,6 @@ function TagsField({ value, suggestions, loading, onChange }: TagsFieldProps) {
                 disabled={loading}
                 placeholder="Add tags…"
             />
-        </div>
-    );
-}
-
-function CollectionSelectField({
-    collections,
-    collectionId,
-    contentEl,
-    loading,
-    onChange,
-}: CollectionSelectFieldProps) {
-    const collectionTriggerId = useId();
-    const collectionLabelId = useId();
-    const selectedName = collections.find((c) => c.id === collectionId)?.name ?? "";
-    return (
-        <div className={styles.field}>
-            <label id={collectionLabelId} htmlFor={collectionTriggerId} className={styles.label}>
-                Collection
-            </label>
-            <Select.Root value={collectionId} onValueChange={onChange} disabled={loading}>
-                <Select.Trigger
-                    id={collectionTriggerId}
-                    aria-labelledby={collectionLabelId}
-                    className={styles.selectTrigger}
-                >
-                    <Select.Value>{selectedName}</Select.Value>
-                    <Select.Icon className={styles.selectIcon}>▾</Select.Icon>
-                </Select.Trigger>
-                <Select.Portal container={contentEl}>
-                    <Select.Content
-                        className={styles.selectContent}
-                        position="popper"
-                        sideOffset={4}
-                    >
-                        <Select.Viewport>
-                            {collections.map((col) => (
-                                <Select.Item
-                                    key={col.id}
-                                    value={col.id}
-                                    className={styles.selectItem}
-                                >
-                                    <Select.ItemText>{col.name}</Select.ItemText>
-                                </Select.Item>
-                            ))}
-                        </Select.Viewport>
-                    </Select.Content>
-                </Select.Portal>
-            </Select.Root>
         </div>
     );
 }
@@ -259,9 +204,9 @@ function EditDialogContent({
                 {collections.length > 1 && (
                     <CollectionSelectField
                         collections={collections}
-                        collectionId={collectionId}
+                        value={collectionId}
                         contentEl={contentEl}
-                        loading={loading}
+                        disabled={loading}
                         onChange={setCollectionId}
                     />
                 )}

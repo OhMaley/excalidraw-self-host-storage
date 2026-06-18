@@ -15,7 +15,7 @@ import type {
     AppState,
     BinaryFiles,
 } from "@excalidraw/excalidraw/types";
-import type { StoredDrawing } from "@services/storage";
+import type { ExcalidrawFile } from "@services/storage";
 
 // Styles
 import "@excalidraw/excalidraw/index.css";
@@ -23,45 +23,46 @@ import "@excalidraw/excalidraw/index.css";
 // Utils
 import { hydrateScene } from "@utils/sceneUtils";
 import { HttpError, HttpStatus, toHttpError } from "@utils/httpError";
-import { saveDraft, loadDraft } from "@utils/draftStorage";
+import { loadDraft } from "@utils/draftStorage";
+
+// Services
+import { loadDrawingContent } from "@services/storage";
 
 type OnChangeElements = Parameters<NonNullable<ExcalidrawProps["onChange"]>>[0];
 
-const DRAFT_DEBOUNCE_MS = 800;
-
 interface ExcalidrawWrapperProps {
+    readonly wsId?: string;
+    readonly colId?: string;
     readonly drawingId?: string;
 }
 
 type BackendState =
     | { status: "idle" }
     | { status: "loading" }
-    | { status: "ready"; data: StoredDrawing }
+    | { status: "ready"; data: ExcalidrawFile | null }
     | { status: "error"; error: HttpError };
 
-export default function ExcalidrawWrapper({ drawingId }: ExcalidrawWrapperProps) {
-    const { load } = useStorage();
+export default function ExcalidrawWrapper({ wsId, colId, drawingId }: ExcalidrawWrapperProps) {
+    const { save } = useStorage(wsId, colId, drawingId);
     const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const hasCoords = Boolean(wsId && colId && drawingId);
 
     const [backendState, setBackendState] = useState<BackendState>(
-        drawingId ? { status: "loading" } : { status: "idle" }
+        hasCoords ? { status: "loading" } : { status: "idle" }
     );
 
-    // Seeded once on mount from localStorage for instant render
     const draftData = useMemo(() => loadDraft(drawingId), [drawingId]);
 
-    // Load drawing from backend when ID exists
     useEffect(() => {
-        if (!drawingId) return;
+        if (!wsId || !colId || !drawingId) return;
 
         let cancelled = false;
 
-        const fetchDrawing = async () => {
+        const fetchContent = async () => {
             setBackendState({ status: "loading" });
-
             try {
-                const data = await load(drawingId);
+                const data = await loadDrawingContent(wsId, colId, drawingId);
                 if (cancelled) return;
                 setBackendState({ status: "ready", data });
             } catch (error) {
@@ -73,40 +74,33 @@ export default function ExcalidrawWrapper({ drawingId }: ExcalidrawWrapperProps)
             }
         };
 
-        void fetchDrawing();
-
+        void fetchContent();
         return () => {
             cancelled = true;
         };
-    }, [drawingId, load]);
+    }, [wsId, colId, drawingId]);
 
-    // Overwrite with backend data once it arrives (authoritative source)
+    // Apply backend data once loaded (authoritative source)
     useEffect(() => {
         if (backendState.status !== "ready") return;
         if (!excalidrawAPIRef.current) return;
 
-        excalidrawAPIRef.current.updateScene(
-            hydrateScene(backendState.data, excalidrawAPIRef.current)
-        );
+        const { data } = backendState;
+        if (!data) return; // null = new drawing, keep empty canvas
+
+        excalidrawAPIRef.current.updateScene(hydrateScene(data, excalidrawAPIRef.current));
+
+        const fileEntries = Object.values(data.files ?? {});
+        if (fileEntries.length > 0) {
+            excalidrawAPIRef.current.addFiles(fileEntries);
+        }
     }, [backendState]);
 
-    // Cleanup debounce on unmount
-    useEffect(() => {
-        return () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-        };
-    }, []);
-
-    // Debounced localStorage save on every change
     const handleChange = useCallback(
         (elements: OnChangeElements, appState: AppState, files: BinaryFiles) => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            debounceRef.current = setTimeout(
-                () => saveDraft(drawingId, elements, appState, files),
-                DRAFT_DEBOUNCE_MS
-            );
+            save(elements, appState, files);
         },
-        [drawingId]
+        [save]
     );
 
     if (backendState.status === "error") {

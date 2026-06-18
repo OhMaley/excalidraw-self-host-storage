@@ -33,7 +33,12 @@ export const publicRoutes: RouteConfig[] = [
 ];
 
 // Auth required — full-screen, no shell (AppLayout)
-export const fullscreenRoutes: RouteConfig[] = [{ path: "/draw/:drawingId", element: Draw }];
+export const fullscreenRoutes: RouteConfig[] = [
+    {
+        path: "/workspaces/:wsId/collections/:colId/drawings/:drawingId",
+        element: Draw,
+    },
+];
 
 // Auth required — admin role only
 export const adminRoutes: RouteConfig[] = [{ path: "/admin", element: Admin }];

@@ -129,18 +129,21 @@ function useTagsInputState(
     const listItems = buildListItems(inputValue, value, suggestions);
     const isOpen = open && listItems.length > 0;
 
-    function addTag(tag: string) {
-        const trimmed = tag.trim();
-        if (!trimmed || value.includes(trimmed)) return;
-        onChange([...value, trimmed]);
-        setInputValue("");
-        setActiveIndex(-1);
-        inputRef.current?.focus();
-    }
-
     function removeTag(tag: string) {
         onChange(value.filter((t) => t !== tag));
     }
+
+    const addTag = useCallback(
+        (tag: string) => {
+            const trimmed = tag.trim();
+            if (!trimmed || value.includes(trimmed)) return;
+            onChange([...value, trimmed]);
+            setInputValue("");
+            setActiveIndex(-1);
+            inputRef.current?.focus();
+        },
+        [value, onChange]
+    );
 
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -164,8 +167,7 @@ function useTagsInputState(
                 inputRef.current?.blur();
             }
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [activeIndex, listItems, inputValue, value, onChange]
+        [activeIndex, listItems, inputValue, value, onChange, addTag]
     );
 
     return {

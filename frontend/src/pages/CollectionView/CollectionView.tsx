@@ -26,6 +26,7 @@ import TrashIcon from "@assets/icons/trash.svg?react";
 import type { Collection } from "@services/collections";
 import { deleteCollection } from "@services/collections";
 import type { Drawing, DrawingUpdate } from "@services/drawings";
+import { createDrawing } from "@services/drawings";
 
 // Utils
 import { getColorFromId } from "@utils/colorUtils";
@@ -46,6 +47,11 @@ const SORT_LABELS: Record<SortOrder, string> = {
 const SORT_OPTIONS = (Object.entries(SORT_LABELS) as [SortOrder, string][]).map(
     ([value, label]) => ({ value, label })
 );
+
+const DRAWING_CREATE_ERROR = {
+    title: "Failed to create drawing. Please try again.",
+    variant: "error",
+} as const;
 
 function applyFilter(drawings: Drawing[], query: string): Drawing[] {
     const q = query.trim().toLowerCase();
@@ -208,6 +214,7 @@ function CollectionSearchSortToolbar({
 }
 
 interface CollectionGridProps {
+    readonly wsId: string | undefined;
     readonly loading: boolean;
     readonly totalCount: number;
     readonly drawings: Drawing[];
@@ -215,7 +222,14 @@ interface CollectionGridProps {
     readonly onDelete: (d: Drawing) => void;
 }
 
-function CollectionGrid({ loading, totalCount, drawings, onEdit, onDelete }: CollectionGridProps) {
+function CollectionGrid({
+    wsId,
+    loading,
+    totalCount,
+    drawings,
+    onEdit,
+    onDelete,
+}: CollectionGridProps) {
     if (loading)
         return (
             <div className={styles.spinnerContainer}>
@@ -231,7 +245,7 @@ function CollectionGrid({ loading, totalCount, drawings, onEdit, onDelete }: Col
                 <DrawingCard
                     key={d.id}
                     drawing={d}
-                    to={`/draw/${d.id}`}
+                    to={`/workspaces/${wsId}/collections/${d.collection_id}/drawings/${d.id}`}
                     onEdit={() => onEdit(d)}
                     onDelete={() => onDelete(d)}
                 />
@@ -371,6 +385,7 @@ function CollectionDialogs({
 export default function CollectionView() {
     const { wsId, colId } = useParams<{ wsId: string; colId: string }>();
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const handleDeleteCollection = useDeleteCollection(wsId);
     const { collection, drawings, loading, handleDelete, handleEdit, handleEditCollection } =
         useCollectionView(wsId, colId);
@@ -382,33 +397,34 @@ export default function CollectionView() {
             if (updates.tags) addTags(updates.tags);
         });
 
-    const {
-        deleteTarget,
-        setDeleteTarget,
-        editTarget,
-        setEditTarget,
-        deleteCollectionTarget,
-        setDeleteCollectionTarget,
-        editCollectionTarget,
-        setEditCollectionTarget,
-        searchQuery,
-        setSearchQuery,
-        sortOrder,
-        setSortOrder,
-        sortDir,
-        setSortDir,
-        visibleDrawings,
-    } = useCollectionState(drawings);
+    const collectionState = useCollectionState(drawings);
+    const { deleteTarget, setDeleteTarget, editTarget, setEditTarget, visibleDrawings } =
+        collectionState;
+    const { deleteCollectionTarget, setDeleteCollectionTarget } = collectionState;
+    const { editCollectionTarget, setEditCollectionTarget } = collectionState;
+    const { searchQuery, setSearchQuery, sortOrder, setSortOrder, sortDir, setSortDir } =
+        collectionState;
 
     const openEdit = (d: Drawing) => setTimeout(() => setEditTarget(d), 0);
     const openDelete = (d: Drawing) => setTimeout(() => setDeleteTarget(d), 0);
+
+    function handleNewDrawing() {
+        if (!wsId || !colId) return;
+        void createDrawing(wsId, colId, { title: "Untitled" })
+            .then((d) => navigate(`/workspaces/${wsId}/collections/${colId}/drawings/${d.id}`))
+            .catch(() => showToast(DRAWING_CREATE_ERROR));
+    }
+
+    function handleConfirmEditCollection(name: string, description: string | null) {
+        return handleEditCollection(name, description).then(updateCollection);
+    }
 
     return (
         <div className={styles.container}>
             <CollectionPageHeader
                 collection={collection}
                 colId={colId}
-                onNewDrawing={() => void navigate("/draw")}
+                onNewDrawing={handleNewDrawing}
                 onEditCollection={() => setTimeout(() => setEditCollectionTarget(collection), 0)}
                 onDeleteCollection={() =>
                     setTimeout(() => setDeleteCollectionTarget(collection), 0)
@@ -432,6 +448,7 @@ export default function CollectionView() {
             <ScrollArea.Root className={styles.scrollRoot}>
                 <ScrollArea.Viewport className={styles.scrollViewport}>
                     <CollectionGrid
+                        wsId={wsId}
                         loading={loading}
                         totalCount={drawings.length}
                         drawings={visibleDrawings}
@@ -456,9 +473,7 @@ export default function CollectionView() {
                 onConfirmDeleteDrawing={handleDelete}
                 onConfirmEditDrawing={handleEditAndSync}
                 onConfirmDeleteCollection={handleDeleteCollection}
-                onConfirmEditCollection={(name, description) =>
-                    handleEditCollection(name, description).then(updateCollection)
-                }
+                onConfirmEditCollection={handleConfirmEditCollection}
             />
         </div>
     );

@@ -1,5 +1,5 @@
 // Services
-import { API_BASE, deleteRequest, getJson, patchJson } from "@services/api";
+import { API_BASE, deleteRequest, getJson, patchJson, postJson } from "@services/api";
 
 interface DrawingAuthor {
     id: string;
@@ -23,6 +23,12 @@ export interface DrawingUpdate {
     description?: string | null;
     tags?: string[];
     collection_id?: string;
+}
+
+export interface DrawingCreate {
+    title: string;
+    description?: string | null;
+    tags?: string[];
 }
 
 export function updateDrawing(
@@ -53,5 +59,17 @@ export function listDrawings(workspaceId: string, collectionId: string): Promise
     return getJson<Drawing[]>(
         `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}/drawings`,
         "Failed to load drawings"
+    );
+}
+
+export function createDrawing(
+    workspaceId: string,
+    collectionId: string,
+    data: DrawingCreate
+): Promise<Drawing> {
+    return postJson<Drawing>(
+        `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}/drawings`,
+        data,
+        "Failed to create drawing"
     );
 }
