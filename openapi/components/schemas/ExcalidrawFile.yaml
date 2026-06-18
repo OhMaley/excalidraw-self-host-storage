@@ -1,0 +1,28 @@
+type: object
+description: Raw Excalidraw file format (`.excalidraw` JSON). Treated as an opaque blob by the backend.
+required: [type, version, source, elements, appState, files]
+properties:
+  type:
+    type: string
+    enum: [excalidraw]
+    example: "excalidraw"
+  version:
+    type: integer
+    example: 2
+  source:
+    type: string
+    example: "https://excalidraw.com"
+  elements:
+    type: array
+    items:
+      type: object
+      additionalProperties: true
+    description: Excalidraw scene elements.
+  appState:
+    type: object
+    additionalProperties: true
+    description: Excalidraw application state (viewport, theme, etc.).
+  files:
+    type: object
+    additionalProperties: true
+    description: Binary file data (images) referenced by elements, keyed by file ID.
