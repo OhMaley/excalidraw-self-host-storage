@@ -199,6 +199,55 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /workspaces/{workspaceId}/collections/{collectionId}/drawings/{drawingId}/content:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+      - $ref: '#/components/parameters/CollectionId'
+      - $ref: '#/components/parameters/DrawingId'
+    get:
+      operationId: getDrawingContent
+      summary: Fetch a drawing's Excalidraw canvas content.
+      description: |
+        Returns the raw Excalidraw JSON for the specified drawing. Returns `204 No Content` if the drawing exists but has never been saved.
+      tags:
+        - Drawings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExcalidrawFile'
+        '204':
+          description: Drawing exists but has no saved content yet.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: putDrawingContent
+      summary: Save a drawing's Excalidraw canvas content.
+      description: |
+        Replaces the drawing's canvas content with the provided Excalidraw JSON. Also updates the drawing's `updated_by` and `updated_at` metadata.
+      tags:
+        - Drawings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExcalidrawFile'
+      responses:
+        '204':
+          description: Content saved.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /workspaces:
     get:
       operationId: listWorkspaces
@@ -730,6 +779,42 @@ components:
           readOnly: true
           description: Null if the drawing has never been updated.
           example: '2026-05-26T09:15:42Z'
+    ExcalidrawFile:
+      type: object
+      description: Raw Excalidraw file format (`.excalidraw` JSON). Treated as an opaque blob by the backend.
+      required:
+        - type
+        - version
+        - source
+        - elements
+        - appState
+        - files
+      properties:
+        type:
+          type: string
+          enum:
+            - excalidraw
+          example: excalidraw
+        version:
+          type: integer
+          example: 2
+        source:
+          type: string
+          example: https://excalidraw.com
+        elements:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: Excalidraw scene elements.
+        appState:
+          type: object
+          additionalProperties: true
+          description: Excalidraw application state (viewport, theme, etc.).
+        files:
+          type: object
+          additionalProperties: true
+          description: Binary file data (images) referenced by elements, keyed by file ID.
     Workspace:
       type: object
       required:
