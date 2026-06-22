@@ -1,5 +1,9 @@
 @use "../../styles/illustration";
 
 .image {
-    @include illustration.image("../../assets/images/undraw_page_not_found.svg", 860.13137, 571.14799);
+    @include illustration.image(
+        "../../assets/images/undraw_page_not_found.svg",
+        860.13137,
+        571.14799
+    );
 }

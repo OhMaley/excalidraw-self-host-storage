@@ -1,11 +1,20 @@
-const NEW_DRAWING_BASE = "New drawing";
+function nextName(base: string, existing: Set<string>): string {
+    if (!existing.has(base)) return base;
+    let n = 2;
+    while (existing.has(`${base} ${n}`)) n++;
+    return `${base} ${n}`;
+}
 
 export function nextDrawingName(existingTitles: string[]): string {
-    const titles = new Set(existingTitles);
-    if (!titles.has(NEW_DRAWING_BASE)) return NEW_DRAWING_BASE;
-    let n = 2;
-    while (titles.has(`${NEW_DRAWING_BASE} ${n}`)) n++;
-    return `${NEW_DRAWING_BASE} ${n}`;
+    return nextName("New drawing", new Set(existingTitles));
+}
+
+export function nextCollectionName(existingNames: string[]): string {
+    return nextName("New collection", new Set(existingNames));
+}
+
+export function nextWorkspaceName(existingNames: string[]): string {
+    return nextName("New workspace", new Set(existingNames));
 }
 
 export function getInitials(text: string, max = 2): string {
