@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@hooks/useToast";
 import { getCollection, updateCollection, type Collection } from "@services/collections";
 import {
@@ -41,6 +41,7 @@ interface UseCollectionViewResult {
         description: string | null
     ) => Promise<Collection>;
     readonly addDrawing: (drawing: Drawing) => void;
+    readonly updateDrawingInList: (updated: Drawing) => void;
 }
 
 export function useCollectionView(
@@ -96,6 +97,10 @@ export function useCollectionView(
         setDrawings(withNewDrawing(drawing));
     }
 
+    const updateDrawingInList = useCallback((updated: Drawing): void => {
+        setDrawings(withUpdatedDrawing(updated));
+    }, []);
+
     function handleEditCollection(name: string, description: string | null): Promise<Collection> {
         if (!wsId || !colId) return Promise.reject(new Error("No workspace or collection"));
         return updateCollection(wsId, colId, name, description).then((updated) => {
@@ -112,5 +117,6 @@ export function useCollectionView(
         handleEdit,
         handleEditCollection,
         addDrawing,
+        updateDrawingInList,
     };
 }
