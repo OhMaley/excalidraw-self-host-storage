@@ -38,15 +38,28 @@ import "@excalidraw/excalidraw/index.css";
 import { hydrateScene } from "@utils/sceneUtils";
 import { HttpError, HttpStatus, toHttpError } from "@utils/httpError";
 import { loadDraft, saveDraft } from "@utils/draftStorage";
-import { serializeAsJSON } from "@excalidraw/excalidraw";
+import { exportToBlob, serializeAsJSON } from "@excalidraw/excalidraw";
 
 // Services
 import { loadDrawingContent } from "@services/storage";
-import { getDrawing, updateDrawing, type Drawing } from "@services/drawings";
+import { getDrawing, updateDrawing, uploadThumbnail, type Drawing } from "@services/drawings";
+
+const THUMBNAIL_MAX_WIDTH = 800;
+const THUMBNAIL_MAX_HEIGHT = 600;
 
 // Extracts the type of the first argument of Excalidraw's onChange prop.
 // Using Parameters<> keeps this type in sync with the library automatically.
 type OnChangeElements = Parameters<NonNullable<ExcalidrawProps["onChange"]>>[0];
+
+// exportToBlob re-exports from @excalidraw/utils which is not installed as a separate package,
+// leaving its type unresolved. This alias restores the expected signature using types in scope.
+type ExportToBlobFn = (opts: {
+    elements: OnChangeElements;
+    appState: AppState;
+    files: BinaryFiles;
+    mimeType?: string;
+    getDimensions?: (w: number, h: number) => { width: number; height: number; scale?: number };
+}) => Promise<Blob>;
 
 interface ExcalidrawWrapperProps {
     readonly wsId?: string;
@@ -305,11 +318,55 @@ function ExcalidrawCanvas({
 
 // ─── ExcalidrawWrapper ────────────────────────────────────────────────────────
 
+async function generateAndUploadThumbnail(
+    api: ExcalidrawImperativeAPI,
+    wsId: string,
+    colId: string,
+    drawingId: string
+): Promise<void> {
+    const elements = api.getSceneElements();
+    if (elements.length === 0) return;
+    try {
+        const blob = await (exportToBlob as unknown as ExportToBlobFn)({
+            elements,
+            appState: api.getAppState(),
+            files: api.getFiles(),
+            mimeType: "image/png",
+            getDimensions: (naturalWidth: number, naturalHeight: number) => {
+                const scale = Math.min(
+                    THUMBNAIL_MAX_WIDTH / naturalWidth,
+                    THUMBNAIL_MAX_HEIGHT / naturalHeight
+                );
+                return {
+                    width: Math.round(naturalWidth * scale),
+                    height: Math.round(naturalHeight * scale),
+                    scale,
+                };
+            },
+        });
+        await uploadThumbnail(wsId, colId, drawingId, blob);
+    } catch {
+        // silent
+    }
+}
+
+function signIn(api: ExcalidrawImperativeAPI | null, login: (redirectUri: string) => void): void {
+    if (api) saveDraft(undefined, api.getSceneElements(), api.getAppState(), api.getFiles());
+    login(window.location.href);
+}
+
 export default function ExcalidrawWrapper({ wsId, colId, drawingId }: ExcalidrawWrapperProps) {
-    const { save, flushSave, saveStatus, recordBaseline } = useStorage(wsId, colId, drawingId);
     const { isAuthenticated, loading: authLoading, login } = useAuth();
 
     const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
+
+    const { save, flushSave, saveStatus, recordBaseline } = useStorage(wsId, colId, drawingId);
+
+    useEffect(() => {
+        if (saveStatus !== "saved") return;
+        if (!excalidrawAPIRef.current || !wsId || !colId || !drawingId) return;
+        void generateAndUploadThumbnail(excalidrawAPIRef.current, wsId, colId, drawingId);
+    }, [saveStatus, wsId, colId, drawingId]);
 
     const { backendState, drawingMeta, setDrawingMeta, handleChange, getContent } =
         useDrawingBackend({
@@ -348,15 +405,7 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
 
     // Flush the draft before the Keycloak redirect so the latest canvas state
     // is preserved in localStorage across the auth round-trip.
-    const handleSignIn = useCallback(() => {
-        if (excalidrawAPIRef.current) {
-            const elements = excalidrawAPIRef.current.getSceneElements();
-            const appState = excalidrawAPIRef.current.getAppState();
-            const files = excalidrawAPIRef.current.getFiles();
-            saveDraft(undefined, elements, appState, files);
-        }
-        login(window.location.href);
-    }, [login]);
+    const handleSignIn = useCallback(() => signIn(excalidrawAPIRef.current, login), [login]);
 
     if (backendState.status === "error") {
         if (backendState.error.status === HttpStatus.NOT_FOUND) {
@@ -389,9 +438,7 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
                 drawingMeta={drawingMeta}
                 saveStatus={saveStatus}
                 onToggleSidebar={handleTogglePanel}
-                onTitleChange={(title) => {
-                    void handleTitleChange(title);
-                }}
+                onTitleChange={(title) => void handleTitleChange(title)}
                 isAuthenticated={isAuthenticated}
                 authLoading={authLoading}
                 onSignIn={handleSignIn}

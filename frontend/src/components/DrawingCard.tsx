@@ -4,6 +4,9 @@ import { DropdownMenu, Tooltip } from "radix-ui";
 // Services
 import type { Drawing } from "@services/drawings";
 
+// Hooks
+import { useThumbnail } from "@hooks/useThumbnail";
+
 // Components
 import { CardMenu, cardMenuStyles } from "@components/CardMenu";
 
@@ -25,6 +28,7 @@ import styles from "./DrawingCard.module.scss";
 interface DrawingCardProps {
     readonly drawing: Drawing;
     readonly to: string;
+    readonly wsId?: string;
     readonly collectionName?: string;
     readonly collectionColor?: string;
     readonly visitedAt?: number;
@@ -83,9 +87,15 @@ function DrawingCardMenu({ onEdit, onDelete }: DrawingCardMenuProps) {
     );
 }
 
+function getTimestamp(drawing: Drawing, visitedAt: number | undefined): string {
+    if (visitedAt !== undefined) return relativeTime(new Date(visitedAt).toISOString());
+    return relativeTime(drawing.updated_at ?? drawing.created_at);
+}
+
 export function DrawingCard({
     drawing,
     to,
+    wsId,
     collectionName,
     collectionColor,
     visitedAt,
@@ -94,11 +104,9 @@ export function DrawingCard({
     onDelete,
 }: DrawingCardProps) {
     const { user } = useAuth();
+    const thumbnailUrl = useThumbnail(wsId, drawing);
     const lastModifiedBy = drawing.updated_by ?? drawing.created_by;
-    const timestamp =
-        visitedAt !== undefined
-            ? relativeTime(new Date(visitedAt).toISOString())
-            : relativeTime(drawing.updated_at ?? drawing.created_at);
+    const timestamp = getTimestamp(drawing, visitedAt);
 
     return (
         <div className={styles.wrapper}>
@@ -109,7 +117,21 @@ export function DrawingCard({
                         className={styles.card}
                         onClick={() => user && recordVisit(user.id, drawing.id)}
                     >
-                        <div className={styles.thumbnail}>
+                        <div
+                            className={
+                                thumbnailUrl
+                                    ? `${styles.thumbnail} ${styles.thumbnailWithImage}`
+                                    : styles.thumbnail
+                            }
+                        >
+                            {thumbnailUrl && (
+                                <img
+                                    src={thumbnailUrl}
+                                    alt=""
+                                    className={styles.thumbnailImage}
+                                    aria-hidden="true"
+                                />
+                            )}
                             <div className={styles.topLeft}>
                                 {collectionName && (
                                     <span
@@ -127,9 +149,9 @@ export function DrawingCard({
                                 )}
                                 {!readOnly && <TagRow tags={drawing.tags} />}
                             </div>
-                            <span className={styles.timestamp}>{timestamp}</span>
                         </div>
                         <div className={styles.info}>
+                            <span className={styles.timestamp}>{timestamp}</span>
                             <p className={styles.title}>{drawing.title}</p>
                             <p className={styles.author}>by {lastModifiedBy.name}</p>
                         </div>

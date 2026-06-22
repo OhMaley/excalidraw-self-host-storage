@@ -39,6 +39,7 @@ export function WorkspaceDrawingSection({
                         key={d.id}
                         drawing={d}
                         to={`/workspaces/${wsId}/collections/${d.collection_id}/drawings/${d.id}`}
+                        wsId={wsId}
                         collectionName={collectionNameMap?.get(d.id)?.name}
                         collectionColor={collectionNameMap?.get(d.id)?.color}
                         visitedAt={visitedAtMap?.get(d.id)}

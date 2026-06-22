@@ -58,6 +58,19 @@
     overflow: hidden;
 }
 
+.thumbnailImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.thumbnailWithImage {
+    background-color: #fff;
+    background-image: none;
+}
+
 .topLeft {
     position: absolute;
     top: 0.625rem;
@@ -87,8 +100,8 @@
 
 .timestamp {
     position: absolute;
-    bottom: 0.625rem;
-    right: 0.625rem;
+    top: 0;
+    right: 0.25rem;
     font-size: 0.6875rem;
     color: var(--color-text);
     opacity: 0.65;
@@ -136,6 +149,7 @@
 // ── Info ──────────────────────────────────────────────────────────────────────
 
 .info {
+    position: relative;
     padding: 0.875rem 1rem;
 }
 

@@ -147,6 +147,9 @@ pub async fn delete(
     if let Err(e) = state.storage.delete(drawing_id).await {
         tracing::warn!(drawing_id = %drawing_id, error = %e, "failed to delete drawing content from storage");
     }
+    if let Err(e) = state.storage.delete_thumbnail(drawing_id).await {
+        tracing::warn!(drawing_id = %drawing_id, error = %e, "failed to delete drawing thumbnail from storage");
+    }
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -193,6 +196,49 @@ pub async fn put_content(
 
     state.storage.save(drawing_id, &body).await.map_err(|e| AppError::Internal(e.to_string()))?;
     db::drawings::touch(&state.pool, drawing_id, &auth.id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn get_thumbnail(
+    auth: AuthUser,
+    State(state): State<AppState>,
+    Path((workspace_id, collection_id, drawing_id)): Path<(Uuid, Uuid, Uuid)>,
+) -> Result<impl IntoResponse, AppError> {
+    super::require_member(&state.pool, workspace_id, &auth.id).await?;
+    db::collections::get(&state.pool, workspace_id, collection_id)
+        .await?
+        .ok_or_else(|| AppError::NotFound("collection not found".to_string()))?;
+    db::drawings::get(&state.pool, collection_id, drawing_id)
+        .await?
+        .ok_or_else(|| AppError::NotFound("drawing not found".to_string()))?;
+
+    match state.storage.load_thumbnail(drawing_id).await.map_err(|e| AppError::Internal(e.to_string()))? {
+        Some(bytes) => Ok((
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "image/png")],
+            Bytes::from(bytes),
+        )
+            .into_response()),
+        None => Ok(StatusCode::NOT_FOUND.into_response()),
+    }
+}
+
+pub async fn put_thumbnail(
+    auth: AuthUser,
+    State(state): State<AppState>,
+    Path((workspace_id, collection_id, drawing_id)): Path<(Uuid, Uuid, Uuid)>,
+    body: Bytes,
+) -> Result<StatusCode, AppError> {
+    super::require_member(&state.pool, workspace_id, &auth.id).await?;
+    db::collections::get(&state.pool, workspace_id, collection_id)
+        .await?
+        .ok_or_else(|| AppError::NotFound("collection not found".to_string()))?;
+    db::drawings::get(&state.pool, collection_id, drawing_id)
+        .await?
+        .ok_or_else(|| AppError::NotFound("drawing not found".to_string()))?;
+
+    state.storage.save_thumbnail(drawing_id, &body).await.map_err(|e| AppError::Internal(e.to_string()))?;
 
     Ok(StatusCode::NO_CONTENT)
 }

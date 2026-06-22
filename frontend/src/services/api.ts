@@ -95,3 +95,21 @@ export async function putJson(url: string, body: unknown, errorMessage: string):
         throw new HttpError(res.status, res.statusText, errorMessage);
     }
 }
+
+export async function putBinary(url: string, blob: Blob, errorMessage: string): Promise<void> {
+    const res = await apiFetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": blob.type },
+        body: blob,
+    });
+    if (!res.ok) {
+        throw new HttpError(res.status, res.statusText, errorMessage);
+    }
+}
+
+export async function fetchBlob(url: string): Promise<Blob | null> {
+    const res = await apiFetch(url, { method: "GET", headers: { Accept: "image/png" } });
+    if (res.status === HttpStatus.NOT_FOUND) return null;
+    if (!res.ok) throw new HttpError(res.status, res.statusText, "Failed to fetch image");
+    return res.blob();
+}

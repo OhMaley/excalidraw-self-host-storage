@@ -10,6 +10,7 @@ import ChevronLeftIcon from "@assets/icons/chevron-left.svg?react";
 
 import { SearchBar } from "@components/SearchSortToolbar";
 import { useCollectionView } from "@hooks/useCollectionView";
+import { useThumbnail } from "@hooks/useThumbnail";
 import { createCollection, listCollections, type Collection } from "@services/collections";
 import {
     createWorkspace,
@@ -117,6 +118,7 @@ function DrawingItem({ drawing, isActive, wsId, colId }: DrawingItemProps) {
     const time = relativeTime(drawing.updated_at ?? drawing.created_at);
     const author = (drawing.updated_by ?? drawing.created_by).name;
     const to = `/workspaces/${wsId}/collections/${colId}/drawings/${drawing.id}`;
+    const thumbnailUrl = useThumbnail(wsId, drawing);
     return (
         <Tooltip.Root>
             <Tooltip.Trigger asChild>
@@ -124,7 +126,22 @@ function DrawingItem({ drawing, isActive, wsId, colId }: DrawingItemProps) {
                     to={to}
                     className={`${styles.drawingItem} ${isActive ? styles.activeItem : ""}`}
                 >
-                    <div className={styles.thumbnail} />
+                    <div
+                        className={
+                            thumbnailUrl
+                                ? `${styles.thumbnail} ${styles.thumbnailWithImage}`
+                                : styles.thumbnail
+                        }
+                    >
+                        {thumbnailUrl && (
+                            <img
+                                src={thumbnailUrl}
+                                alt=""
+                                className={styles.thumbnailImage}
+                                aria-hidden="true"
+                            />
+                        )}
+                    </div>
                     <div className={styles.drawingInfo}>
                         <div className={styles.drawingTitleWrapper}>
                             <p className={styles.drawingTitle}>{drawing.title}</p>
