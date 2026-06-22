@@ -1,0 +1,64 @@
+@use "../../styles/icon-button";
+
+.topBar {
+    position: absolute;
+    top: 1rem;
+    left: 4rem;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: var(--button-size-md);
+    pointer-events: none;
+
+    > * {
+        pointer-events: auto;
+    }
+}
+
+.toggleButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--button-size-md);
+    height: var(--button-size-md);
+    @include icon-button.surface-button-base;
+}
+
+.title {
+    max-width: 15rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-on-surface);
+}
+
+.icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+    color: var(--color-text-muted);
+}
+
+.saved {
+    color: var(--color-success);
+}
+
+.error {
+    color: var(--color-red);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -55,6 +55,17 @@ export function deleteDrawing(
     );
 }
 
+export function getDrawing(
+    workspaceId: string,
+    collectionId: string,
+    drawingId: string
+): Promise<Drawing> {
+    return getJson<Drawing>(
+        `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}/drawings/${encodeURIComponent(drawingId)}`,
+        "Failed to load drawing"
+    );
+}
+
 export function listDrawings(workspaceId: string, collectionId: string): Promise<Drawing[]> {
     return getJson<Drawing[]>(
         `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}/drawings`,

@@ -38,3 +38,11 @@ export function loadDraft(drawingId?: string): Draft | null {
         return null;
     }
 }
+
+export function clearDraft(drawingId?: string): void {
+    try {
+        localStorage.removeItem(draftKey(drawingId));
+    } catch {
+        // Ignore
+    }
+}

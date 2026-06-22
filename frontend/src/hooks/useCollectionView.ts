@@ -21,6 +21,10 @@ function withoutDrawing(id: string) {
     return (prev: Drawing[]) => prev.filter((d) => d.id !== id);
 }
 
+function withNewDrawing(drawing: Drawing) {
+    return (prev: Drawing[]) => sortByLastModified([...prev, drawing]);
+}
+
 function withUpdatedDrawing(updated: Drawing) {
     return (prev: Drawing[]) =>
         sortByLastModified(prev.map((d) => (d.id === updated.id ? updated : d)));
@@ -36,6 +40,7 @@ interface UseCollectionViewResult {
         name: string,
         description: string | null
     ) => Promise<Collection>;
+    readonly addDrawing: (drawing: Drawing) => void;
 }
 
 export function useCollectionView(
@@ -87,6 +92,10 @@ export function useCollectionView(
         });
     }
 
+    function addDrawing(drawing: Drawing): void {
+        setDrawings(withNewDrawing(drawing));
+    }
+
     function handleEditCollection(name: string, description: string | null): Promise<Collection> {
         if (!wsId || !colId) return Promise.reject(new Error("No workspace or collection"));
         return updateCollection(wsId, colId, name, description).then((updated) => {
@@ -95,5 +104,13 @@ export function useCollectionView(
         });
     }
 
-    return { collection, drawings, loading, handleDelete, handleEdit, handleEditCollection };
+    return {
+        collection,
+        drawings,
+        loading,
+        handleDelete,
+        handleEdit,
+        handleEditCollection,
+        addDrawing,
+    };
 }

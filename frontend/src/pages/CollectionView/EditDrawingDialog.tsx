@@ -203,7 +203,7 @@ function EditDialogContent({
 
                 {collections.length > 1 && (
                     <CollectionSelectField
-                        collections={collections}
+                        items={collections}
                         value={collectionId}
                         contentEl={contentEl}
                         disabled={loading}
