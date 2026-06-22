@@ -149,7 +149,10 @@ function CollectionActions({
 
 function useDrawingInfoPanel(wsId: string, colId: string) {
     const navigate = useNavigate();
-    const { collection, drawings, addDrawing } = useCollectionView(wsId, colId);
+    const { collection, drawings, addDrawing, updateDrawingInList } = useCollectionView(
+        wsId,
+        colId
+    );
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
     const [creating, setCreating] = useState(false);
 
@@ -182,7 +185,7 @@ function useDrawingInfoPanel(wsId: string, colId: string) {
         }
     }
 
-    return { collection, drawings, workspace, creating, handleCreate };
+    return { collection, drawings, workspace, creating, handleCreate, updateDrawingInList };
 }
 
 interface DrawingInfoPanelProps {
@@ -192,16 +195,22 @@ interface DrawingInfoPanelProps {
     readonly isDocked: boolean;
     readonly onDockChange: (docked: boolean) => void;
     readonly onClose: () => void;
+    readonly updatedDrawing?: Drawing | null;
 }
 
 export const DrawingInfoPanel = forwardRef<HTMLDivElement, DrawingInfoPanelProps>(
-    function DrawingInfoPanel({ wsId, colId, drawingId, isDocked, onDockChange, onClose }, ref) {
+    function DrawingInfoPanel(
+        { wsId, colId, drawingId, isDocked, onDockChange, onClose, updatedDrawing },
+        ref
+    ) {
         const [searchQuery, setSearchQuery] = useState("");
         const [sortAsc, setSortAsc] = useState(false);
-        const { collection, drawings, workspace, creating, handleCreate } = useDrawingInfoPanel(
-            wsId,
-            colId
-        );
+        const { collection, drawings, workspace, creating, handleCreate, updateDrawingInList } =
+            useDrawingInfoPanel(wsId, colId);
+
+        useEffect(() => {
+            if (updatedDrawing) updateDrawingInList(updatedDrawing);
+        }, [updatedDrawing, updateDrawingInList]);
 
         const filtered = drawings
             .filter((d) => d.title.toLowerCase().includes(searchQuery.toLowerCase()))

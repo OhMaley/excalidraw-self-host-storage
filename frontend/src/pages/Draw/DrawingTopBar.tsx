@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import styles from "./DrawingTopBar.module.scss";
 
 import PanelLeftIcon from "@assets/icons/panel-left.svg?react";
@@ -11,9 +12,15 @@ interface DrawingTopBarProps {
     readonly title: string;
     readonly saveStatus: SaveStatus;
     readonly onToggleSidebar: () => void;
+    readonly onTitleChange?: (title: string) => void;
 }
 
-export function DrawingTopBar({ title, saveStatus, onToggleSidebar }: DrawingTopBarProps) {
+export function DrawingTopBar({
+    title,
+    saveStatus,
+    onToggleSidebar,
+    onTitleChange,
+}: DrawingTopBarProps) {
     return (
         <div className={styles.topBar}>
             <button
@@ -24,9 +31,74 @@ export function DrawingTopBar({ title, saveStatus, onToggleSidebar }: DrawingTop
             >
                 <PanelLeftIcon className={styles.icon} />
             </button>
-            <span className={styles.title}>{title}</span>
+            {onTitleChange ? (
+                <EditableTitle title={title} onTitleChange={onTitleChange} />
+            ) : (
+                <span className={styles.title}>{title}</span>
+            )}
             <SaveStatusIcon saveStatus={saveStatus} />
         </div>
+    );
+}
+
+interface EditableTitleProps {
+    readonly title: string;
+    readonly onTitleChange: (title: string) => void;
+}
+
+function EditableTitle({ title, onTitleChange }: EditableTitleProps) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [draft, setDraft] = useState(title);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (isEditing) inputRef.current?.select();
+    }, [isEditing]);
+
+    function startEditing() {
+        setDraft(title);
+        setIsEditing(true);
+    }
+
+    function commit() {
+        const trimmed = draft.trim();
+        setIsEditing(false);
+        if (trimmed && trimmed !== title) {
+            onTitleChange(trimmed);
+        }
+    }
+
+    function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.key === "Enter") commit();
+        if (e.key === "Escape") setIsEditing(false);
+    }
+
+    if (isEditing) {
+        return (
+            <input
+                ref={inputRef}
+                className={styles.titleInput}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={commit}
+                onKeyDown={handleKeyDown}
+            />
+        );
+    }
+
+    return (
+        <span
+            className={styles.title}
+            onClick={startEditing}
+            title="Click to rename"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === "Enter") startEditing();
+            }}
+        >
+            {title}
+        </span>
     );
 }
 

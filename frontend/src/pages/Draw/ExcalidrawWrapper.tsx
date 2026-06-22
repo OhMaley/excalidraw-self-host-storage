@@ -30,7 +30,6 @@ import type {
     ExcalidrawProps,
 } from "@excalidraw/excalidraw/types";
 import type { ExcalidrawFile } from "@services/storage";
-import type { Drawing } from "@services/drawings";
 
 // Styles
 import "@excalidraw/excalidraw/index.css";
@@ -43,7 +42,7 @@ import { serializeAsJSON } from "@excalidraw/excalidraw";
 
 // Services
 import { loadDrawingContent } from "@services/storage";
-import { getDrawing } from "@services/drawings";
+import { getDrawing, updateDrawing, type Drawing } from "@services/drawings";
 
 // Extracts the type of the first argument of Excalidraw's onChange prop.
 // Using Parameters<> keeps this type in sync with the library automatically.
@@ -208,7 +207,7 @@ function useDrawingBackend({
         return JSON.parse(serializeAsJSON(elements, appState, files, "local")) as ExcalidrawFile;
     }, [excalidrawAPIRef]);
 
-    return { backendState, drawingMeta, handleChange, getContent };
+    return { backendState, drawingMeta, setDrawingMeta, handleChange, getContent };
 }
 
 // ─── ExcalidrawCanvas ─────────────────────────────────────────────────────────
@@ -218,6 +217,7 @@ interface ExcalidrawCanvasProps {
     readonly drawingMeta: Drawing | null;
     readonly saveStatus: SaveStatus;
     readonly onToggleSidebar: () => void;
+    readonly onTitleChange: (title: string) => void;
     readonly isAuthenticated: boolean;
     readonly authLoading: boolean;
     readonly onSignIn: () => void;
@@ -231,6 +231,7 @@ interface ExcalidrawCanvasProps {
         isDocked: boolean;
         onDockChange: (docked: boolean) => void;
         onClose: () => void;
+        updatedDrawing?: Drawing | null;
     };
     readonly onChange: (elements: OnChangeElements, appState: AppState, files: BinaryFiles) => void;
     readonly draftData: ReturnType<typeof loadDraft>;
@@ -242,6 +243,7 @@ function ExcalidrawCanvas({
     drawingMeta,
     saveStatus,
     onToggleSidebar,
+    onTitleChange,
     isAuthenticated,
     authLoading,
     onSignIn,
@@ -262,6 +264,7 @@ function ExcalidrawCanvas({
                     title={drawingMeta.title}
                     saveStatus={saveStatus}
                     onToggleSidebar={onToggleSidebar}
+                    onTitleChange={onTitleChange}
                 />
             )}
 
@@ -308,14 +311,33 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
 
     const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
 
-    const { backendState, drawingMeta, handleChange, getContent } = useDrawingBackend({
-        wsId,
-        colId,
-        drawingId,
-        save,
-        recordBaseline,
-        excalidrawAPIRef,
-    });
+    const { backendState, drawingMeta, setDrawingMeta, handleChange, getContent } =
+        useDrawingBackend({
+            wsId,
+            colId,
+            drawingId,
+            save,
+            recordBaseline,
+            excalidrawAPIRef,
+        });
+
+    const [updatedDrawingForPanel, setUpdatedDrawingForPanel] = useState<Drawing | null>(null);
+
+    const handleTitleChange = useCallback(
+        async (newTitle: string) => {
+            if (!wsId || !colId || !drawingId || !drawingMeta) return;
+            const prev = drawingMeta;
+            setDrawingMeta({ ...prev, title: newTitle });
+            try {
+                const updated = await updateDrawing(wsId, colId, drawingId, { title: newTitle });
+                setDrawingMeta(updated);
+                setUpdatedDrawingForPanel(updated);
+            } catch {
+                setDrawingMeta(prev);
+            }
+        },
+        [wsId, colId, drawingId, drawingMeta, setDrawingMeta]
+    );
 
     // True only when all three IDs are present — this is a saved, backend-linked drawing.
     const isLinkedDrawing = Boolean(wsId && colId && drawingId);
@@ -355,6 +377,7 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
         isDocked,
         onDockChange: setIsDocked,
         onClose: () => setIsPanelOpen(false),
+        updatedDrawing: updatedDrawingForPanel,
     };
 
     return (
@@ -366,6 +389,9 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
                 drawingMeta={drawingMeta}
                 saveStatus={saveStatus}
                 onToggleSidebar={handleTogglePanel}
+                onTitleChange={(title) => {
+                    void handleTitleChange(title);
+                }}
                 isAuthenticated={isAuthenticated}
                 authLoading={authLoading}
                 onSignIn={handleSignIn}

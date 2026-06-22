@@ -26,13 +26,39 @@
 }
 
 .title {
-    max-width: 15rem;
+    max-width: 12rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 1rem;
     font-weight: 500;
     color: var(--color-on-surface);
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--border-radius-sm);
+    cursor: text;
+
+    &:hover {
+        background-color: var(--button-hover-bg);
+    }
+}
+
+.titleInput {
+    width: 12rem;
+    max-width: 12rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-on-surface);
+    font-family: inherit;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-sm);
+    padding: 0.125rem 0.25rem;
+    outline: none;
+
+    &:focus {
+        background-color: var(--color-background);
+        border-color: var(--color-primary);
+    }
 }
 
 .icon {
