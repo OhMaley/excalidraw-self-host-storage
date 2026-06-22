@@ -248,6 +248,55 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /workspaces/{workspaceId}/collections/{collectionId}/drawings/{drawingId}/thumbnail:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+      - $ref: '#/components/parameters/CollectionId'
+      - $ref: '#/components/parameters/DrawingId'
+    get:
+      operationId: getDrawingThumbnail
+      summary: Fetch a drawing's PNG thumbnail.
+      description: |
+        Returns the PNG thumbnail for the specified drawing. Returns `404 Not Found` if the drawing exists but has no thumbnail yet.
+      tags:
+        - Drawings
+      responses:
+        '200':
+          description: OK
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: putDrawingThumbnail
+      summary: Upload a PNG thumbnail for a drawing.
+      description: |
+        Stores a PNG thumbnail for the drawing, replacing any existing one. Thumbnails are generated client-side via Excalidraw's export API and uploaded after each successful content save.
+      tags:
+        - Drawings
+      requestBody:
+        required: true
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Thumbnail saved.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /workspaces:
     get:
       operationId: listWorkspaces

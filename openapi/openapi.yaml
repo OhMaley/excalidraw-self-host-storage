@@ -80,6 +80,8 @@ paths:
     $ref: "./paths/drawings.yaml#/single"
   /workspaces/{workspaceId}/collections/{collectionId}/drawings/{drawingId}/content:
     $ref: "./paths/drawing_content.yaml#/content"
+  /workspaces/{workspaceId}/collections/{collectionId}/drawings/{drawingId}/thumbnail:
+    $ref: "./paths/drawing_thumbnail.yaml#/thumbnail"
 
   /workspaces:
     $ref: "./paths/workspaces.yaml#/list"

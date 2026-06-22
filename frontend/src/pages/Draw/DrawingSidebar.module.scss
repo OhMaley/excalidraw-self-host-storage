@@ -304,12 +304,26 @@
 // ── Thumbnail ─────────────────────────────────────────────────────────────────
 
 .thumbnail {
+    position: relative;
     width: 8rem;
     height: 6rem;
     flex-shrink: 0;
     border-radius: var(--border-radius-sm);
     overflow: hidden;
     @include thumbnail.grid-background;
+}
+
+.thumbnailWithImage {
+    background-color: #fff;
+    background-image: none;
+}
+
+.thumbnailImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 // ── Drawing text info ─────────────────────────────────────────────────────────

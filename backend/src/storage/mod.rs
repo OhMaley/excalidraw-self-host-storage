@@ -43,4 +43,22 @@ impl StorageBackend {
             StorageBackend::Local(s) => s.delete(drawing_id).await,
         }
     }
+
+    pub async fn load_thumbnail(&self, drawing_id: Uuid) -> Result<Option<Vec<u8>>, StorageError> {
+        match self {
+            StorageBackend::Local(s) => s.load_thumbnail(drawing_id).await,
+        }
+    }
+
+    pub async fn save_thumbnail(&self, drawing_id: Uuid, data: &[u8]) -> Result<(), StorageError> {
+        match self {
+            StorageBackend::Local(s) => s.save_thumbnail(drawing_id, data).await,
+        }
+    }
+
+    pub async fn delete_thumbnail(&self, drawing_id: Uuid) -> Result<(), StorageError> {
+        match self {
+            StorageBackend::Local(s) => s.delete_thumbnail(drawing_id).await,
+        }
+    }
 }

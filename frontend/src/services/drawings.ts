@@ -1,5 +1,5 @@
 // Services
-import { API_BASE, deleteRequest, getJson, patchJson, postJson } from "@services/api";
+import { API_BASE, deleteRequest, getJson, patchJson, postJson, putBinary } from "@services/api";
 
 interface DrawingAuthor {
     id: string;
@@ -82,5 +82,18 @@ export function createDrawing(
         `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}/drawings`,
         data,
         "Failed to create drawing"
+    );
+}
+
+export function uploadThumbnail(
+    workspaceId: string,
+    collectionId: string,
+    drawingId: string,
+    blob: Blob
+): Promise<void> {
+    return putBinary(
+        `${API_BASE}/workspaces/${encodeURIComponent(workspaceId)}/collections/${encodeURIComponent(collectionId)}/drawings/${encodeURIComponent(drawingId)}/thumbnail`,
+        blob,
+        "Failed to upload thumbnail"
     );
 }

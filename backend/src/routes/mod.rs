@@ -57,6 +57,10 @@ pub fn build_router() -> Router<AppState> {
         .route(
             "/{workspace_id}/collections/{collection_id}/drawings/{drawing_id}/content",
             get(drawings::get_content).put(drawings::put_content),
+        )
+        .route(
+            "/{workspace_id}/collections/{collection_id}/drawings/{drawing_id}/thumbnail",
+            get(drawings::get_thumbnail).put(drawings::put_thumbnail),
         );
 
     Router::new()
