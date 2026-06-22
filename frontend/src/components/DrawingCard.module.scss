@@ -1,4 +1,5 @@
 @use "../styles/card-menu";
+@use "../styles/thumbnail";
 @use "../styles/tooltip";
 
 // ── Wrapper ───────────────────────────────────────────────────────────────────
@@ -53,11 +54,7 @@
 .thumbnail {
     position: relative;
     aspect-ratio: 4 / 3;
-    background-color: var(--color-background-gray);
-    background-image:
-        linear-gradient(var(--default-border-color) 1px, transparent 1px),
-        linear-gradient(90deg, var(--default-border-color) 1px, transparent 1px);
-    background-size: 1.5rem 1.5rem;
+    @include thumbnail.grid-background;
     overflow: hidden;
 }
 

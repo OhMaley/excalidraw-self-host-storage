@@ -1,11 +1,11 @@
 import { useId } from "react";
 import { Select } from "radix-ui";
 
-import type { Collection } from "@services/collections";
 import styles from "./CollectionSelectField.module.scss";
 
 export interface CollectionSelectFieldProps {
-    readonly collections: Collection[];
+    readonly items: { id: string; name: string }[];
+    readonly label?: string;
     readonly value: string;
     readonly onChange: (id: string) => void;
     readonly disabled: boolean;
@@ -13,7 +13,8 @@ export interface CollectionSelectFieldProps {
 }
 
 export function CollectionSelectField({
-    collections,
+    items,
+    label = "Collection",
     value,
     onChange,
     disabled,
@@ -24,7 +25,7 @@ export function CollectionSelectField({
     return (
         <div className={styles.field}>
             <label id={labelId} htmlFor={triggerId} className={styles.label}>
-                Collection
+                {label}
             </label>
             <Select.Root value={value} onValueChange={onChange} disabled={disabled}>
                 <Select.Trigger
@@ -42,13 +43,13 @@ export function CollectionSelectField({
                         sideOffset={4}
                     >
                         <Select.Viewport>
-                            {collections.map((col) => (
+                            {items.map((item) => (
                                 <Select.Item
-                                    key={col.id}
-                                    value={col.id}
+                                    key={item.id}
+                                    value={item.id}
                                     className={styles.selectItem}
                                 >
-                                    <Select.ItemText>{col.name}</Select.ItemText>
+                                    <Select.ItemText>{item.name}</Select.ItemText>
                                 </Select.Item>
                             ))}
                         </Select.Viewport>

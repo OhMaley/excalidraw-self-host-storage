@@ -10,7 +10,8 @@ import { useToast } from "@hooks/useToast";
 
 // Services
 import { deleteWorkspace, updateWorkspace } from "@services/workspaces";
-import { createDrawing } from "@services/drawings";
+import { createDrawing, listDrawings } from "@services/drawings";
+import { nextDrawingName } from "@utils/stringUtils";
 
 // Components
 import { WorkspaceDrawingSection } from "./WorkspaceDrawingSection";
@@ -48,7 +49,9 @@ function NewDrawingButton({ wsId }: { readonly wsId: string }) {
     }
 
     async function handleCreateDrawing(colId: string) {
-        const drawing = await createDrawing(wsId, colId, { title: "Untitled" });
+        const existing = await listDrawings(wsId, colId);
+        const title = nextDrawingName(existing.map((d) => d.title));
+        const drawing = await createDrawing(wsId, colId, { title });
         void navigate(`/workspaces/${wsId}/collections/${colId}/drawings/${drawing.id}`);
     }
 

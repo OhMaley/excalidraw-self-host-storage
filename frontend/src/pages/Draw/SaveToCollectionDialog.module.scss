@@ -1,7 +1,14 @@
 @use "../../styles/dialog-form";
 
-// .overlay, .content, .form, .field, .label, .error, .actions,
+// .overlay, .content, .form, .field, .label, .input, .error, .actions,
 // .title, .subtitle — forwarded from dialog-form via @use
+
+.hint {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    opacity: 0.6;
+}
 
 .cancelButton {
     @include dialog-form.cancel-button;

@@ -1,0 +1,7 @@
+@mixin grid-background {
+    background-color: var(--color-background-gray);
+    background-image:
+        linear-gradient(var(--default-border-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--default-border-color) 1px, transparent 1px);
+    background-size: 1.5rem 1.5rem;
+}

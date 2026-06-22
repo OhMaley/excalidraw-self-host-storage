@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog } from "radix-ui";
 
 import { CollectionSelectField } from "@components/CollectionSelectField";
+import { FormDialog } from "@components/FormDialog";
 import type { Collection } from "@services/collections";
 import styles from "./NewDrawingDialog.module.scss";
 
@@ -51,52 +52,41 @@ export function NewDrawingDialog({
     }
 
     return (
-        <Dialog.Root open={open} onOpenChange={handleOpenChange}>
-            <Dialog.Portal>
-                <Dialog.Overlay className={styles.overlay} />
-                <Dialog.Content
-                    ref={setContentEl}
-                    className={styles.content}
-                    onCloseAutoFocus={(e) => e.preventDefault()}
-                >
-                    <Dialog.Title className={styles.title}>Start drawing</Dialog.Title>
-                    <Dialog.Description className={styles.subtitle}>
-                        Choose which collection to save your drawing in.
-                    </Dialog.Description>
-                    <div className={styles.form}>
-                        <CollectionSelectField
-                            collections={collections}
-                            value={effectiveColId}
-                            onChange={setColId}
-                            disabled={loading}
-                            contentEl={contentEl}
-                        />
-                        {error && (
-                            <p className={styles.error}>
-                                Failed to create drawing. Please try again.
-                            </p>
-                        )}
-                        <div className={styles.actions}>
-                            <button
-                                type="button"
-                                className={`btn-md ${styles.cancelButton}`}
-                                disabled={loading}
-                                onClick={close}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                className={`btn-md ${styles.confirmButton}`}
-                                disabled={loading || !effectiveColId}
-                                onClick={() => void handleConfirm()}
-                            >
-                                {loading ? "Creating…" : "Start drawing"}
-                            </button>
-                        </div>
-                    </div>
-                </Dialog.Content>
-            </Dialog.Portal>
-        </Dialog.Root>
+        <FormDialog open={open} onOpenChange={handleOpenChange} ref={setContentEl}>
+            <Dialog.Title className={styles.title}>Start drawing</Dialog.Title>
+            <Dialog.Description className={styles.subtitle}>
+                Choose which collection to save your drawing in.
+            </Dialog.Description>
+            <div className={styles.form}>
+                <CollectionSelectField
+                    items={collections}
+                    value={effectiveColId}
+                    onChange={setColId}
+                    disabled={loading}
+                    contentEl={contentEl}
+                />
+                {error && (
+                    <p className={styles.error}>Failed to create drawing. Please try again.</p>
+                )}
+                <div className={styles.actions}>
+                    <button
+                        type="button"
+                        className={`btn-md ${styles.cancelButton}`}
+                        disabled={loading}
+                        onClick={close}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn-md ${styles.confirmButton}`}
+                        disabled={loading || !effectiveColId}
+                        onClick={() => void handleConfirm()}
+                    >
+                        {loading ? "Creating…" : "Start drawing"}
+                    </button>
+                </div>
+            </div>
+        </FormDialog>
     );
 }

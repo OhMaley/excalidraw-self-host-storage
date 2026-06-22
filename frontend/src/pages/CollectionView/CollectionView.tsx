@@ -30,7 +30,7 @@ import { createDrawing } from "@services/drawings";
 
 // Utils
 import { getColorFromId } from "@utils/colorUtils";
-import { getInitials } from "@utils/stringUtils";
+import { getInitials, nextDrawingName } from "@utils/stringUtils";
 
 // Styles
 import styles from "./CollectionView.module.scss";
@@ -410,7 +410,8 @@ export default function CollectionView() {
 
     function handleNewDrawing() {
         if (!wsId || !colId) return;
-        void createDrawing(wsId, colId, { title: "Untitled" })
+        const title = nextDrawingName(drawings.map((d) => d.title));
+        void createDrawing(wsId, colId, { title })
             .then((d) => navigate(`/workspaces/${wsId}/collections/${colId}/drawings/${d.id}`))
             .catch(() => showToast(DRAWING_CREATE_ERROR));
     }
