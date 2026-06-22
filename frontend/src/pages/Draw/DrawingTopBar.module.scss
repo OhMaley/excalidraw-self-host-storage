@@ -7,7 +7,7 @@
     z-index: 5;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.75rem;
     height: var(--button-size-md);
     pointer-events: none;
 
@@ -65,6 +65,16 @@
     width: 1rem;
     height: 1rem;
     flex-shrink: 0;
+}
+
+.saveIconOverlay {
+    position: absolute;
+    left: calc(var(--button-size-md) + 0.5rem);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    pointer-events: none;
 }
 
 .spinning {

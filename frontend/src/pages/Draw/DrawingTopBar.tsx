@@ -36,7 +36,9 @@ export function DrawingTopBar({
             ) : (
                 <span className={styles.title}>{title}</span>
             )}
-            <SaveStatusIcon saveStatus={saveStatus} />
+            <div className={styles.saveIconOverlay}>
+                <SaveStatusIcon saveStatus={saveStatus} />
+            </div>
         </div>
     );
 }
