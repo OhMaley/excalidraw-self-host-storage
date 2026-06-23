@@ -27,6 +27,8 @@ tags:
     description: Manage collections of drawings within a workspace.
   - name: Drawings
     description: Manage individual drawings within a collection.
+  - name: Health
+    description: Liveness and readiness probes.
 
 security:
   - keycloak: []
@@ -99,3 +101,8 @@ paths:
     $ref: "./paths/workspace-collections.yaml#/list"
   /workspaces/{workspaceId}/collections/{collectionId}:
     $ref: "./paths/workspace-collections.yaml#/single"
+
+  /health:
+    $ref: "./paths/health.yaml#/liveness"
+  /health/db:
+    $ref: "./paths/health.yaml#/readiness"

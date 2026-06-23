@@ -25,10 +25,13 @@ struct Inner {
 }
 
 impl JwksStore {
-    pub fn new(jwks_url: String, issuer: String) -> Self {
+    pub fn new(jwks_url: String, issuer: String, audience: Option<String>) -> Self {
         let mut validation = Validation::new(Algorithm::RS256);
         validation.set_issuer(&[issuer]);
-        validation.validate_aud = false;
+        match audience {
+            Some(ref aud) => validation.set_audience(&[aud]),
+            None => validation.validate_aud = false,
+        }
 
         JwksStore(Arc::new(Inner {
             jwks_url,

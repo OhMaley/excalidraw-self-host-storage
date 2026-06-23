@@ -6,7 +6,7 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{auth::AuthUser, db, error::AppError, models::Collection, state::AppState};
+use crate::{auth::AuthUser, db, error::AppError, models::{Collection, WorkspaceRole}, state::AppState};
 
 #[derive(Deserialize)]
 pub(super) struct CreateBody {
@@ -90,11 +90,15 @@ pub async fn delete(
     State(state): State<AppState>,
     Path((workspace_id, collection_id)): Path<(Uuid, Uuid)>,
 ) -> Result<StatusCode, AppError> {
-    super::require_member(&state.pool, workspace_id, &auth.id).await?;
-    // Verify collection exists in this workspace before deleting.
-    db::collections::get(&state.pool, workspace_id, collection_id)
+    let member = super::require_member(&state.pool, workspace_id, &auth.id).await?;
+    let col = db::collections::get(&state.pool, workspace_id, collection_id)
         .await?
         .ok_or_else(|| AppError::NotFound("collection not found".to_string()))?;
+    if member.role != WorkspaceRole::Owner && col.created_by.id != auth.id {
+        return Err(AppError::Forbidden(
+            "only the workspace owner or collection creator can delete a collection".to_string(),
+        ));
+    }
     db::collections::delete(&state.pool, collection_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }

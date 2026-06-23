@@ -1,0 +1,56 @@
+liveness:
+  get:
+    operationId: getHealth
+    summary: Liveness check.
+    description: Returns 200 as long as the server process is running. No authentication required.
+    tags: [Health]
+    security: []
+    responses:
+      "200":
+        description: Server is alive.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  example: "ok"
+            example:
+              status: "ok"
+
+readiness:
+  get:
+    operationId: getHealthDb
+    summary: Readiness check.
+    description: Returns 200 if the server can reach the database, 503 otherwise. No authentication required.
+    tags: [Health]
+    security: []
+    responses:
+      "200":
+        description: Server and database are reachable.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  example: "ok"
+            example:
+              status: "ok"
+      "503":
+        description: Database is unreachable.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  example: "error"
+            example:
+              status: "error"

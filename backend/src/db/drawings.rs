@@ -340,6 +340,20 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn create_duplicate_title_returns_conflict() {
+        let pool = test_pool().await;
+        let user_id = seed_user(&pool).await;
+        let ws_id = seed_workspace(&pool, &user_id).await;
+        let col_id = seed_collection(&pool, ws_id, &user_id).await;
+
+        create(&pool, col_id, &user_id, "Duplicate", None, &[]).await.unwrap();
+        let err = create(&pool, col_id, &user_id, "Duplicate", None, &[]).await.unwrap_err();
+        assert!(matches!(err, AppError::Conflict(_)));
+
+        cleanup_user(&pool, &user_id).await;
+    }
+
+    #[tokio::test]
     async fn touch_nonexistent_drawing_does_not_error() {
         let pool = test_pool().await;
         let user_id = seed_user(&pool).await;

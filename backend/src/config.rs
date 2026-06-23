@@ -5,7 +5,9 @@ pub struct Config {
     pub port: u16,
     pub keycloak_jwks_url: String,
     pub keycloak_issuer: String,
-    /// Comma-separated list of allowed origins, or `*` to allow all.
+    /// When set, only tokens whose `aud` claim contains this value are accepted.
+    pub keycloak_audience: Option<String>,
+    /// Comma-separated list of allowed origins. Empty string = deny all cross-origin requests.
     pub cors_allowed_origins: String,
     /// Base directory for local drawing file storage.
     pub storage_local_path: PathBuf,
@@ -21,8 +23,9 @@ impl Config {
                 .parse()?,
             keycloak_jwks_url: required("KEYCLOAK_JWKS_URL")?,
             keycloak_issuer: required("KEYCLOAK_ISSUER")?,
+            keycloak_audience: env::var("KEYCLOAK_AUDIENCE").ok().filter(|s| !s.is_empty()),
             cors_allowed_origins: env::var("CORS_ALLOWED_ORIGINS")
-                .unwrap_or_else(|_| "*".to_string()),
+                .unwrap_or_default(),
             storage_local_path: env::var("STORAGE_LOCAL_PATH")
                 .unwrap_or_else(|_| "./drawings".to_string())
                 .into(),

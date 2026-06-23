@@ -2,6 +2,7 @@
 name = "excalidraw-storage-backend"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 # Minimum driven by sqlx 0.9 (requires 1.94) and Rust edition 2024 (requires 1.85).
 rust-version = "1.94"
 
@@ -26,7 +27,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 
 # Auth — JWT validation against Keycloak JWKS
-jsonwebtoken = { version = "10", features = ["rust_crypto"] }
+jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
 reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "webpki-roots"] }
 
 # Error handling

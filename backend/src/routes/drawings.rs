@@ -9,7 +9,7 @@ use serde::Deserialize;
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::{auth::AuthUser, db, error::AppError, models::Drawing, state::AppState};
+use crate::{auth::AuthUser, db, error::AppError, models::{Drawing, WorkspaceRole}, state::AppState};
 
 // Ensures the `files` key is always present in stored drawing JSON, defaulting to `{}`.
 // Drawings saved before this field was introduced may omit it, which breaks the frontend.
@@ -136,19 +136,28 @@ pub async fn delete(
     State(state): State<AppState>,
     Path((workspace_id, collection_id, drawing_id)): Path<(Uuid, Uuid, Uuid)>,
 ) -> Result<StatusCode, AppError> {
-    super::require_member(&state.pool, workspace_id, &auth.id).await?;
-    db::collections::get(&state.pool, workspace_id, collection_id)
+    let member = super::require_member(&state.pool, workspace_id, &auth.id).await?;
+    let col = db::collections::get(&state.pool, workspace_id, collection_id)
         .await?
         .ok_or_else(|| AppError::NotFound("collection not found".to_string()))?;
-    db::drawings::get(&state.pool, collection_id, drawing_id)
+    let drawing = db::drawings::get(&state.pool, collection_id, drawing_id)
         .await?
         .ok_or_else(|| AppError::NotFound("drawing not found".to_string()))?;
+    if member.role != WorkspaceRole::Owner
+        && drawing.created_by.id != auth.id
+        && col.created_by.id != auth.id
+    {
+        return Err(AppError::Forbidden(
+            "only the workspace owner, collection creator, or drawing creator can delete a drawing"
+                .to_string(),
+        ));
+    }
     db::drawings::delete(&state.pool, drawing_id).await?;
     if let Err(e) = state.storage.delete(drawing_id).await {
-        tracing::warn!(drawing_id = %drawing_id, error = %e, "failed to delete drawing content from storage");
+        tracing::error!(drawing_id = %drawing_id, error = %e, "orphaned drawing content file remains on disk — manual cleanup required");
     }
     if let Err(e) = state.storage.delete_thumbnail(drawing_id).await {
-        tracing::warn!(drawing_id = %drawing_id, error = %e, "failed to delete drawing thumbnail from storage");
+        tracing::error!(drawing_id = %drawing_id, error = %e, "orphaned drawing thumbnail file remains on disk — manual cleanup required");
     }
     Ok(StatusCode::NO_CONTENT)
 }
