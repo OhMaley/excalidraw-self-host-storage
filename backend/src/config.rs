@@ -23,7 +23,7 @@ impl Config {
                 .parse()?,
             keycloak_jwks_url: required("KEYCLOAK_JWKS_URL")?,
             keycloak_issuer: required("KEYCLOAK_ISSUER")?,
-            keycloak_audience: env::var("KEYCLOAK_AUDIENCE").ok(),
+            keycloak_audience: env::var("KEYCLOAK_AUDIENCE").ok().filter(|s| !s.is_empty()),
             cors_allowed_origins: env::var("CORS_ALLOWED_ORIGINS")
                 .unwrap_or_default(),
             storage_local_path: env::var("STORAGE_LOCAL_PATH")
