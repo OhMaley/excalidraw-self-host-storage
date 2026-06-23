@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use super::User;
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "workspace_role", rename_all = "lowercase")]
 #[serde(rename_all = "lowercase")]
 pub enum WorkspaceRole {

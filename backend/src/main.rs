@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = db::create_pool(&config.database_url).await?;
     tracing::info!("connected to database");
 
-    let jwks = JwksStore::new(config.keycloak_jwks_url, config.keycloak_issuer);
+    let jwks = JwksStore::new(config.keycloak_jwks_url, config.keycloak_issuer, config.keycloak_audience);
     jwks.prefetch().await?;
     tracing::info!("JWKS keys loaded");
 
@@ -69,6 +69,9 @@ fn build_cors(allowed_origins: &str) -> CorsLayer {
             .allow_origin(Any)
             .allow_methods(methods)
             .allow_headers(headers)
+    } else if allowed_origins.is_empty() {
+        // Empty = deny all cross-origin requests (secure default).
+        CorsLayer::new()
     } else {
         let origins = allowed_origins
             .split(',')

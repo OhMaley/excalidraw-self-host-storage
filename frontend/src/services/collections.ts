@@ -1,12 +1,20 @@
 // Services
 import { API_BASE, deleteRequest, getJson, patchJson, postJson } from "@services/api";
 
-export interface Collection {
+interface CollectionAuthor {
     id: string;
     name: string;
-    description: string | null;
+}
+
+export interface Collection {
+    id: string;
     workspace_id: string;
+    name: string;
+    description: string | null;
+    created_by: CollectionAuthor;
     created_at: string;
+    updated_by: CollectionAuthor | null;
+    updated_at: string | null;
 }
 
 export function listCollections(workspaceId: string): Promise<Collection[]> {

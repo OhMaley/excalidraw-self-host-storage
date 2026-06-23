@@ -21,6 +21,13 @@ rules:
   no-identical-paths: error
   no-undefined-server-variable: error
 
+overrides:
+  - files:
+      - './openapi/paths/health.yaml'
+    rules:
+      # Health probes have no authentication and no 4XX responses by design.
+      operation-4xx-response: off
+
 apis:
   main:
     root: ./openapi/openapi.yaml

@@ -157,7 +157,7 @@ pub async fn delete(pool: &PgPool, collection_id: Uuid) -> Result<(), AppError> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db::test_helpers::{cleanup_user, seed_user, seed_workspace, test_pool};
+    use crate::db::test_helpers::{cleanup_user, seed_collection, seed_user, seed_workspace, test_pool};
 
     #[tokio::test]
     async fn create_and_get() {
@@ -246,5 +246,52 @@ mod tests {
         assert!(get(&pool, ws_id, c.id).await.unwrap().is_none());
 
         cleanup_user(&pool, &user_id).await;
+    }
+
+    #[tokio::test]
+    async fn delete_cascades_to_drawings() {
+        let pool = test_pool().await;
+        let user_id = seed_user(&pool).await;
+        let ws_id = seed_workspace(&pool, &user_id).await;
+        let col_id = seed_collection(&pool, ws_id, &user_id).await;
+
+        let d = crate::db::drawings::create(&pool, col_id, &user_id, "Child Drawing", None, &[])
+            .await
+            .unwrap();
+
+        delete(&pool, col_id).await.unwrap();
+
+        assert!(crate::db::drawings::get(&pool, col_id, d.id).await.unwrap().is_none());
+
+        cleanup_user(&pool, &user_id).await;
+    }
+
+    #[tokio::test]
+    async fn create_duplicate_name_returns_conflict() {
+        let pool = test_pool().await;
+        let user_id = seed_user(&pool).await;
+        let ws_id = seed_workspace(&pool, &user_id).await;
+
+        create(&pool, ws_id, &user_id, "Duplicate", None).await.unwrap();
+        let err = create(&pool, ws_id, &user_id, "Duplicate", None).await.unwrap_err();
+        assert!(matches!(err, AppError::Conflict(_)));
+
+        cleanup_user(&pool, &user_id).await;
+    }
+
+    #[tokio::test]
+    async fn created_by_reflects_creator_not_workspace_owner() {
+        let pool = test_pool().await;
+        let owner_id = seed_user(&pool).await;
+        let member_id = seed_user(&pool).await;
+        let ws_id = seed_workspace(&pool, &owner_id).await;
+
+        // A different user creates the collection in the owner's workspace.
+        let col = create(&pool, ws_id, &member_id, "Member's Collection", None).await.unwrap();
+        assert_eq!(col.created_by.id, member_id);
+        assert_ne!(col.created_by.id, owner_id);
+
+        cleanup_user(&pool, &owner_id).await;
+        cleanup_user(&pool, &member_id).await;
     }
 }
