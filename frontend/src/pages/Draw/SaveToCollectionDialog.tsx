@@ -10,6 +10,7 @@ import { createDrawing, listDrawings } from "@services/drawings";
 import { saveDrawingContent, type ExcalidrawFile } from "@services/storage";
 import { nextDrawingName } from "@utils/stringUtils";
 import { clearDraft } from "@utils/draftStorage";
+import { generateAndUploadThumbnail } from "@utils/thumbnail";
 
 import styles from "./SaveToCollectionDialog.module.scss";
 
@@ -183,6 +184,7 @@ function useSaveConfirm(
             const drawing = await createDrawing(wsId, colId, { title: finalTitle });
             if (content) {
                 await saveDrawingContent(wsId, colId, drawing.id, content);
+                void generateAndUploadThumbnail(content, wsId, colId, drawing.id);
             }
             clearDraft();
             onOpenChange(false);

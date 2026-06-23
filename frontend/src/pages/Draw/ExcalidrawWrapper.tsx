@@ -38,28 +38,16 @@ import "@excalidraw/excalidraw/index.css";
 import { hydrateScene } from "@utils/sceneUtils";
 import { HttpError, HttpStatus, toHttpError } from "@utils/httpError";
 import { loadDraft, saveDraft } from "@utils/draftStorage";
-import { exportToBlob, serializeAsJSON } from "@excalidraw/excalidraw";
+import { generateAndUploadThumbnail } from "@utils/thumbnail";
+import { serializeAsJSON } from "@excalidraw/excalidraw";
 
 // Services
 import { loadDrawingContent } from "@services/storage";
-import { getDrawing, updateDrawing, uploadThumbnail, type Drawing } from "@services/drawings";
-
-const THUMBNAIL_MAX_WIDTH = 800;
-const THUMBNAIL_MAX_HEIGHT = 600;
+import { getDrawing, updateDrawing, type Drawing } from "@services/drawings";
 
 // Extracts the type of the first argument of Excalidraw's onChange prop.
 // Using Parameters<> keeps this type in sync with the library automatically.
 type OnChangeElements = Parameters<NonNullable<ExcalidrawProps["onChange"]>>[0];
-
-// exportToBlob re-exports from @excalidraw/utils which is not installed as a separate package,
-// leaving its type unresolved. This alias restores the expected signature using types in scope.
-type ExportToBlobFn = (opts: {
-    elements: OnChangeElements;
-    appState: AppState;
-    files: BinaryFiles;
-    mimeType?: string;
-    getDimensions?: (w: number, h: number) => { width: number; height: number; scale?: number };
-}) => Promise<Blob>;
 
 interface ExcalidrawWrapperProps {
     readonly wsId?: string;
@@ -317,37 +305,6 @@ function ExcalidrawCanvas({
 }
 
 // ─── ExcalidrawWrapper ────────────────────────────────────────────────────────
-
-async function generateAndUploadThumbnail(
-    content: ExcalidrawFile,
-    wsId: string,
-    colId: string,
-    drawingId: string
-): Promise<void> {
-    if ((content.elements ?? []).length === 0) return;
-    try {
-        const blob = await (exportToBlob as unknown as ExportToBlobFn)({
-            elements: content.elements,
-            appState: content.appState as AppState,
-            files: content.files ?? {},
-            mimeType: "image/png",
-            getDimensions: (naturalWidth: number, naturalHeight: number) => {
-                const scale = Math.min(
-                    THUMBNAIL_MAX_WIDTH / naturalWidth,
-                    THUMBNAIL_MAX_HEIGHT / naturalHeight
-                );
-                return {
-                    width: Math.round(naturalWidth * scale),
-                    height: Math.round(naturalHeight * scale),
-                    scale,
-                };
-            },
-        });
-        await uploadThumbnail(wsId, colId, drawingId, blob);
-    } catch {
-        // silent
-    }
-}
 
 function signIn(api: ExcalidrawImperativeAPI | null, login: (redirectUri: string) => void): void {
     if (api) saveDraft(undefined, api.getSceneElements(), api.getAppState(), api.getFiles());
