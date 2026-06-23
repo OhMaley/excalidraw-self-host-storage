@@ -319,18 +319,17 @@ function ExcalidrawCanvas({
 // ─── ExcalidrawWrapper ────────────────────────────────────────────────────────
 
 async function generateAndUploadThumbnail(
-    api: ExcalidrawImperativeAPI,
+    content: ExcalidrawFile,
     wsId: string,
     colId: string,
     drawingId: string
 ): Promise<void> {
-    const elements = api.getSceneElements();
-    if (elements.length === 0) return;
+    if ((content.elements ?? []).length === 0) return;
     try {
         const blob = await (exportToBlob as unknown as ExportToBlobFn)({
-            elements,
-            appState: api.getAppState(),
-            files: api.getFiles(),
+            elements: content.elements,
+            appState: content.appState as AppState,
+            files: content.files ?? {},
             mimeType: "image/png",
             getDimensions: (naturalWidth: number, naturalHeight: number) => {
                 const scale = Math.min(
@@ -360,13 +359,16 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
 
     const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
 
-    const { save, flushSave, saveStatus, recordBaseline } = useStorage(wsId, colId, drawingId);
+    const handleSaved = useCallback((w: string, c: string, d: string, content: ExcalidrawFile) => {
+        void generateAndUploadThumbnail(content, w, c, d);
+    }, []);
 
-    useEffect(() => {
-        if (saveStatus !== "saved") return;
-        if (!excalidrawAPIRef.current || !wsId || !colId || !drawingId) return;
-        void generateAndUploadThumbnail(excalidrawAPIRef.current, wsId, colId, drawingId);
-    }, [saveStatus, wsId, colId, drawingId]);
+    const { save, flushSave, saveStatus, recordBaseline } = useStorage(
+        wsId,
+        colId,
+        drawingId,
+        handleSaved
+    );
 
     const { backendState, drawingMeta, setDrawingMeta, handleChange, getContent } =
         useDrawingBackend({

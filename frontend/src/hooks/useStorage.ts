@@ -17,18 +17,63 @@ type OnChangeElements = Parameters<NonNullable<ExcalidrawProps["onChange"]>>[0];
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
+export type OnSavedCallback = (
+    wsId: string,
+    colId: string,
+    drawingId: string,
+    content: ExcalidrawFile
+) => void;
+
 const DRAFT_DEBOUNCE_MS = 800;
 const BACKEND_DEBOUNCE_MS = 2000;
 const SAVED_RESET_MS = 3000;
 
-export function useStorage(wsId?: string, colId?: string, drawingId?: string) {
+// Owns the async save call, save status state, and onSaved notification.
+function usePerformSave(onSaved: OnSavedCallback | undefined) {
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+    const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Kept in a ref so performSave (stable useCallback) always calls the latest version.
+    const onSavedRef = useRef(onSaved);
+    useEffect(() => {
+        onSavedRef.current = onSaved;
+    });
+    useEffect(() => {
+        return () => {
+            if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+        };
+    }, []);
+
+    const performSave = useCallback(
+        async (w: string, c: string, d: string, content: ExcalidrawFile) => {
+            setSaveStatus("saving");
+            try {
+                await saveDrawingContent(w, c, d, content);
+                setSaveStatus("saved");
+                if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+                resetTimerRef.current = setTimeout(() => setSaveStatus("idle"), SAVED_RESET_MS);
+                onSavedRef.current?.(w, c, d, content);
+            } catch {
+                setSaveStatus("error");
+            }
+        },
+        []
+    );
+
+    return { saveStatus, performSave };
+}
+
+export function useStorage(
+    wsId?: string,
+    colId?: string,
+    drawingId?: string,
+    onSaved?: OnSavedCallback
+) {
     const coordsRef = useRef({ wsId, colId, drawingId });
     useEffect(() => {
         coordsRef.current = { wsId, colId, drawingId };
     });
 
-    const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-    const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { saveStatus, performSave } = usePerformSave(onSaved);
 
     const draftDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const backendDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,21 +92,6 @@ export function useStorage(wsId?: string, colId?: string, drawingId?: string) {
         lastSentSerializedRef.current = null;
     }, [drawingId]);
 
-    const performSave = useCallback(
-        async (w: string, c: string, d: string, content: ExcalidrawFile) => {
-            setSaveStatus("saving");
-            try {
-                await saveDrawingContent(w, c, d, content);
-                setSaveStatus("saved");
-                if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-                resetTimerRef.current = setTimeout(() => setSaveStatus("idle"), SAVED_RESET_MS);
-            } catch {
-                setSaveStatus("error");
-            }
-        },
-        []
-    );
-
     const flushSave = useCallback(() => {
         if (backendDebounceRef.current) {
             clearTimeout(backendDebounceRef.current);
@@ -75,9 +105,6 @@ export function useStorage(wsId?: string, colId?: string, drawingId?: string) {
         }
     }, [performSave]);
 
-    // Called from ExcalidrawWrapper when the restoration onChange fires so the
-    // baseline is recorded from the exact merged appState Excalidraw reports,
-    // not from the raw backend file (which has an unmerged partial appState).
     const recordBaseline = useCallback(
         (elements: OnChangeElements, appState: AppState, files: BinaryFiles) => {
             lastSentSerializedRef.current = serializeAsJSON(elements, appState, files, "local");
@@ -99,9 +126,6 @@ export function useStorage(wsId?: string, colId?: string, drawingId?: string) {
             if (w && c && d) {
                 const serialized = serializeAsJSON(elements, appState, files, "local");
 
-                // Skip if the content hasn't changed since the last backend save was queued.
-                // This prevents spurious saves from Excalidraw's internal onChange firings
-                // (viewport updates, cursor state, collaborator events, etc.).
                 if (serialized === lastSentSerializedRef.current) return;
                 lastSentSerializedRef.current = serialized;
 
@@ -126,7 +150,6 @@ export function useStorage(wsId?: string, colId?: string, drawingId?: string) {
     useEffect(() => {
         return () => {
             if (draftDebounceRef.current) clearTimeout(draftDebounceRef.current);
-            if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
             flushSave();
         };
     }, [flushSave]);
