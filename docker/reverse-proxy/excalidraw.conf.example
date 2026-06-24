@@ -1,0 +1,65 @@
+# Example reverse-proxy site config for excalidraw.yourdomain.example.
+# Copy this onto your host's reverse proxy and adjust paths/domain — it is
+# NOT consumed by Docker Compose and nothing in this repo applies it
+# automatically.
+#
+# Assumes TLS termination is already handled by your existing certificate
+# tooling (e.g. an ACME client) and that the loopback ports below match
+# FRONTEND_HOST_PORT / PORT in docker/.env.prod.
+
+# Shared rate-limit zone — must live in the top-level http{} context of your
+# reverse proxy's main config, not inside a server block. Move this line
+# there if your setup keeps server blocks in separate included files.
+# limit_req_zone $binary_remote_addr zone=excalidraw_api:10m rate=10r/s;
+
+server {
+    listen 80;
+    server_name excalidraw.yourdomain.example;
+    # return 301 https://$host$request_uri;  # uncomment once TLS is issued
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name excalidraw.yourdomain.example;
+
+    ssl_certificate     /etc/letsencrypt/live/excalidraw.yourdomain.example/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/excalidraw.yourdomain.example/privkey.pem;
+
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options DENY always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    # Starter CSP only — Excalidraw uses web workers and blob: URLs for image
+    # paste/export. Watch the browser console for violations after deploying
+    # and loosen/tighten directives accordingly rather than trusting this as
+    # final.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; worker-src 'self' blob:; connect-src 'self' https://auth.yourdomain.example; frame-ancestors 'none';" always;
+
+    # Must exceed the backend's largest accepted body (10MB drawing content)
+    # or requests get rejected here before ever reaching the app.
+    client_max_body_size 12m;
+
+    # /api/* -> backend, with the /api prefix stripped.
+    # The trailing slash on BOTH the location and proxy_pass is what strips
+    # the prefix — drop either one and the backend will see /api/health
+    # instead of /health and 404.
+    location /api/ {
+        # limit_req zone=excalidraw_api burst=20 nodelay;
+
+        proxy_pass http://127.0.0.1:3000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Everything else -> frontend (static SPA), no path rewrite.
+    location / {
+        proxy_pass http://127.0.0.1:8081;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
