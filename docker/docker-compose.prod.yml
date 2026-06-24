@@ -1,0 +1,79 @@
+services:
+  appdb:
+    image: postgres:${POSTGRES_VERSION:-15}
+    container_name: appdb
+    volumes:
+      - appdb_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${APP_DB_NAME:-excalidraw}
+      POSTGRES_USER: ${APP_DB_USER:?APP_DB_USER is required}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}
+    # No ports published — internal network only. Postgres must never be
+    # reachable from outside the docker network in production.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${APP_DB_USER} -d ${APP_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  migrator:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.migrator
+    volumes:
+      - ../backend/migrations:/migrations
+    environment:
+      DATABASE_URL: postgres://${APP_DB_USER:?APP_DB_USER is required}:${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}@appdb:5432/${APP_DB_NAME:-excalidraw}
+    depends_on:
+      appdb:
+        condition: service_healthy
+    restart: on-failure
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: backend
+    environment:
+      DATABASE_URL: postgres://${APP_DB_USER:?APP_DB_USER is required}:${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}@appdb:5432/${APP_DB_NAME:-excalidraw}
+      PORT: ${PORT:-3000}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:?KEYCLOAK_ISSUER is required}
+      KEYCLOAK_JWKS_URL: ${KEYCLOAK_JWKS_URL:?KEYCLOAK_JWKS_URL is required}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE:?KEYCLOAK_AUDIENCE is required}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      RUST_LOG: ${RUST_LOG:-info}
+      STORAGE_LOCAL_PATH: /storage/drawings
+    volumes:
+      - drawings_data:/storage/drawings
+    ports:
+      # Loopback only — the host's reverse proxy forwards /api/* here.
+      # Never publish to 0.0.0.0.
+      - "127.0.0.1:${PORT:-3000}:${PORT:-3000}"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-/api}
+        VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:?VITE_KEYCLOAK_URL is required}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:?VITE_KEYCLOAK_REALM is required}
+        VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:?VITE_KEYCLOAK_CLIENT_ID is required}
+        VITE_DEBUG: ${VITE_DEBUG:-false}
+    container_name: frontend
+    ports:
+      # Loopback only — the host's reverse proxy forwards / here.
+      # Never publish to 0.0.0.0.
+      - "127.0.0.1:${FRONTEND_HOST_PORT:-8081}:8080"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  appdb_data:
+  drawings_data:
