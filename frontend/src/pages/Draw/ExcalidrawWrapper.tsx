@@ -33,6 +33,7 @@ import type { ExcalidrawFile } from "@services/storage";
 
 // Styles
 import "@excalidraw/excalidraw/index.css";
+import styles from "./ExcalidrawWrapper.module.scss";
 
 // Utils
 import { hydrateScene } from "@utils/sceneUtils";
@@ -290,17 +291,6 @@ interface ExcalidrawCanvasProps {
     readonly authLoading: boolean;
     readonly onSignIn: () => void;
     readonly getContent: () => ExcalidrawFile | null;
-    readonly showPanel: boolean;
-    readonly panelRef: RefObject<HTMLDivElement | null>;
-    readonly panelProps: {
-        wsId: string;
-        colId: string;
-        drawingId: string;
-        isDocked: boolean;
-        onDockChange: (docked: boolean) => void;
-        onClose: () => void;
-        updatedDrawing?: Drawing | null;
-    };
     readonly onChange: (elements: OnChangeElements, appState: AppState, files: BinaryFiles) => void;
     readonly draftData: ReturnType<typeof loadDraft>;
     readonly onAPIReady: (api: ExcalidrawImperativeAPI) => void;
@@ -316,9 +306,6 @@ function ExcalidrawCanvas({
     authLoading,
     onSignIn,
     getContent,
-    showPanel,
-    panelRef,
-    panelProps,
     onChange,
     draftData,
     onAPIReady,
@@ -331,7 +318,7 @@ function ExcalidrawCanvas({
     }, [draftData, savedLibrary]);
 
     return (
-        <div style={{ flex: 1, position: "relative", height: "100%", minWidth: 0 }}>
+        <div className={styles.canvas}>
             {isLinkedDrawing && drawingMeta && (
                 <DrawingTopBar
                     title={drawingMeta.title}
@@ -355,11 +342,6 @@ function ExcalidrawCanvas({
                         getContent={getContent}
                     />
                 </>
-            )}
-
-            {/* Floating panel overlays the canvas; ref used for click-outside detection */}
-            {showPanel && !panelProps.isDocked && (
-                <DrawingInfoPanel ref={panelRef} {...panelProps} />
             )}
 
             <Excalidraw
@@ -462,9 +444,8 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
     };
 
     return (
-        <div style={{ height: "100%", width: "100%", display: "flex" }}>
-            {/* Docked panel sits in flex flow, pushing the canvas to the right */}
-            {showPanel && isDocked && <DrawingInfoPanel {...panelProps} />}
+        <div className={styles.wrapper}>
+            {showPanel && <DrawingInfoPanel ref={panelRef} {...panelProps} />}
             <ExcalidrawCanvas
                 isLinkedDrawing={isLinkedDrawing}
                 drawingMeta={drawingMeta}
@@ -475,9 +456,6 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
                 authLoading={authLoading}
                 onSignIn={handleSignIn}
                 getContent={getContent}
-                showPanel={showPanel}
-                panelRef={panelRef}
-                panelProps={panelProps}
                 onChange={handleChange}
                 draftData={draftData}
                 onAPIReady={onAPIReady}
