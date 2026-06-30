@@ -338,7 +338,7 @@
 .drawingTitleWrapper {
     flex: 1;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     min-width: 0;
 }
 
@@ -347,9 +347,10 @@
     font-size: 0.875rem;
     font-weight: 700;
     color: var(--color-on-surface);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .drawingMeta {
@@ -380,6 +381,21 @@
 
 .tooltip {
     @include tooltip.content;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 16rem;
+}
+
+.tooltipTitle {
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.tooltipDescription {
+    font-weight: 400;
+    color: var(--color-text-muted);
+    word-break: break-word;
 }
 
 .tooltipArrow {
