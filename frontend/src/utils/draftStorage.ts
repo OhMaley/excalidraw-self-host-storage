@@ -1,4 +1,9 @@
-import type { ExcalidrawProps, AppState, BinaryFiles } from "@excalidraw/excalidraw/types";
+import type {
+    ExcalidrawProps,
+    AppState,
+    BinaryFiles,
+    LibraryItems,
+} from "@excalidraw/excalidraw/types";
 
 type ExcalidrawElements = Parameters<NonNullable<ExcalidrawProps["onChange"]>>[0];
 
@@ -44,5 +49,24 @@ export function clearDraft(drawingId?: string): void {
         localStorage.removeItem(draftKey(drawingId));
     } catch {
         // Ignore
+    }
+}
+
+const LIBRARY_KEY = "excalidraw-library";
+
+export function saveLibrary(items: LibraryItems): void {
+    try {
+        localStorage.setItem(LIBRARY_KEY, JSON.stringify(items));
+    } catch {
+        // Quota exceeded or storage unavailable
+    }
+}
+
+export function loadLibrary(): LibraryItems | null {
+    try {
+        const raw = localStorage.getItem(LIBRARY_KEY);
+        return raw ? (JSON.parse(raw) as LibraryItems) : null;
+    } catch {
+        return null;
     }
 }
