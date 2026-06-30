@@ -216,9 +216,18 @@ function useDrawingBackend({
 // Parses the hash on mount and on hashchange, then applies the library once the
 // Excalidraw API is ready. Returns onAPIReady to be passed to excalidrawAPI prop.
 
+const ALLOWED_LIBRARY_HOSTS = new Set(["libraries.excalidraw.com", "raw.githubusercontent.com"]);
+
 function parseAddLibraryHash(hash: string): string | null {
     const match = /[#&]addLibrary=([^&]+)/u.exec(hash);
-    return match ? decodeURIComponent(match[1]) : null;
+    if (!match) return null;
+    const raw = decodeURIComponent(match[1]);
+    try {
+        const { protocol, hostname } = new URL(raw);
+        return protocol === "https:" && ALLOWED_LIBRARY_HOSTS.has(hostname) ? raw : null;
+    } catch {
+        return null;
+    }
 }
 
 function useAddLibrary(excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | null>) {
