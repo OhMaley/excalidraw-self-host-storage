@@ -37,7 +37,7 @@ import "@excalidraw/excalidraw/index.css";
 // Utils
 import { hydrateScene } from "@utils/sceneUtils";
 import { HttpError, HttpStatus, toHttpError } from "@utils/httpError";
-import { loadDraft, saveDraft } from "@utils/draftStorage";
+import { loadDraft, saveDraft, loadLibrary, saveLibrary } from "@utils/draftStorage";
 import { generateAndUploadThumbnail } from "@utils/thumbnail";
 import { serializeAsJSON } from "@excalidraw/excalidraw";
 
@@ -211,6 +211,64 @@ function useDrawingBackend({
     return { backendState, drawingMeta, setDrawingMeta, handleChange, getContent };
 }
 
+// ─── useAddLibrary ────────────────────────────────────────────────────────────
+// Handles the #addLibrary=URL hash protocol used by libraries.excalidraw.com.
+// Parses the hash on mount and on hashchange, then applies the library once the
+// Excalidraw API is ready. Returns onAPIReady to be passed to excalidrawAPI prop.
+
+function parseAddLibraryHash(hash: string): string | null {
+    const match = /[#&]addLibrary=([^&]+)/u.exec(hash);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+function useAddLibrary(excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | null>) {
+    const [isAPIReady, setIsAPIReady] = useState(false);
+    const [pendingLibraryUrl, setPendingLibraryUrl] = useState<string | null>(() => {
+        const url = parseAddLibraryHash(window.location.hash);
+        if (url) history.replaceState(null, "", window.location.pathname + window.location.search);
+        return url;
+    });
+
+    useEffect(() => {
+        const onHashChange = () => {
+            const url = parseAddLibraryHash(window.location.hash);
+            if (!url) return;
+            history.replaceState(null, "", window.location.pathname + window.location.search);
+            setPendingLibraryUrl(url);
+        };
+        window.addEventListener("hashchange", onHashChange);
+        return () => window.removeEventListener("hashchange", onHashChange);
+    }, []);
+
+    useEffect(() => {
+        if (!pendingLibraryUrl || !isAPIReady || !excalidrawAPIRef.current) return;
+        const url = pendingLibraryUrl;
+        setPendingLibraryUrl(null);
+        void fetch(url)
+            .then((res) => res.blob())
+            .then(
+                (blob) =>
+                    void excalidrawAPIRef.current?.updateLibrary({
+                        libraryItems: blob,
+                        merge: true,
+                        defaultStatus: "unpublished",
+                        openLibraryMenu: true,
+                    })
+            )
+            .catch(() => undefined);
+    }, [pendingLibraryUrl, isAPIReady, excalidrawAPIRef]);
+
+    const onAPIReady = useCallback(
+        (api: ExcalidrawImperativeAPI) => {
+            excalidrawAPIRef.current = api;
+            setIsAPIReady(true);
+        },
+        [excalidrawAPIRef]
+    );
+
+    return { onAPIReady };
+}
+
 // ─── ExcalidrawCanvas ─────────────────────────────────────────────────────────
 
 interface ExcalidrawCanvasProps {
@@ -236,7 +294,7 @@ interface ExcalidrawCanvasProps {
     };
     readonly onChange: (elements: OnChangeElements, appState: AppState, files: BinaryFiles) => void;
     readonly draftData: ReturnType<typeof loadDraft>;
-    readonly excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | null>;
+    readonly onAPIReady: (api: ExcalidrawImperativeAPI) => void;
 }
 
 function ExcalidrawCanvas({
@@ -254,9 +312,14 @@ function ExcalidrawCanvas({
     panelProps,
     onChange,
     draftData,
-    excalidrawAPIRef,
+    onAPIReady,
 }: ExcalidrawCanvasProps) {
     const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+    const savedLibrary = useMemo(() => loadLibrary() ?? [], []);
+    const initialData = useMemo(() => {
+        if (!draftData && savedLibrary.length === 0) return undefined;
+        return { ...draftData, libraryItems: savedLibrary };
+    }, [draftData, savedLibrary]);
 
     return (
         <div style={{ flex: 1, position: "relative", height: "100%", minWidth: 0 }}>
@@ -291,11 +354,11 @@ function ExcalidrawCanvas({
             )}
 
             <Excalidraw
-                excalidrawAPI={(api) => (excalidrawAPIRef.current = api)}
+                excalidrawAPI={onAPIReady}
+                libraryReturnUrl={`${window.location.origin}${window.location.pathname}`}
                 renderTopRightUI={() => <TopRightUI />}
-                // Excalidraw's initialData rejects null; ?? undefined converts it
-                // to the accepted "no initial data" signal.
-                initialData={draftData ?? undefined}
+                initialData={initialData}
+                onLibraryChange={saveLibrary}
                 onChange={onChange}
             >
                 <WelcomeScreen />
@@ -315,6 +378,7 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
     const { isAuthenticated, loading: authLoading, login } = useAuth();
 
     const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
+    const { onAPIReady } = useAddLibrary(excalidrawAPIRef);
 
     const handleSaved = useCallback((w: string, c: string, d: string, content: ExcalidrawFile) => {
         void generateAndUploadThumbnail(content, w, c, d);
@@ -407,7 +471,7 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
                 panelProps={panelProps}
                 onChange={handleChange}
                 draftData={draftData}
-                excalidrawAPIRef={excalidrawAPIRef}
+                onAPIReady={onAPIReady}
             />
         </div>
     );
