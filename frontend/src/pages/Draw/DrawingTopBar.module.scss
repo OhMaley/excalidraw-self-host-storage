@@ -1,4 +1,5 @@
 @use "../../styles/icon-button";
+@use "../../styles/tooltip";
 
 .topBar {
     position: absolute;
@@ -88,6 +89,14 @@
 
 .error {
     color: var(--color-red);
+}
+
+.tooltip {
+    @include tooltip.content;
+}
+
+.tooltipArrow {
+    @include tooltip.arrow;
 }
 
 @keyframes spin {

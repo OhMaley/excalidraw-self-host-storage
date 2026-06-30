@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useReducer, useState } from "react";
+import { forwardRef, useEffect, useReducer, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Avatar, ScrollArea, Separator, Tooltip } from "radix-ui";
 
@@ -119,6 +119,16 @@ function DrawingItem({ drawing, isActive, wsId, colId }: DrawingItemProps) {
     const author = (drawing.updated_by ?? drawing.created_by).name;
     const to = `/workspaces/${wsId}/collections/${colId}/drawings/${drawing.id}`;
     const thumbnailUrl = useThumbnail(wsId, drawing);
+    const titleRef = useRef<HTMLParagraphElement>(null);
+    const [isTitleClamped, setIsTitleClamped] = useState(false);
+
+    useEffect(() => {
+        const el = titleRef.current;
+        if (el) setIsTitleClamped(el.scrollHeight > el.clientHeight);
+    }, [drawing.title]);
+
+    const showTooltip = isTitleClamped || !!drawing.description;
+
     return (
         <Tooltip.Root>
             <Tooltip.Trigger asChild>
@@ -144,7 +154,9 @@ function DrawingItem({ drawing, isActive, wsId, colId }: DrawingItemProps) {
                     </div>
                     <div className={styles.drawingInfo}>
                         <div className={styles.drawingTitleWrapper}>
-                            <p className={styles.drawingTitle}>{drawing.title}</p>
+                            <p ref={titleRef} className={styles.drawingTitle}>
+                                {drawing.title}
+                            </p>
                         </div>
                         <div className={styles.drawingMeta}>
                             <p className={styles.drawingAuthor}>by {author}</p>
@@ -153,10 +165,13 @@ function DrawingItem({ drawing, isActive, wsId, colId }: DrawingItemProps) {
                     </div>
                 </NavLink>
             </Tooltip.Trigger>
-            {drawing.description && (
+            {showTooltip && (
                 <Tooltip.Portal>
                     <Tooltip.Content className={styles.tooltip} side="right" sideOffset={8}>
-                        {drawing.description}
+                        <span className={styles.tooltipTitle}>{drawing.title}</span>
+                        {drawing.description && (
+                            <span className={styles.tooltipDescription}>{drawing.description}</span>
+                        )}
                         <Tooltip.Arrow className={styles.tooltipArrow} />
                     </Tooltip.Content>
                 </Tooltip.Portal>
