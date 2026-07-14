@@ -128,16 +128,24 @@ function useLibraryPanel(excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | n
 
     // Reload from localStorage right when the panel opens, so items added via
     // external import (useAddLibrary) are picked up without a page refresh.
+    const reloadFromStorage = useCallback(() => {
+        const stored = loadLibrary();
+        if (stored) setLibraryItems(stored);
+    }, [setLibraryItems]);
+
     const handleToggleLibrary = useCallback(() => {
         setIsLibraryOpen((prev) => {
-            const next = !prev;
-            if (next) {
-                const stored = loadLibrary();
-                if (stored) setLibraryItems(stored);
-            }
-            return next;
+            if (!prev) reloadFromStorage();
+            return !prev;
         });
-    }, [setLibraryItems]);
+    }, [reloadFromStorage]);
+
+    // Used after an external import (useAddLibrary) lands new items in
+    // storage, so the panel opens already showing them.
+    const openLibraryPanel = useCallback(() => {
+        reloadFromStorage();
+        setIsLibraryOpen(true);
+    }, [reloadFromStorage]);
 
     // onLibraryChange intentionally does NOT call setLibraryItems — Excalidraw
     // fires this during its own effect/render phase, and a synchronous setState
@@ -170,6 +178,7 @@ function useLibraryPanel(excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | n
         libraryPanelProps,
         handleToggleLibrary,
         handleLibraryChange,
+        openLibraryPanel,
     };
 }
 
@@ -307,7 +316,10 @@ function parseAddLibraryHash(hash: string): string | null {
     }
 }
 
-function useAddLibrary(excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | null>) {
+function useAddLibrary(
+    excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | null>,
+    openLibraryPanel: () => void
+) {
     const [isAPIReady, setIsAPIReady] = useState(false);
     const [pendingLibraryUrl, setPendingLibraryUrl] = useState<string | null>(() => {
         const url = parseAddLibraryHash(window.location.hash);
@@ -332,17 +344,20 @@ function useAddLibrary(excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | nul
         setPendingLibraryUrl(null);
         void fetch(url)
             .then((res) => res.blob())
-            .then(
-                (blob) =>
-                    void excalidrawAPIRef.current?.updateLibrary({
-                        libraryItems: blob,
-                        merge: true,
-                        defaultStatus: "unpublished",
-                        openLibraryMenu: true,
-                    })
-            )
+            .then(async (blob) => {
+                // Items dropped in via libraries.excalidraw.com are inherently
+                // external — tag them "published" so they land in the Library
+                // panel's External section, and open our own panel (not
+                // Excalidraw's own hidden-trigger sidebar) so they're visible.
+                await excalidrawAPIRef.current?.updateLibrary({
+                    libraryItems: blob,
+                    merge: true,
+                    defaultStatus: "published",
+                });
+                openLibraryPanel();
+            })
             .catch(() => undefined);
-    }, [pendingLibraryUrl, isAPIReady, excalidrawAPIRef]);
+    }, [pendingLibraryUrl, isAPIReady, excalidrawAPIRef, openLibraryPanel]);
 
     const onAPIReady = useCallback(
         (api: ExcalidrawImperativeAPI) => {
@@ -540,7 +555,17 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
     const { isAuthenticated, loading: authLoading, login } = useAuth();
 
     const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
-    const { onAPIReady } = useAddLibrary(excalidrawAPIRef);
+
+    const {
+        libraryPanelRef,
+        isLibraryOpen,
+        libraryPanelProps,
+        handleToggleLibrary,
+        handleLibraryChange,
+        openLibraryPanel,
+    } = useLibraryPanel(excalidrawAPIRef);
+
+    const { onAPIReady } = useAddLibrary(excalidrawAPIRef, openLibraryPanel);
 
     const handleSaved = useCallback((w: string, c: string, d: string, content: ExcalidrawFile) => {
         void generateAndUploadThumbnail(content, w, c, d);
@@ -569,14 +594,6 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
 
     const { panelRef, showPanel, panelProps, handleTogglePanel, handleTitleChange } =
         useDrawingPanel({ wsId, colId, drawingId, flushSave, drawingMeta, setDrawingMeta });
-
-    const {
-        libraryPanelRef,
-        isLibraryOpen,
-        libraryPanelProps,
-        handleToggleLibrary,
-        handleLibraryChange,
-    } = useLibraryPanel(excalidrawAPIRef);
 
     const { selectedElements, wrappedChange } = useSelectionTracking(handleChange);
 

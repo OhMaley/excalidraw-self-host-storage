@@ -61,10 +61,7 @@
 // ── Separator ─────────────────────────────────────────────────────────────────
 
 .separator {
-    height: 1px;
-    background: var(--default-border-color);
-    flex-shrink: 0;
-    margin: 0 0.75rem;
+    @include panel-header.separator;
 }
 
 // ── Search ────────────────────────────────────────────────────────────────────

@@ -1,5 +1,20 @@
-import { forwardRef, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { exportToSvg, mergeLibraryItems } from "@excalidraw/excalidraw";
+import {
+    forwardRef,
+    lazy,
+    Suspense,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    type ReactNode,
+} from "react";
+import { Separator } from "radix-ui";
+import {
+    exportToSvg,
+    mergeLibraryItems,
+    MIME_TYPES,
+    serializeLibraryAsJSON,
+} from "@excalidraw/excalidraw";
 import type { ExcalidrawProps, LibraryItems, LibraryItem } from "@excalidraw/excalidraw/types";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 
@@ -10,7 +25,15 @@ import ExitIcon from "@assets/icons/exit.svg?react";
 
 import { SearchBar } from "@components/SearchSortToolbar";
 import { SidePanel } from "@components/SidePanel";
+import { useAuth } from "@hooks/useAuth";
 import styles from "./LibraryPanel.module.scss";
+
+// Requires an authenticated session — kept out of the anonymous bundle.
+const AuthenticatedLibrarySections = lazy(() => import("./AuthenticatedLibrarySections"));
+
+// Custom drag type for dragging a canvas selection preview onto a library
+// section to save it — internal to this panel, not related to MIME_TYPES.
+const SELECTION_DRAG_TYPE = "application/x-excalidraw-panel-selection";
 
 type SceneElements = Parameters<NonNullable<ExcalidrawProps["onChange"]>>[0];
 type ExportElements = readonly ExcalidrawElement[];
@@ -19,7 +42,7 @@ type ExportElements = readonly ExcalidrawElement[];
 // package that isn't published, so its type can't be resolved — assert it explicitly instead.
 interface ExportToSvgOptions {
     readonly elements: ExportElements;
-    readonly appState: { exportBackground: boolean; viewBackgroundColor: string };
+    readonly appState: { exportBackground: boolean };
     readonly files: null;
 }
 
@@ -61,7 +84,7 @@ function useLibraryThumbnails(items: LibraryItems): Map<string, string> {
                 try {
                     const svgEl = await typedExportToSvg({
                         elements: item.elements,
-                        appState: { exportBackground: true, viewBackgroundColor: "#ffffff" },
+                        appState: { exportBackground: false },
                         files: null,
                     });
                     if (cancelled) return;
@@ -109,7 +132,7 @@ function useSelectionPreview(elements: SceneElements): string | null {
             try {
                 const svgEl = await typedExportToSvg({
                     elements,
-                    appState: { exportBackground: true, viewBackgroundColor: "#ffffff" },
+                    appState: { exportBackground: false },
                     files: null,
                 });
                 if (cancelled) return;
@@ -139,8 +162,13 @@ interface LibraryItemTileProps {
 }
 
 function LibraryItemTile({ item, thumbnail, onDelete }: LibraryItemTileProps) {
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+        e.dataTransfer.setData(MIME_TYPES.excalidrawlib, serializeLibraryAsJSON([item]));
+        e.dataTransfer.effectAllowed = "copy";
+    };
+
     return (
-        <div className={styles.tile} title={item.name}>
+        <div className={styles.tile} title={item.name} draggable onDragStart={handleDragStart}>
             {thumbnail ? (
                 <img src={thumbnail} alt={item.name ?? "Library item"} className={styles.tileImg} />
             ) : (
@@ -166,17 +194,48 @@ interface CollapsibleSectionProps {
     readonly count?: number;
     readonly defaultOpen?: boolean;
     readonly children: ReactNode;
+    // When set, this section accepts a dragged selection preview (see
+    // SelectionDock) and calls this instead of saving it.
+    readonly onDropSelection?: () => void;
 }
 
-function CollapsibleSection({
+export function CollapsibleSection({
     label,
     count,
     defaultOpen = true,
     children,
+    onDropSelection,
 }: CollapsibleSectionProps) {
     const [isOpen, setIsOpen] = useState(defaultOpen);
+    const [isDragOver, setIsDragOver] = useState(false);
+
+    const isSelectionDrag = (e: React.DragEvent<HTMLDivElement>) =>
+        e.dataTransfer.types.includes(SELECTION_DRAG_TYPE);
+
     return (
-        <div className={styles.section}>
+        <div
+            className={`${styles.section} ${isDragOver ? styles.sectionDragOver : ""}`}
+            onDragOver={
+                onDropSelection
+                    ? (e) => {
+                          if (!isSelectionDrag(e)) return;
+                          e.preventDefault();
+                          setIsDragOver(true);
+                      }
+                    : undefined
+            }
+            onDragLeave={onDropSelection ? () => setIsDragOver(false) : undefined}
+            onDrop={
+                onDropSelection
+                    ? (e) => {
+                          if (!isSelectionDrag(e)) return;
+                          e.preventDefault();
+                          setIsDragOver(false);
+                          onDropSelection();
+                      }
+                    : undefined
+            }
+        >
             <button className={styles.sectionHeader} onClick={() => setIsOpen((p) => !p)}>
                 <ChevronLeftIcon
                     className={`${styles.chevron} ${isOpen ? styles.chevronOpen : styles.chevronClosed}`}
@@ -189,48 +248,84 @@ function CollapsibleSection({
     );
 }
 
-// ── LibrarySections ───────────────────────────────────────────────────────────
+// ── LibraryItemGrid ───────────────────────────────────────────────────────────
 
-interface LibrarySectionsProps {
-    readonly query: string;
-    readonly filtered: LibraryItems;
+interface LibraryItemGridProps {
+    readonly items: LibraryItems;
+    readonly emptyMessage: string;
     readonly thumbnails: Map<string, string>;
     readonly onDelete: (id: string) => void;
 }
 
-function LibrarySections({ query, filtered, thumbnails, onDelete }: LibrarySectionsProps) {
+function LibraryItemGrid({ items, emptyMessage, thumbnails, onDelete }: LibraryItemGridProps) {
+    if (items.length === 0) return <p className={styles.emptySection}>{emptyMessage}</p>;
+    return (
+        <div className={styles.itemGrid}>
+            {items.map((item) => (
+                <LibraryItemTile
+                    key={item.id}
+                    item={item}
+                    thumbnail={thumbnails.get(item.id)}
+                    onDelete={onDelete}
+                />
+            ))}
+        </div>
+    );
+}
+
+// ── LibrarySections ───────────────────────────────────────────────────────────
+
+interface LibrarySectionsProps {
+    readonly query: string;
+    readonly personalItems: LibraryItems;
+    readonly externalItems: LibraryItems;
+    readonly thumbnails: Map<string, string>;
+    readonly onDelete: (id: string) => void;
+    readonly isAuthenticated: boolean;
+    readonly selectedElements: SceneElements;
+    readonly onDropSelection: (elements: SceneElements) => void;
+}
+
+function LibrarySections({
+    query,
+    personalItems,
+    externalItems,
+    thumbnails,
+    onDelete,
+    isAuthenticated,
+    selectedElements,
+    onDropSelection,
+}: LibrarySectionsProps) {
+    const noMatchMessage = query ? "No items match your search." : null;
     return (
         <>
-            <CollapsibleSection label="My Library" count={filtered.length}>
-                {filtered.length > 0 ? (
-                    <div className={styles.itemGrid}>
-                        {filtered.map((item) => (
-                            <LibraryItemTile
-                                key={item.id}
-                                item={item}
-                                thumbnail={thumbnails.get(item.id)}
-                                onDelete={onDelete}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <p className={styles.emptySection}>
-                        {query ? "No items match your search." : "No items yet."}
-                    </p>
-                )}
+            <CollapsibleSection
+                label="My Library"
+                count={personalItems.length}
+                onDropSelection={() => onDropSelection(selectedElements)}
+            >
+                <LibraryItemGrid
+                    items={personalItems}
+                    emptyMessage={noMatchMessage ?? "No items yet."}
+                    thumbnails={thumbnails}
+                    onDelete={onDelete}
+                />
             </CollapsibleSection>
 
-            <CollapsibleSection label="Workspace" defaultOpen={false}>
-                <p className={styles.comingSoon}>Coming in a future update</p>
+            <CollapsibleSection label="External" count={externalItems.length}>
+                <LibraryItemGrid
+                    items={externalItems}
+                    emptyMessage={noMatchMessage ?? "Imported libraries will appear here."}
+                    thumbnails={thumbnails}
+                    onDelete={onDelete}
+                />
             </CollapsibleSection>
 
-            <CollapsibleSection label="Collection" defaultOpen={false}>
-                <p className={styles.comingSoon}>Coming in a future update</p>
-            </CollapsibleSection>
-
-            <CollapsibleSection label="Drawing" defaultOpen={false}>
-                <p className={styles.comingSoon}>Coming in a future update</p>
-            </CollapsibleSection>
+            {isAuthenticated && (
+                <Suspense fallback={null}>
+                    <AuthenticatedLibrarySections />
+                </Suspense>
+            )}
         </>
     );
 }
@@ -239,28 +334,31 @@ function LibrarySections({ query, filtered, thumbnails, onDelete }: LibrarySecti
 
 interface SelectionDockProps {
     readonly selectedElements: SceneElements;
-    readonly onSave: (elements: SceneElements) => void;
 }
 
-function SelectionDock({ selectedElements, onSave }: SelectionDockProps) {
+function SelectionDock({ selectedElements }: SelectionDockProps) {
     const preview = useSelectionPreview(selectedElements);
     if (selectedElements.length === 0) return null;
+
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+        e.dataTransfer.setData(SELECTION_DRAG_TYPE, "1");
+        e.dataTransfer.effectAllowed = "copy";
+    };
+
     return (
         <div className={styles.selectionDock}>
             <span className={styles.selectionLabel}>
                 Selection ({selectedElements.length} element
                 {selectedElements.length !== 1 ? "s" : ""})
             </span>
-            <div className={styles.previewWrapper}>
+            <div className={styles.previewWrapper} draggable onDragStart={handleDragStart}>
                 {preview ? (
                     <img src={preview} alt="Selection preview" className={styles.previewImg} />
                 ) : (
                     <span className={styles.previewPlaceholder}>Generating preview…</span>
                 )}
             </div>
-            <button className={styles.saveButton} onClick={() => onSave(selectedElements)}>
-                Save to My Library
-            </button>
+            <p className={styles.dragHint}>Drag the preview onto a section to save it</p>
         </div>
     );
 }
@@ -277,11 +375,14 @@ function AddActionsFooter({ onImportFile, onBrowseExternal }: AddActionsFooterPr
         <div className={styles.footer}>
             <button className={styles.footerButton} onClick={onImportFile}>
                 <PlusIcon />
-                Import from file
+                Import
             </button>
+            <span className={styles.footerOrGroup}>
+                <span className={styles.footerOr}>or</span>
+            </span>
             <button className={styles.footerButton} onClick={onBrowseExternal}>
                 <ExitIcon />
-                Browse libraries
+                Browse
             </button>
         </div>
     );
@@ -291,20 +392,15 @@ function AddActionsFooter({ onImportFile, onBrowseExternal }: AddActionsFooterPr
 
 interface LibraryFooterProps {
     readonly selectedElements: SceneElements;
-    readonly onSaveSelection: (elements: SceneElements) => void;
     readonly onImportFile: () => void;
     readonly onBrowseExternal: () => void;
 }
 
-function LibraryFooter({
-    selectedElements,
-    onSaveSelection,
-    onImportFile,
-    onBrowseExternal,
-}: LibraryFooterProps) {
+function LibraryFooter({ selectedElements, onImportFile, onBrowseExternal }: LibraryFooterProps) {
     return (
         <>
-            <SelectionDock selectedElements={selectedElements} onSave={onSaveSelection} />
+            <SelectionDock selectedElements={selectedElements} />
+            {selectedElements.length > 0 && <Separator.Root className={styles.footerSeparator} />}
             <AddActionsFooter onImportFile={onImportFile} onBrowseExternal={onBrowseExternal} />
         </>
     );
@@ -395,6 +491,7 @@ export const LibraryPanel = forwardRef<HTMLDivElement, LibraryPanelProps>(functi
     { isDocked, onDockChange, onClose, selectedElements, libraryItems, onItemsChange },
     ref
 ) {
+    const { isAuthenticated } = useAuth();
     const [query, setQuery] = useState("");
     const thumbnails = useLibraryThumbnails(libraryItems);
 
@@ -403,6 +500,12 @@ export const LibraryPanel = forwardRef<HTMLDivElement, LibraryPanelProps>(functi
               (item.name ?? "").toLowerCase().includes(query.toLowerCase())
           )
         : libraryItems;
+
+    // Items imported from a file are routed by their own "published" attribute
+    // (from libraries.excalidraw.com's convention); items merged in via the
+    // browse-external flow are tagged "published" too — see useAddLibrary.
+    const personalItems = filtered.filter((item) => item.status !== "published");
+    const externalItems = filtered.filter((item) => item.status === "published");
 
     const {
         fileInputRef,
@@ -427,7 +530,6 @@ export const LibraryPanel = forwardRef<HTMLDivElement, LibraryPanelProps>(functi
             footer={
                 <LibraryFooter
                     selectedElements={selectedElements}
-                    onSaveSelection={handleSaveSelection}
                     onImportFile={handleImportFile}
                     onBrowseExternal={handleBrowseExternal}
                 />
@@ -437,9 +539,13 @@ export const LibraryPanel = forwardRef<HTMLDivElement, LibraryPanelProps>(functi
                 <div className={styles.scrollViewport}>
                     <LibrarySections
                         query={query}
-                        filtered={filtered}
+                        personalItems={personalItems}
+                        externalItems={externalItems}
                         thumbnails={thumbnails}
                         onDelete={handleDelete}
+                        isAuthenticated={isAuthenticated}
+                        selectedElements={selectedElements}
+                        onDropSelection={handleSaveSelection}
                     />
                 </div>
             </div>
