@@ -1,4 +1,5 @@
 import { forwardRef, type CSSProperties, type ReactNode } from "react";
+import { Separator } from "radix-ui";
 import { SidePanelHeader } from "./SidePanelHeader";
 import styles from "./SidePanel.module.scss";
 
@@ -38,6 +39,7 @@ export const SidePanel = forwardRef<HTMLDivElement, SidePanelProps>(function Sid
             />
             {search && <div className={styles.searchWrapper}>{search}</div>}
             {children}
+            {footer && <Separator.Root className={styles.separator} />}
             {footer}
         </div>
     );
