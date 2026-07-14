@@ -2,13 +2,38 @@ import { useEffect } from "react";
 
 // Components
 import { UserDropdownMenu } from "./UserDropdownMenu";
+import LibraryIcon from "@assets/icons/library.svg?react";
 
 // Hooks
 import { useAuth } from "@hooks/useAuth";
 import { useToast } from "@hooks/useToast";
 
-export function TopRightUI() {
-    const { loading, isAuthenticated, user, login, logout, error } = useAuth();
+// Types
+import type { User } from "@contexts/AuthContext";
+
+import styles from "./TopRightUI.module.scss";
+
+interface TopRightUIProps {
+    readonly onToggleLibrary: () => void;
+    readonly isLibraryOpen: boolean;
+}
+
+interface AuthControlProps {
+    readonly loading: boolean;
+    readonly error: Error | null;
+    readonly user: User | null;
+    readonly login: () => void;
+    readonly logout: () => void;
+}
+
+function AuthControl({ loading, error, user, login, logout }: AuthControlProps) {
+    if (loading || error) return null;
+    if (user) return <UserDropdownMenu user={user} logout={logout} />;
+    return <button onClick={() => login()}>Login</button>;
+}
+
+export function TopRightUI({ onToggleLibrary, isLibraryOpen }: TopRightUIProps) {
+    const { loading, user, login, logout, error } = useAuth();
     const { showToast } = useToast();
 
     useEffect(() => {
@@ -21,11 +46,23 @@ export function TopRightUI() {
         });
     }, [error, showToast]);
 
-    if (loading || error) return null;
-
-    if (isAuthenticated && user) {
-        return <UserDropdownMenu user={user} logout={logout} />;
-    }
-
-    return <button onClick={() => login()}>Login</button>;
+    return (
+        <div className={styles.container}>
+            <AuthControl
+                loading={loading}
+                error={error}
+                user={user}
+                login={login}
+                logout={logout}
+            />
+            <button
+                className={styles.libraryButton}
+                onClick={onToggleLibrary}
+                title={isLibraryOpen ? "Close library" : "Open library"}
+                aria-pressed={isLibraryOpen}
+            >
+                <LibraryIcon />
+            </button>
+        </div>
+    );
 }

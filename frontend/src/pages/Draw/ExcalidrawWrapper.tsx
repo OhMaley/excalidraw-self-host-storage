@@ -14,6 +14,7 @@ import { Excalidraw, WelcomeScreen } from "@excalidraw/excalidraw";
 import { TopRightUI } from "./TopRightUI";
 import { DrawingTopBar } from "./DrawingTopBar";
 import { DrawingInfoPanel } from "./DrawingSidebar";
+import { LibraryPanel } from "./LibraryPanel";
 import { DrawSaveBanner } from "./DrawSaveBanner";
 import { SaveToCollectionDialog } from "./SaveToCollectionDialog";
 const NotFound = lazy(() => import("@components/ErrorPages/NotFound"));
@@ -28,6 +29,7 @@ import type {
     AppState,
     BinaryFiles,
     ExcalidrawProps,
+    LibraryItems,
 } from "@excalidraw/excalidraw/types";
 import type { ExcalidrawFile } from "@services/storage";
 
@@ -95,6 +97,80 @@ function usePanelState(drawingId: string | undefined, flushSave: () => void) {
     }, []);
 
     return { panelRef, isPanelOpen, setIsPanelOpen, isDocked, setIsDocked, handleTogglePanel };
+}
+
+// ─── useLibraryPanel ──────────────────────────────────────────────────────────
+
+function useLibraryPanel(excalidrawAPIRef: RefObject<ExcalidrawImperativeAPI | null>) {
+    const libraryPanelRef = useRef<HTMLDivElement>(null);
+    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+    const [isLibraryDocked, setIsLibraryDocked] = useState(true);
+
+    const initialLibraryItems = loadLibrary() ?? [];
+    const libraryItemsRef = useRef<LibraryItems>(initialLibraryItems);
+    const [libraryItems, setLibraryItemsState] = useState<LibraryItems>(initialLibraryItems);
+
+    useEffect(() => {
+        if (isLibraryDocked || !isLibraryOpen) return;
+        const handleMouseDown = (e: MouseEvent) => {
+            if (libraryPanelRef.current && !libraryPanelRef.current.contains(e.target as Node)) {
+                setIsLibraryOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleMouseDown);
+        return () => document.removeEventListener("mousedown", handleMouseDown);
+    }, [isLibraryDocked, isLibraryOpen]);
+
+    const setLibraryItems = useCallback((items: LibraryItems) => {
+        libraryItemsRef.current = items;
+        setLibraryItemsState(items);
+    }, []);
+
+    // Reload from localStorage right when the panel opens, so items added via
+    // external import (useAddLibrary) are picked up without a page refresh.
+    const handleToggleLibrary = useCallback(() => {
+        setIsLibraryOpen((prev) => {
+            const next = !prev;
+            if (next) {
+                const stored = loadLibrary();
+                if (stored) setLibraryItems(stored);
+            }
+            return next;
+        });
+    }, [setLibraryItems]);
+
+    // onLibraryChange intentionally does NOT call setLibraryItems — Excalidraw
+    // fires this during its own effect/render phase, and a synchronous setState
+    // there causes an infinite update loop. We only persist to localStorage here;
+    // state is refreshed from storage when the panel opens (see handleToggleLibrary).
+    const handleLibraryChange = useCallback((items: LibraryItems) => {
+        saveLibrary(items);
+    }, []);
+
+    const handleLibraryItemsChange = useCallback(
+        async (updated: LibraryItems) => {
+            saveLibrary(updated);
+            setLibraryItems(updated);
+            await excalidrawAPIRef.current?.updateLibrary({ libraryItems: updated, merge: false });
+        },
+        [setLibraryItems, excalidrawAPIRef]
+    );
+
+    const libraryPanelProps = {
+        isDocked: isLibraryDocked,
+        onDockChange: setIsLibraryDocked,
+        onClose: () => setIsLibraryOpen(false),
+        libraryItems,
+        onItemsChange: handleLibraryItemsChange,
+    };
+
+    return {
+        libraryPanelRef,
+        isLibraryOpen,
+        libraryPanelProps,
+        handleToggleLibrary,
+        handleLibraryChange,
+    };
 }
 
 // ─── useDrawingBackend ────────────────────────────────────────────────────────
@@ -294,6 +370,9 @@ interface ExcalidrawCanvasProps {
     readonly onChange: (elements: OnChangeElements, appState: AppState, files: BinaryFiles) => void;
     readonly draftData: ReturnType<typeof loadDraft>;
     readonly onAPIReady: (api: ExcalidrawImperativeAPI) => void;
+    readonly onToggleLibrary: () => void;
+    readonly isLibraryOpen: boolean;
+    readonly onLibraryChange: (items: LibraryItems) => void;
 }
 
 function ExcalidrawCanvas({
@@ -309,6 +388,9 @@ function ExcalidrawCanvas({
     onChange,
     draftData,
     onAPIReady,
+    onToggleLibrary,
+    isLibraryOpen,
+    onLibraryChange,
 }: ExcalidrawCanvasProps) {
     const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
     const savedLibrary = useMemo(() => loadLibrary() ?? [], []);
@@ -347,15 +429,104 @@ function ExcalidrawCanvas({
             <Excalidraw
                 excalidrawAPI={onAPIReady}
                 libraryReturnUrl={`${window.location.origin}${window.location.pathname}`}
-                renderTopRightUI={() => <TopRightUI />}
+                renderTopRightUI={() => (
+                    <TopRightUI onToggleLibrary={onToggleLibrary} isLibraryOpen={isLibraryOpen} />
+                )}
                 initialData={initialData}
-                onLibraryChange={saveLibrary}
+                onLibraryChange={onLibraryChange}
                 onChange={onChange}
             >
                 <WelcomeScreen />
             </Excalidraw>
         </div>
     );
+}
+
+// ─── useSelectionTracking ─────────────────────────────────────────────────────
+// Only updates selectedElements when the set of selected IDs actually changes —
+// Excalidraw fires onChange for every canvas event (scroll, zoom, cursor move),
+// and creating a new array on each call would cause excessive re-renders.
+
+function useSelectionTracking(
+    handleChange: (elements: OnChangeElements, appState: AppState, files: BinaryFiles) => void
+) {
+    const prevSelectionKeyRef = useRef("");
+    const [selectedElements, setSelectedElements] = useState<OnChangeElements>(
+        [] as OnChangeElements
+    );
+    const wrappedChange = useCallback(
+        (elements: OnChangeElements, appState: AppState, files: BinaryFiles) => {
+            handleChange(elements, appState, files);
+            const ids = appState.selectedElementIds;
+            const selected = elements.filter((el) => ids[el.id]);
+            const key = selected
+                .map((el) => el.id)
+                .sort((a, b) => a.localeCompare(b))
+                .join(",");
+            if (key !== prevSelectionKeyRef.current) {
+                prevSelectionKeyRef.current = key;
+                setSelectedElements(selected);
+            }
+        },
+        [handleChange]
+    );
+
+    return { selectedElements, wrappedChange };
+}
+
+// ─── useDrawingPanel ──────────────────────────────────────────────────────────
+// Combines the drawing info panel's open/dock state with its title-editing
+// logic and produces ready-to-spread props for <DrawingInfoPanel>.
+
+interface DrawingPanelParams {
+    readonly wsId: string | undefined;
+    readonly colId: string | undefined;
+    readonly drawingId: string | undefined;
+    readonly flushSave: () => void;
+    readonly drawingMeta: Drawing | null;
+    readonly setDrawingMeta: (drawing: Drawing | null) => void;
+}
+
+function useDrawingPanel({
+    wsId,
+    colId,
+    drawingId,
+    flushSave,
+    drawingMeta,
+    setDrawingMeta,
+}: DrawingPanelParams) {
+    const { panelRef, isPanelOpen, setIsPanelOpen, isDocked, setIsDocked, handleTogglePanel } =
+        usePanelState(drawingId, flushSave);
+    const [updatedDrawingForPanel, setUpdatedDrawingForPanel] = useState<Drawing | null>(null);
+
+    const handleTitleChange = useCallback(
+        async (newTitle: string) => {
+            if (!wsId || !colId || !drawingId || !drawingMeta) return;
+            const prev = drawingMeta;
+            setDrawingMeta({ ...prev, title: newTitle });
+            try {
+                const updated = await updateDrawing(wsId, colId, drawingId, { title: newTitle });
+                setDrawingMeta(updated);
+                setUpdatedDrawingForPanel(updated);
+            } catch {
+                setDrawingMeta(prev);
+            }
+        },
+        [wsId, colId, drawingId, drawingMeta, setDrawingMeta]
+    );
+
+    const showPanel = Boolean(wsId && colId && drawingId) && isPanelOpen;
+    const panelProps = {
+        wsId: wsId!,
+        colId: colId!,
+        drawingId: drawingId!,
+        isDocked,
+        onDockChange: setIsDocked,
+        onClose: () => setIsPanelOpen(false),
+        updatedDrawing: updatedDrawingForPanel,
+    };
+
+    return { panelRef, showPanel, panelProps, handleTogglePanel, handleTitleChange };
 }
 
 // ─── ExcalidrawWrapper ────────────────────────────────────────────────────────
@@ -392,30 +563,22 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
             excalidrawAPIRef,
         });
 
-    const [updatedDrawingForPanel, setUpdatedDrawingForPanel] = useState<Drawing | null>(null);
-
-    const handleTitleChange = useCallback(
-        async (newTitle: string) => {
-            if (!wsId || !colId || !drawingId || !drawingMeta) return;
-            const prev = drawingMeta;
-            setDrawingMeta({ ...prev, title: newTitle });
-            try {
-                const updated = await updateDrawing(wsId, colId, drawingId, { title: newTitle });
-                setDrawingMeta(updated);
-                setUpdatedDrawingForPanel(updated);
-            } catch {
-                setDrawingMeta(prev);
-            }
-        },
-        [wsId, colId, drawingId, drawingMeta, setDrawingMeta]
-    );
-
     // True only when all three IDs are present — this is a saved, backend-linked drawing.
     const isLinkedDrawing = Boolean(wsId && colId && drawingId);
     const draftData = useMemo(() => loadDraft(drawingId), [drawingId]);
 
-    const { panelRef, isPanelOpen, setIsPanelOpen, isDocked, setIsDocked, handleTogglePanel } =
-        usePanelState(drawingId, flushSave);
+    const { panelRef, showPanel, panelProps, handleTogglePanel, handleTitleChange } =
+        useDrawingPanel({ wsId, colId, drawingId, flushSave, drawingMeta, setDrawingMeta });
+
+    const {
+        libraryPanelRef,
+        isLibraryOpen,
+        libraryPanelProps,
+        handleToggleLibrary,
+        handleLibraryChange,
+    } = useLibraryPanel(excalidrawAPIRef);
+
+    const { selectedElements, wrappedChange } = useSelectionTracking(handleChange);
 
     // Flush the draft before the Keycloak redirect so the latest canvas state
     // is preserved in localStorage across the auth round-trip.
@@ -432,17 +595,6 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
         return <div>Failed to load drawing</div>;
     }
 
-    const showPanel = isLinkedDrawing && isPanelOpen;
-    const panelProps = {
-        wsId: wsId!,
-        colId: colId!,
-        drawingId: drawingId!,
-        isDocked,
-        onDockChange: setIsDocked,
-        onClose: () => setIsPanelOpen(false),
-        updatedDrawing: updatedDrawingForPanel,
-    };
-
     return (
         <div className={styles.wrapper}>
             {showPanel && <DrawingInfoPanel ref={panelRef} {...panelProps} />}
@@ -456,10 +608,20 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
                 authLoading={authLoading}
                 onSignIn={handleSignIn}
                 getContent={getContent}
-                onChange={handleChange}
+                onChange={wrappedChange}
                 draftData={draftData}
                 onAPIReady={onAPIReady}
+                onToggleLibrary={handleToggleLibrary}
+                isLibraryOpen={isLibraryOpen}
+                onLibraryChange={handleLibraryChange}
             />
+            {isLibraryOpen && (
+                <LibraryPanel
+                    ref={libraryPanelRef}
+                    {...libraryPanelProps}
+                    selectedElements={selectedElements}
+                />
+            )}
         </div>
     );
 }
