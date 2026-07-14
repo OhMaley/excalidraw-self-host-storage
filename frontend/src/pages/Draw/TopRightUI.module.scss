@@ -1,0 +1,19 @@
+@use "../../styles/icon-button";
+
+.container {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.libraryButton {
+    width: var(--button-size-md);
+    height: var(--button-size-md);
+    padding: 0;
+    @include icon-button.surface-button-base;
+
+    svg {
+        width: 1rem;
+        height: 1rem;
+    }
+}

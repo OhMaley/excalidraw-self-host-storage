@@ -2,13 +2,12 @@ import { forwardRef, useEffect, useReducer, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Avatar, ScrollArea, Separator, Tooltip } from "radix-ui";
 
-import PinIcon from "@assets/icons/pin.svg?react";
-import XIcon from "@assets/icons/x.svg?react";
 import FolderIcon from "@assets/icons/folder.svg?react";
 import PlusIcon from "@assets/icons/plus.svg?react";
 import ChevronLeftIcon from "@assets/icons/chevron-left.svg?react";
 
 import { SearchBar } from "@components/SearchSortToolbar";
+import { SidePanel } from "@components/SidePanel";
 import { useCollectionView } from "@hooks/useCollectionView";
 import { useThumbnail } from "@hooks/useThumbnail";
 import { createCollection, listCollections, type Collection } from "@services/collections";
@@ -220,45 +219,18 @@ function WorkspaceItem({ workspace, isActive, onClick }: WorkspaceItemProps) {
     );
 }
 
-interface PanelHeaderProps {
-    readonly workspace: Workspace | null;
-    readonly isDocked: boolean;
-    readonly onDockChange: (docked: boolean) => void;
-    readonly onClose: () => void;
-}
-
-function PanelHeader({ workspace, isDocked, onDockChange, onClose }: PanelHeaderProps) {
+function WorkspaceTitle({ workspace }: { readonly workspace: Workspace | null }) {
     const avatarColor = workspace ? getColorFromId(workspace.id) : "var(--color-primary)";
     const avatarInitials = workspace ? getInitials(workspace.name) : "…";
     return (
-        <div className={styles.header}>
-            <div className={styles.workspaceInfo}>
-                <Avatar.Root
-                    className={styles.workspaceAvatar}
-                    style={{ backgroundColor: avatarColor }}
-                >
-                    <Avatar.Fallback>{avatarInitials}</Avatar.Fallback>
-                </Avatar.Root>
-                <span className={styles.workspaceName}>{workspace?.name ?? "…"}</span>
-            </div>
-            <div className={styles.headerButtons}>
-                <button
-                    className={`${styles.iconButton} ${isDocked ? styles.pinned : ""}`}
-                    onClick={() => onDockChange(!isDocked)}
-                    title={isDocked ? "Unpin panel" : "Pin panel"}
-                    aria-label={isDocked ? "Unpin panel" : "Pin panel"}
-                >
-                    <PinIcon className={styles.icon} />
-                </button>
-                <button
-                    className={styles.iconButton}
-                    onClick={onClose}
-                    title="Close panel"
-                    aria-label="Close panel"
-                >
-                    <XIcon className={styles.icon} />
-                </button>
-            </div>
+        <div className={styles.workspaceInfo}>
+            <Avatar.Root
+                className={styles.workspaceAvatar}
+                style={{ backgroundColor: avatarColor }}
+            >
+                <Avatar.Fallback>{avatarInitials}</Avatar.Fallback>
+            </Avatar.Root>
+            <span className={styles.workspaceName}>{workspace?.name ?? "…"}</span>
         </div>
     );
 }
@@ -648,21 +620,23 @@ export const DrawingInfoPanel = forwardRef<HTMLDivElement, DrawingInfoPanelProps
         );
 
         return (
-            <div ref={ref} className={`${styles.panel} ${!isDocked ? styles.floating : ""}`}>
-                <PanelHeader
-                    workspace={workspace}
-                    isDocked={isDocked}
-                    onDockChange={onDockChange}
-                    onClose={onClose}
-                />
-                <Separator.Root className={styles.separator} />
-                <div className={styles.searchWrapper}>
+            <SidePanel
+                ref={ref}
+                side="left"
+                width="var(--drawing-info-panel-width)"
+                isDocked={isDocked}
+                onDockChange={onDockChange}
+                onClose={onClose}
+                closeLabel="Close panel"
+                title={<WorkspaceTitle workspace={workspace} />}
+                search={
                     <SearchBar
                         value={searchQuery}
                         placeholder="Quick search"
                         onChange={(q) => dispatch({ type: "SET_SEARCH", query: q })}
                     />
-                </div>
+                }
+            >
                 {view === "drawings" && <DashboardNav wsId={wsId} />}
                 <LevelActions
                     label={levelLabel}
@@ -690,7 +664,7 @@ export const DrawingInfoPanel = forwardRef<HTMLDivElement, DrawingInfoPanelProps
                     onSelectCollection={(col) => dispatch({ type: "SELECT_COLLECTION", col })}
                     onSelectWorkspace={(ws) => dispatch({ type: "SELECT_WORKSPACE", ws })}
                 />
-            </div>
+            </SidePanel>
         );
     }
 );

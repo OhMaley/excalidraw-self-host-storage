@@ -10,4 +10,15 @@
     position: relative;
     height: 100%;
     min-width: 0;
+
+    // Hide Excalidraw's built-in library sidebar trigger — we provide our own.
+    :global(.excalidraw .default-sidebar-trigger) {
+        display: none;
+    }
+
+    // The hidden trigger above still reserves its flex gap, leaving our
+    // TopRightUI content short of the true right edge — kill the gap.
+    :global(.excalidraw .layer-ui__wrapper__top-right) {
+        gap: 0;
+    }
 }
