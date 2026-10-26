@@ -1,5 +1,5 @@
 import type Keycloak from "keycloak-js";
-import { HttpError, HttpStatus } from "@utils/httpError";
+import { AuthError, HttpError, HttpStatus } from "@utils/httpError";
 
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "";
 
@@ -20,7 +20,15 @@ async function getToken(): Promise<string | undefined> {
 }
 
 async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const token = await getToken();
+    let token: string | undefined;
+    try {
+        token = await getToken();
+    } catch (err) {
+        // Refresh token itself was rejected or unreachable — the request was never
+        // sent. Surfaced distinctly so callers (e.g. drawing autosave) can tell a
+        // session/connectivity hiccup apart from a real HTTP error.
+        throw new AuthError("Failed to refresh session before request", { cause: err });
+    }
     return fetch(url, {
         ...options,
         headers: {

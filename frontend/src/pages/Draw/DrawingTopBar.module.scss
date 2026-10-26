@@ -91,6 +91,25 @@
     color: var(--color-red);
 }
 
+.retrying {
+    color: var(--color-warning);
+}
+
+.sessionExpiredButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.sessionExpired {
+    color: var(--color-warning);
+}
+
 .tooltip {
     @include tooltip.content;
 }

@@ -9,19 +9,20 @@ export default defineConfig(({ mode }) => {
     const isDev = mode === "development";
     const host = env.VITE_DEV_HOST || "localhost";
     const port = parseInt(env.VITE_DEV_PORT || "5173", 10);
+    const dirname = import.meta.dirname;
 
     return {
         plugins: [react(), svgr()],
         resolve: {
             alias: {
-                "@components": path.resolve(__dirname, "./src/components"),
-                "@pages": path.resolve(__dirname, "./src/pages"),
-                "@hooks": path.resolve(__dirname, "./src/hooks"),
-                "@services": path.resolve(__dirname, "./src/services"),
-                "@utils": path.resolve(__dirname, "./src/utils"),
-                "@auth": path.resolve(__dirname, "./src/auth"),
-                "@contexts": path.resolve(__dirname, "./src/contexts"),
-                "@assets": path.resolve(__dirname, "./src/assets"),
+                "@components": path.resolve(dirname, "./src/components"),
+                "@pages": path.resolve(dirname, "./src/pages"),
+                "@hooks": path.resolve(dirname, "./src/hooks"),
+                "@services": path.resolve(dirname, "./src/services"),
+                "@utils": path.resolve(dirname, "./src/utils"),
+                "@auth": path.resolve(dirname, "./src/auth"),
+                "@contexts": path.resolve(dirname, "./src/contexts"),
+                "@assets": path.resolve(dirname, "./src/assets"),
             },
         },
         server: {

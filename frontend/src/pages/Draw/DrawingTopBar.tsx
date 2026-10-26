@@ -6,6 +6,7 @@ import PanelLeftIcon from "@assets/icons/panel-left.svg?react";
 import CheckCircleIcon from "@assets/icons/check-circle.svg?react";
 import AlertCircleIcon from "@assets/icons/alert-circle.svg?react";
 import LoaderCircleIcon from "@assets/icons/loader-circle.svg?react";
+import LockIcon from "@assets/icons/lock.svg?react";
 
 import type { SaveStatus } from "@hooks/useStorage";
 
@@ -14,6 +15,9 @@ interface DrawingTopBarProps {
     readonly saveStatus: SaveStatus;
     readonly onToggleSidebar: () => void;
     readonly onTitleChange?: (title: string) => void;
+    // Only needed to recover from "session-expired" — re-authenticates and
+    // reloads, picking the drawing back up from its local draft.
+    readonly onSignInAgain?: () => void;
 }
 
 export function DrawingTopBar({
@@ -21,6 +25,7 @@ export function DrawingTopBar({
     saveStatus,
     onToggleSidebar,
     onTitleChange,
+    onSignInAgain,
 }: DrawingTopBarProps) {
     return (
         <div className={styles.topBar}>
@@ -38,7 +43,7 @@ export function DrawingTopBar({
                 <ReadOnlyTitle title={title} />
             )}
             <div className={styles.saveIconOverlay}>
-                <SaveStatusIcon saveStatus={saveStatus} />
+                <SaveStatusIcon saveStatus={saveStatus} onSignInAgain={onSignInAgain} />
             </div>
         </div>
     );
@@ -152,7 +157,12 @@ function EditableTitle({ title, onTitleChange }: EditableTitleProps) {
     );
 }
 
-function SaveStatusIcon({ saveStatus }: { readonly saveStatus: SaveStatus }) {
+interface SaveStatusIconProps {
+    readonly saveStatus: SaveStatus;
+    readonly onSignInAgain?: () => void;
+}
+
+function SaveStatusIcon({ saveStatus, onSignInAgain }: SaveStatusIconProps) {
     if (saveStatus === "idle") return null;
     if (saveStatus === "saving")
         return (
@@ -163,6 +173,26 @@ function SaveStatusIcon({ saveStatus }: { readonly saveStatus: SaveStatus }) {
         );
     if (saveStatus === "saved")
         return <CheckCircleIcon className={`${styles.icon} ${styles.saved}`} aria-label="Saved" />;
+    if (saveStatus === "retrying")
+        return (
+            <LoaderCircleIcon
+                className={`${styles.icon} ${styles.spinning} ${styles.retrying}`}
+                aria-label="Offline — your changes are saved locally and will sync automatically"
+                title="Offline — your changes are saved locally and will sync automatically"
+            />
+        );
+    if (saveStatus === "session-expired")
+        return (
+            <button
+                type="button"
+                className={styles.sessionExpiredButton}
+                onClick={onSignInAgain}
+                aria-label="Session expired — your changes are saved locally, click to sign in again"
+                title="Session expired — your changes are saved locally, click to sign in again"
+            >
+                <LockIcon className={`${styles.icon} ${styles.sessionExpired}`} />
+            </button>
+        );
     return (
         <AlertCircleIcon className={`${styles.icon} ${styles.error}`} aria-label="Save failed" />
     );

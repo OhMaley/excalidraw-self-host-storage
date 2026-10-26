@@ -4,7 +4,7 @@ import { createContext, useCallback } from "react";
 import Keycloak from "keycloak-js";
 
 // Hooks
-import { useKeycloakInit } from "@hooks/useKeycloakInit";
+import { useKeycloakInit, type SessionStatus } from "@hooks/useKeycloakInit";
 
 export const ROLES = ["user", "admin"] as const;
 export type Role = (typeof ROLES)[number];
@@ -22,6 +22,7 @@ export interface AuthContextType {
     loading: boolean;
     error: Error | null;
     isAuthenticated: boolean;
+    sessionStatus: SessionStatus;
     login: (redirectUri?: string) => void;
     logout: () => void;
     hasRole: (roles: Role[]) => boolean;
@@ -30,7 +31,7 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>(null!);
 
 export function AuthProvider({ children }: { readonly children: React.ReactNode }) {
-    const { keycloak, user, loading, error } = useKeycloakInit();
+    const { keycloak, user, loading, error, sessionStatus } = useKeycloakInit();
 
     const login = useCallback(
         (redirectUri?: string) => {
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: { readonly children: React.ReactNode 
         loading,
         error,
         isAuthenticated: !!user,
+        sessionStatus,
         login,
         logout,
         hasRole,

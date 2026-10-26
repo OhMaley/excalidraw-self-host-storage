@@ -378,6 +378,7 @@ interface ExcalidrawCanvasProps {
     readonly saveStatus: SaveStatus;
     readonly onToggleSidebar: () => void;
     readonly onTitleChange: (title: string) => void;
+    readonly onSignInAgain: () => void;
     readonly isAuthenticated: boolean;
     readonly authLoading: boolean;
     readonly onSignIn: () => void;
@@ -396,6 +397,7 @@ function ExcalidrawCanvas({
     saveStatus,
     onToggleSidebar,
     onTitleChange,
+    onSignInAgain,
     isAuthenticated,
     authLoading,
     onSignIn,
@@ -422,6 +424,7 @@ function ExcalidrawCanvas({
                     saveStatus={saveStatus}
                     onToggleSidebar={onToggleSidebar}
                     onTitleChange={onTitleChange}
+                    onSignInAgain={onSignInAgain}
                 />
             )}
 
@@ -551,6 +554,18 @@ function signIn(api: ExcalidrawImperativeAPI | null, login: (redirectUri: string
     login(window.location.href);
 }
 
+// Used to recover from "session-expired": flushes the current scene into this
+// drawing's own draft slot (not the anonymous one) right before the Keycloak
+// redirect, so it's picked up as initialData once the user is back.
+function reauthenticate(
+    api: ExcalidrawImperativeAPI | null,
+    drawingId: string | undefined,
+    login: (redirectUri: string) => void
+): void {
+    if (api) saveDraft(drawingId, api.getSceneElements(), api.getAppState(), api.getFiles());
+    login(window.location.href);
+}
+
 export default function ExcalidrawWrapper({ wsId, colId, drawingId }: ExcalidrawWrapperProps) {
     const { isAuthenticated, loading: authLoading, login } = useAuth();
 
@@ -600,6 +615,10 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
     // Flush the draft before the Keycloak redirect so the latest canvas state
     // is preserved in localStorage across the auth round-trip.
     const handleSignIn = useCallback(() => signIn(excalidrawAPIRef.current, login), [login]);
+    const handleSignInAgain = useCallback(
+        () => reauthenticate(excalidrawAPIRef.current, drawingId, login),
+        [login, drawingId]
+    );
 
     if (backendState.status === "error") {
         if (backendState.error.status === HttpStatus.NOT_FOUND) {
@@ -621,6 +640,7 @@ export default function ExcalidrawWrapper({ wsId, colId, drawingId }: Excalidraw
                 saveStatus={saveStatus}
                 onToggleSidebar={handleTogglePanel}
                 onTitleChange={(title) => void handleTitleChange(title)}
+                onSignInAgain={handleSignInAgain}
                 isAuthenticated={isAuthenticated}
                 authLoading={authLoading}
                 onSignIn={handleSignIn}
