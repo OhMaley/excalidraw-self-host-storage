@@ -121,21 +121,25 @@ pub async fn create(
 }
 
 // description: None = keep, Some(None) = clear, Some(Some(v)) = set
+pub struct DrawingUpdate<'a> {
+    pub title: Option<&'a str>,
+    pub description: Option<Option<&'a str>>,
+    pub tags: Option<&'a [String]>,
+    pub new_collection_id: Option<Uuid>,
+    pub updated_by: &'a str,
+}
+
 pub async fn update(
     pool: &PgPool,
     collection_id: Uuid,
     drawing_id: Uuid,
-    title: Option<&str>,
-    description: Option<Option<&str>>,
-    tags: Option<&[String]>,
-    new_collection_id: Option<Uuid>,
-    updated_by: &str,
+    fields: DrawingUpdate<'_>,
 ) -> Result<Drawing, AppError> {
-    let (update_desc, desc_value) = match description {
+    let (update_desc, desc_value) = match fields.description {
         Some(d) => (true, d),
         None => (false, None),
     };
-    let effective_collection_id = new_collection_id.unwrap_or(collection_id);
+    let effective_collection_id = fields.new_collection_id.unwrap_or(collection_id);
 
     sqlx::query!(
         "UPDATE drawings
@@ -146,7 +150,7 @@ pub async fn update(
              updated_by    = $7,
              updated_at    = NOW()
          WHERE id = $1",
-        drawing_id, title, update_desc, desc_value, tags, effective_collection_id, updated_by
+        drawing_id, fields.title, update_desc, desc_value, fields.tags, effective_collection_id, fields.updated_by
     )
     .execute(pool)
     .await?;
@@ -244,8 +248,13 @@ mod tests {
         let new_tags = vec!["updated".to_string()];
         let updated = update(
             &pool, col_id, d.id,
-            Some("New Title"), None, Some(&new_tags), None,
-            &user_id,
+            DrawingUpdate {
+                title: Some("New Title"),
+                description: None,
+                tags: Some(&new_tags),
+                new_collection_id: None,
+                updated_by: &user_id,
+            },
         ).await.unwrap();
 
         assert_eq!(updated.title, "New Title");
@@ -264,7 +273,16 @@ mod tests {
         let col_b = seed_collection(&pool, ws_id, &user_id).await;
 
         let d = create(&pool, col_a, &user_id, "Moving", None, &[]).await.unwrap();
-        let moved = update(&pool, col_a, d.id, None, None, None, Some(col_b), &user_id).await.unwrap();
+        let moved = update(
+            &pool, col_a, d.id,
+            DrawingUpdate {
+                title: None,
+                description: None,
+                tags: None,
+                new_collection_id: Some(col_b),
+                updated_by: &user_id,
+            },
+        ).await.unwrap();
         assert_eq!(moved.collection_id, col_b);
         assert!(get(&pool, col_a, d.id).await.unwrap().is_none());
 
@@ -279,7 +297,16 @@ mod tests {
         let col_id = seed_collection(&pool, ws_id, &user_id).await;
 
         let d = create(&pool, col_id, &user_id, "T", Some("to clear"), &[]).await.unwrap();
-        let updated = update(&pool, col_id, d.id, None, Some(None), None, None, &user_id).await.unwrap();
+        let updated = update(
+            &pool, col_id, d.id,
+            DrawingUpdate {
+                title: None,
+                description: Some(None),
+                tags: None,
+                new_collection_id: None,
+                updated_by: &user_id,
+            },
+        ).await.unwrap();
         assert!(updated.description.is_none());
 
         cleanup_user(&pool, &user_id).await;

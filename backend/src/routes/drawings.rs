@@ -108,24 +108,26 @@ pub async fn update(
         .await?
         .ok_or_else(|| AppError::NotFound("collection not found".to_string()))?;
     // When moving to a different collection, verify the target also belongs to this workspace.
-    if let Some(new_col_id) = body.collection_id {
-        if new_col_id != collection_id {
-            db::collections::get(&state.pool, workspace_id, new_col_id)
-                .await?
-                .ok_or_else(|| {
-                    AppError::NotFound("target collection not found in workspace".to_string())
-                })?;
-        }
+    if let Some(new_col_id) = body.collection_id
+        && new_col_id != collection_id
+    {
+        db::collections::get(&state.pool, workspace_id, new_col_id)
+            .await?
+            .ok_or_else(|| {
+                AppError::NotFound("target collection not found in workspace".to_string())
+            })?;
     }
     let drawing = db::drawings::update(
         &state.pool,
         collection_id,
         drawing_id,
-        body.title.as_deref(),
-        body.description.as_ref().map(|d| d.as_deref()),
-        body.tags.as_deref(),
-        body.collection_id,
-        &auth.id,
+        db::drawings::DrawingUpdate {
+            title: body.title.as_deref(),
+            description: body.description.as_ref().map(|d| d.as_deref()),
+            tags: body.tags.as_deref(),
+            new_collection_id: body.collection_id,
+            updated_by: &auth.id,
+        },
     )
     .await?;
     Ok(Json(drawing))

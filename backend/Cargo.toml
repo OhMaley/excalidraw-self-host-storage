@@ -10,7 +10,7 @@ rust-version = "1.94"
 # Web framework
 axum = "0.8"
 tower = "0.5"
-tower-http = { version = "0.6", features = ["cors", "trace"] }
+tower-http = { version = "0.7", features = ["cors", "trace"] }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
@@ -27,8 +27,8 @@ uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 
 # Auth — JWT validation against Keycloak JWKS
-jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
-reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "webpki-roots"] }
+jsonwebtoken = { version = "11", features = ["aws_lc_rs"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
 
 # Error handling
 thiserror = "2"
