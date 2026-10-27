@@ -302,15 +302,26 @@ function useDrawingBackend({
 // Parses the hash on mount and on hashchange, then applies the library once the
 // Excalidraw API is ready. Returns onAPIReady to be passed to excalidrawAPI prop.
 
-const ALLOWED_LIBRARY_HOSTS = new Set(["libraries.excalidraw.com", "raw.githubusercontent.com"]);
+// Hostname → trusted origin. The fetched URL is rebuilt from these constants
+// rather than from the user-supplied string, so the host can never be forged.
+const ALLOWED_LIBRARY_ORIGINS = new Map([
+    ["libraries.excalidraw.com", "https://libraries.excalidraw.com"],
+    ["raw.githubusercontent.com", "https://raw.githubusercontent.com"],
+]);
+
+// Plain path segments ending in a .excalidrawlib file — no "..", no
+// percent-escapes, no query/fragment that could redirect the request.
+const SAFE_LIBRARY_PATH = /^(?:\/[\w.-]+)+\.excalidrawlib$/u;
 
 function parseAddLibraryHash(hash: string): string | null {
     const match = /[#&]addLibrary=([^&]+)/u.exec(hash);
     if (!match) return null;
-    const raw = decodeURIComponent(match[1]);
     try {
-        const { protocol, hostname } = new URL(raw);
-        return protocol === "https:" && ALLOWED_LIBRARY_HOSTS.has(hostname) ? raw : null;
+        const { protocol, hostname, pathname } = new URL(decodeURIComponent(match[1]));
+        const origin = ALLOWED_LIBRARY_ORIGINS.get(hostname);
+        if (protocol !== "https:" || !origin) return null;
+        if (!SAFE_LIBRARY_PATH.test(pathname) || pathname.split("/").includes("..")) return null;
+        return `${origin}${pathname}`;
     } catch {
         return null;
     }
