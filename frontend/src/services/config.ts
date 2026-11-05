@@ -16,7 +16,8 @@ export interface AppConfig {
 const runtime: Partial<AppConfig> = window.__APP_CONFIG__ ?? {};
 
 function pick(runtimeValue: string | undefined, buildValue: string | undefined): string {
-    return runtimeValue || buildValue || "";
+    if (runtimeValue) return runtimeValue;
+    return buildValue ?? "";
 }
 
 export const appConfig: AppConfig = {

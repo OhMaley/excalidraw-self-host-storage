@@ -21,8 +21,7 @@ interface TokenParsed {
 function parseUserFromToken(kc: Keycloak): User | null {
     if (!kc.tokenParsed) return null;
     const token = kc.tokenParsed as TokenParsed;
-    const rawRoles: string[] =
-        token.resource_access?.[appConfig.keycloakClientId]?.roles ?? [];
+    const rawRoles: string[] = token.resource_access?.[appConfig.keycloakClientId]?.roles ?? [];
     const roles: Role[] = rawRoles.filter((r): r is Role => ROLES.includes(r as Role));
     return {
         id: token.sub,
