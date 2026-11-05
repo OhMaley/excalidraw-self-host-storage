@@ -7,4 +7,9 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
 WORKDIR /migrations
 COPY migrations .
-ENTRYPOINT ["sqlx", "migrate", "run", "--source", "/migrations"]
+# --ignore-missing: when rolling back to an older image, the DB already has
+# migrations this image doesn't know about. Without the flag sqlx refuses to
+# run, the backend (which waits on this service) never starts, and the
+# rollback fails. Applied migrations must therefore stay backward compatible
+# with the previous release (expand/contract — see docker/DEPLOY.md).
+ENTRYPOINT ["sqlx", "migrate", "run", "--source", "/migrations", "--ignore-missing"]

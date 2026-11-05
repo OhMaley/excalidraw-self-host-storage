@@ -10,6 +10,8 @@ on:
     paths:
       - "frontend/**"
       - ".github/workflows/frontend-quality.yml"
+  # Gate for release.yml — images are only built if this passes.
+  workflow_call:
 
 permissions:
   contents: read

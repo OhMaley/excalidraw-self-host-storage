@@ -1,0 +1,116 @@
+name: Release — Build & Deploy
+
+# Tag push (vX.Y.Z)  -> tests -> images tagged vX.Y.Z + sha-<sha> -> deploy
+# Manual run         -> tests -> images tagged sha-<sha>          -> deploy
+# The deploy job waits for approval on the "production" environment.
+# To redeploy or roll back an existing version without rebuilding, run
+# deploy.yml manually instead.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-tests:
+    uses: ./.github/workflows/backend-tests.yml
+    permissions:
+      contents: read
+      pull-requests: write
+
+  frontend-quality:
+    uses: ./.github/workflows/frontend-quality.yml
+    permissions:
+      contents: read
+      pull-requests: write
+
+  version:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      image_prefix: ${{ steps.v.outputs.image_prefix }}
+    steps:
+      - id: v
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ "$REF_TYPE" = "tag" ]; then
+            version="$REF_NAME"
+          else
+            version="sha-$SHA"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          # GHCR image names must be lowercase.
+          echo "image_prefix=ghcr.io/${REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "Version: $version"
+
+  build:
+    name: Build ${{ matrix.image }}
+    needs: [backend-tests, frontend-quality, version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - image: backend
+            context: backend
+            file: backend/Dockerfile
+          - image: migrator
+            context: backend
+            file: backend/Dockerfile.migrator
+          - image: frontend
+            context: frontend
+            file: frontend/Dockerfile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ needs.version.outputs.image_prefix }}/${{ matrix.image }}
+          # No `latest`: production always pins an explicit version.
+          flavor: latest=false
+          tags: |
+            type=ref,event=tag
+            type=sha,format=long
+
+      - name: Build and push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  deploy:
+    needs: [build, version]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      version: ${{ needs.version.outputs.version }}
+    secrets: inherit
