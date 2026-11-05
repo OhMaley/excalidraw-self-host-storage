@@ -114,7 +114,17 @@ The app is available at `http://localhost:5173` by default.
 | `VITE_KEYCLOAK_CLIENT_ID` | **Yes**  | —               | Keycloak client ID |
 | `VITE_API_BASE`           | No       | *(same origin)* | Backend API base URL; leave empty when frontend and backend share an origin |
 
+These are build-time values for local dev and plain `npm run build`. The
+production Docker image instead reads `KEYCLOAK_URL`, `KEYCLOAK_REALM`,
+`KEYCLOAK_CLIENT_ID` and `API_BASE` from the container environment at startup
+and serves them as `/config.js`, so one image works for any environment.
+Runtime values override build-time ones.
+
 ## Building for production
+
+Releases are built and deployed by GitHub Actions: push a `vX.Y.Z` tag.
+See [docker/DEPLOY.md](docker/DEPLOY.md) for the pipeline, server setup,
+migrations and rollback.
 
 **Backend**
 

@@ -1,0 +1,79 @@
+name: Deploy
+
+# Deploys an already-published image version to the server over SSH.
+# Called by release.yml after a build, or run manually to redeploy / roll
+# back to any existing version (vX.Y.Z or sha-<40 hex>).
+#
+# Requires a "production" environment (Settings → Environments) with
+# "Required reviewers" enabled and these environment secrets:
+#   DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS
+# and optionally the environment variable DEPLOY_PORT (default 22).
+# See docker/DEPLOY.md.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy (vX.Y.Z or sha-<40 hex>)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    environment: production
+    # Never run two deploys at once, and never cancel one mid-migration.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      # The server re-validates too; this just fails fast with a clear error.
+      - name: Validate version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ && ! "$VERSION" =~ ^sha-[0-9a-f]{40}$ ]]; then
+            echo "::error::Invalid version '$VERSION' (expected vX.Y.Z or sha-<40 hex>)"
+            exit 1
+          fi
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pinned host key: no trust-on-first-use, so a spoofed host can't
+          # receive the deploy command.
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      # The server's authorized_keys forces this key to run deploy.sh, so the
+      # only thing sent is the version (received as SSH_ORIGINAL_COMMAND).
+      - name: Deploy
+        env:
+          VERSION: ${{ inputs.version }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -p "${DEPLOY_PORT:-22}" \
+            "$DEPLOY_USER@$DEPLOY_HOST" "$VERSION"
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

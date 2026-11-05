@@ -1,0 +1,58 @@
+name: Docker — Build check
+
+# Builds the 3 production images without pushing them anywhere, so a broken
+# Dockerfile fails the PR instead of the release. Keep the matrix in sync with
+# the build job in release.yml.
+#
+# Also runs on push to main: GitHub Actions caches written on main are
+# readable by PRs and release tags, so this keeps release builds warm.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/docker-build.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/docker-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: backend
+            context: backend
+            file: backend/Dockerfile
+          - image: migrator
+            context: backend
+            file: backend/Dockerfile.migrator
+          - image: frontend
+            context: frontend
+            file: frontend/Dockerfile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

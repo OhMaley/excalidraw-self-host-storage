@@ -5,6 +5,7 @@ import Keycloak from "keycloak-js";
 
 // Services
 import { setKeycloak as registerKeycloak } from "@services/api";
+import { appConfig } from "@services/config";
 
 // Contexts
 import { ROLES, type Role, type User } from "@contexts/AuthContext";
@@ -21,7 +22,7 @@ function parseUserFromToken(kc: Keycloak): User | null {
     if (!kc.tokenParsed) return null;
     const token = kc.tokenParsed as TokenParsed;
     const rawRoles: string[] =
-        token.resource_access?.[import.meta.env.VITE_KEYCLOAK_CLIENT_ID]?.roles ?? [];
+        token.resource_access?.[appConfig.keycloakClientId]?.roles ?? [];
     const roles: Role[] = rawRoles.filter((r): r is Role => ROLES.includes(r as Role));
     return {
         id: token.sub,
@@ -126,9 +127,9 @@ export function useKeycloakInit() {
         initializedRef.current = true;
 
         const kc = new Keycloak({
-            url: import.meta.env.VITE_KEYCLOAK_URL,
-            realm: import.meta.env.VITE_KEYCLOAK_REALM,
-            clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
+            url: appConfig.keycloakUrl,
+            realm: appConfig.keycloakRealm,
+            clientId: appConfig.keycloakClientId,
         });
         kcRef.current = kc;
 

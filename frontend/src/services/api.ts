@@ -1,7 +1,8 @@
 import type Keycloak from "keycloak-js";
 import { AuthError, HttpError, HttpStatus } from "@utils/httpError";
+import { appConfig } from "@services/config";
 
-export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "";
+export const API_BASE = appConfig.apiBase;
 
 const TOKEN_MIN_VALIDITY_SECONDS = 30;
 

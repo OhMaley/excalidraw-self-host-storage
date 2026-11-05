@@ -1,3 +1,9 @@
+# Production stack — runs prebuilt images from GHCR, nothing is built on the
+# server. Deployed by docker/deploy.sh (see docker/DEPLOY.md), which fetches
+# this file at the deployed git ref and sets APP_VERSION in .env.version.
+#
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod --env-file .env.version ...
+
 services:
   appdb:
     image: postgres:${POSTGRES_VERSION:-15}
@@ -18,22 +24,18 @@ services:
     restart: unless-stopped
 
   migrator:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile.migrator
-    volumes:
-      - ../backend/migrations:/migrations
+    image: ${IMAGE_PREFIX:-ghcr.io/ohmaley/excalidraw-self-host-storage}/migrator:${APP_VERSION:?APP_VERSION is required}
+    # Migrations are baked into the image — no bind mount in production.
     environment:
       DATABASE_URL: postgres://${APP_DB_USER:?APP_DB_USER is required}:${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}@appdb:5432/${APP_DB_NAME:-excalidraw}
     depends_on:
       appdb:
         condition: service_healthy
-    restart: on-failure
+    # One-shot: a failed migration must fail the deploy, not retry forever.
+    restart: "no"
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: ${IMAGE_PREFIX:-ghcr.io/ohmaley/excalidraw-self-host-storage}/backend:${APP_VERSION:?APP_VERSION is required}
     container_name: backend
     environment:
       DATABASE_URL: postgres://${APP_DB_USER:?APP_DB_USER is required}:${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}@appdb:5432/${APP_DB_NAME:-excalidraw}
@@ -56,16 +58,15 @@ services:
     restart: unless-stopped
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE: ${VITE_API_BASE:-/api}
-        VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:?VITE_KEYCLOAK_URL is required}
-        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:?VITE_KEYCLOAK_REALM is required}
-        VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:?VITE_KEYCLOAK_CLIENT_ID is required}
-        VITE_DEBUG: ${VITE_DEBUG:-false}
+    image: ${IMAGE_PREFIX:-ghcr.io/ohmaley/excalidraw-self-host-storage}/frontend:${APP_VERSION:?APP_VERSION is required}
     container_name: frontend
+    # Read at container start and written to /config.js — changing one only
+    # needs `up -d` (container recreate), not an image rebuild.
+    environment:
+      API_BASE: ${FRONTEND_API_BASE:-/api}
+      KEYCLOAK_URL: ${FRONTEND_KEYCLOAK_URL:?FRONTEND_KEYCLOAK_URL is required}
+      KEYCLOAK_REALM: ${FRONTEND_KEYCLOAK_REALM:?FRONTEND_KEYCLOAK_REALM is required}
+      KEYCLOAK_CLIENT_ID: ${FRONTEND_KEYCLOAK_CLIENT_ID:?FRONTEND_KEYCLOAK_CLIENT_ID is required}
     ports:
       # Loopback only — the host's reverse proxy forwards / here.
       # Never publish to 0.0.0.0.
