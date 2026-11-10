@@ -1,0 +1,7 @@
+[advisories]
+# RUSTSEC-2026-0459 (libsqlite3-sys < 0.39.0, via C SQLite CVE-2026-119375)
+# libsqlite3-sys is only present in Cargo.lock through sqlx's optional sqlite
+# driver (rust-lang/cargo#10801). We build sqlx with the postgres driver only,
+# so it is never compiled. Remove this once sqlx releases a version that allows
+# libsqlite3-sys >= 0.39, and re-check with `cargo tree -i libsqlite3-sys`.
+ignore = ["RUSTSEC-2026-0459"]
