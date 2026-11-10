@@ -7,7 +7,7 @@ name: Deploy
 # Requires a "production" environment (Settings → Environments) with
 # "Required reviewers" enabled and these environment secrets:
 #   DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS
-# and optionally the environment variable DEPLOY_PORT (default 22).
+# and optionally DEPLOY_PORT (default 22). All are secrets.
 # See docker/DEPLOY.md.
 
 on:
@@ -65,7 +65,7 @@ jobs:
           VERSION: ${{ inputs.version }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
         run: |
           ssh -i ~/.ssh/deploy_key \
             -o IdentitiesOnly=yes \

@@ -31,7 +31,7 @@ git tag v1.4.0 && git push origin v1.4.0
      | `DEPLOY_USER` | the server account that runs deploys (`<deploy-user>` below) |
      | `DEPLOY_SSH_KEY` | private key generated below |
      | `DEPLOY_KNOWN_HOSTS` | output of `ssh-keyscan -t ed25519 <host>`, run from a trusted machine, then fingerprint-checked |
-   - Optional environment variable `DEPLOY_PORT` if SSH isn't on 22.
+   - Optional environment secret `DEPLOY_PORT` if SSH isn't on 22.
 2. **Packages:** after the first release, open each of the 3 packages
    (profile → Packages), go to *Package settings*, and set them to **Public**. Then the server
    needs no registry credentials. The images contain no secrets: all
